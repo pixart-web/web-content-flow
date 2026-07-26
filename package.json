@@ -33,6 +33,10 @@
     "prisma:seed": "prisma db seed",
     "worker": "NODE_OPTIONS=--conditions=react-server tsx scripts/run-worker.ts",
     "worker:once": "NODE_OPTIONS=--conditions=react-server tsx scripts/run-worker.ts --once",
+    "maintenance": "node --conditions=react-server --import tsx scripts/run-maintenance.ts",
+    "test:email": "vitest run src/server/email src/server/auth/password-recovery.test.ts",
+    "test:export": "vitest run src/server/export",
+    "test:security": "vitest run src/server/security src/app/health",
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm tokens:check && pnpm test"
   },
   "dependencies": {

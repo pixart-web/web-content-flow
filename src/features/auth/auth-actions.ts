@@ -11,6 +11,12 @@ import {
   deleteCurrentSession,
 } from "@/server/auth/session";
 import { createUserRepository } from "@/server/repositories/user-repository";
+import { getRolloutPolicy } from "@/server/launch/rollout";
+import {
+  enforceRateLimit,
+  requestSubject,
+  RateLimitError,
+} from "@/server/security/rate-limit";
 
 export type AuthFormState = {
   message?: string;
@@ -65,6 +71,22 @@ export async function signUpAction(
   if (!parsed.success) {
     return { fieldErrors: parsed.error.flatten().fieldErrors };
   }
+  if (!getRolloutPolicy().registrationAvailable)
+    return {
+      message: "Account creation is not available in the current launch mode.",
+    };
+  try {
+    await enforceRateLimit({
+      action: "sign-up",
+      subjectHash: await requestSubject(parsed.data.email),
+      limit: 5,
+      windowSeconds: 15 * 60,
+    });
+  } catch (error: unknown) {
+    if (error instanceof RateLimitError)
+      return { message: "Please wait before trying to create an account." };
+    return { message: "Your account could not be created right now." };
+  }
 
   const users = createUserRepository(getPrisma());
   const existing = await users.findByEmail(parsed.data.email);
@@ -89,7 +111,11 @@ export async function signUpAction(
     };
   }
 
-  redirect(safeReturnTo(parsed.data.returnTo));
+  redirect(
+    parsed.data.returnTo
+      ? safeReturnTo(parsed.data.returnTo)
+      : "/app/onboarding",
+  );
 }
 
 export async function signInAction(
@@ -104,6 +130,16 @@ export async function signInAction(
 
   if (!parsed.success) {
     return { fieldErrors: parsed.error.flatten().fieldErrors };
+  }
+  try {
+    await enforceRateLimit({
+      action: "sign-in",
+      subjectHash: await requestSubject(parsed.data.email),
+      limit: 10,
+      windowSeconds: 15 * 60,
+    });
+  } catch {
+    return { message: "Please wait before trying to sign in again." };
   }
 
   const user = await createUserRepository(getPrisma()).findByEmail(

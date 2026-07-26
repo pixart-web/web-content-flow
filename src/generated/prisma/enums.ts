@@ -112,6 +112,45 @@ export const UsageReservationStatus = {
 export type UsageReservationStatus = (typeof UsageReservationStatus)[keyof typeof UsageReservationStatus]
 
 
+export const PlanId = {
+  FREE: 'FREE',
+  INTERNAL: 'INTERNAL'
+} as const
+
+export type PlanId = (typeof PlanId)[keyof typeof PlanId]
+
+
+export const ExportFormat = {
+  PLAIN_TEXT: 'PLAIN_TEXT',
+  MARKDOWN: 'MARKDOWN',
+  JSON: 'JSON',
+  CSV: 'CSV'
+} as const
+
+export type ExportFormat = (typeof ExportFormat)[keyof typeof ExportFormat]
+
+
+export const ExportScope = {
+  SINGLE_ITEM: 'SINGLE_ITEM',
+  SELECTED_ITEMS: 'SELECTED_ITEMS',
+  MODULE: 'MODULE',
+  LIBRARY_FILTER: 'LIBRARY_FILTER',
+  CALENDAR: 'CALENDAR',
+  PROJECT_PACKAGE: 'PROJECT_PACKAGE'
+} as const
+
+export type ExportScope = (typeof ExportScope)[keyof typeof ExportScope]
+
+
+export const ExportStatus = {
+  COMPLETE: 'COMPLETE',
+  FAILED: 'FAILED',
+  EXPIRED: 'EXPIRED'
+} as const
+
+export type ExportStatus = (typeof ExportStatus)[keyof typeof ExportStatus]
+
+
 export const GenerationScopeType = {
   BRAND_PROFILE: 'BRAND_PROFILE',
   CONTENT_ITEM: 'CONTENT_ITEM',

@@ -6,6 +6,10 @@ const booleanFromEnv = z
   .enum(["true", "false"])
   .default("false")
   .transform((value) => value === "true");
+const enabledFromEnv = z
+  .enum(["true", "false"])
+  .default("true")
+  .transform((value) => value === "true");
 const integerFromEnv = (minimum: number, maximum: number, fallback: number) =>
   z.coerce.number().int().min(minimum).max(maximum).default(fallback);
 
@@ -16,6 +20,27 @@ export const serverEnvSchema = z
     DATABASE_URL: z.string().url().startsWith("postgresql://"),
     AUTH_SECRET: z.string().min(32),
     AUTH_URL: z.url(),
+    APP_ENV: z
+      .enum(["local", "test", "staging", "production"])
+      .default("local"),
+    ROLLOUT_STATE: z
+      .enum(["INTERNAL", "INVITE_ONLY", "PUBLIC", "MAINTENANCE"])
+      .default("INTERNAL"),
+    PUBLIC_REGISTRATION_ENABLED: enabledFromEnv,
+    EMAIL_VERIFICATION_REQUIRED: booleanFromEnv,
+    EXPORTS_ENABLED: enabledFromEnv,
+    PROJECT_PACKAGE_EXPORT_ENABLED: enabledFromEnv,
+    ACCOUNT_DELETION_ENABLED: booleanFromEnv,
+    PUBLIC_PRICING_ENABLED: enabledFromEnv,
+    EMAIL_PROVIDER: z.enum(["MOCK", "RESEND"]).default("MOCK"),
+    RESEND_API_KEY: z.string().min(20).optional(),
+    EMAIL_FROM: z.string().email().default("noreply@webcontentflow.local"),
+    SUPPORT_EMAIL: z.string().email().default("support@webcontentflow.local"),
+    LEGAL_TERMS_VERSION: z.string().min(1).max(40).default("draft-2026-07"),
+    LEGAL_PRIVACY_VERSION: z.string().min(1).max(40).default("draft-2026-07"),
+    EXPORT_RETENTION_HOURS: integerFromEnv(1, 168, 24),
+    EXPORT_MAX_BYTES: integerFromEnv(10_000, 20_000_000, 2_000_000),
+    RATE_LIMIT_SECRET: z.string().min(32).optional(),
     AI_PROVIDER_DEFAULT: z.enum(["MOCK", "OPENAI"]).default("MOCK"),
     AI_REAL_GENERATION_ENABLED: booleanFromEnv,
     AI_FAKE_OPENAI_ENABLED: booleanFromEnv,
@@ -62,6 +87,24 @@ export const serverEnvSchema = z
         path: ["AI_PROMPT_DEBUG_ENABLED"],
         message: "Prompt debugging is not allowed in production.",
       });
+    if (value.EMAIL_PROVIDER === "RESEND" && !value.RESEND_API_KEY)
+      context.addIssue({
+        code: "custom",
+        path: ["RESEND_API_KEY"],
+        message: "RESEND_API_KEY is required for real transactional email.",
+      });
+    if (value.NODE_ENV === "production" && value.EMAIL_PROVIDER === "MOCK")
+      context.addIssue({
+        code: "custom",
+        path: ["EMAIL_PROVIDER"],
+        message: "Production requires a real transactional email provider.",
+      });
+    if (value.NODE_ENV === "production" && !value.RATE_LIMIT_SECRET)
+      context.addIssue({
+        code: "custom",
+        path: ["RATE_LIMIT_SECRET"],
+        message: "Production requires RATE_LIMIT_SECRET.",
+      });
   });
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;
@@ -77,6 +120,23 @@ export function getServerEnv(): ServerEnv {
     DATABASE_URL: process.env.DATABASE_URL,
     AUTH_SECRET: process.env.AUTH_SECRET,
     AUTH_URL: process.env.AUTH_URL,
+    APP_ENV: process.env.APP_ENV,
+    ROLLOUT_STATE: process.env.ROLLOUT_STATE,
+    PUBLIC_REGISTRATION_ENABLED: process.env.PUBLIC_REGISTRATION_ENABLED,
+    EMAIL_VERIFICATION_REQUIRED: process.env.EMAIL_VERIFICATION_REQUIRED,
+    EXPORTS_ENABLED: process.env.EXPORTS_ENABLED,
+    PROJECT_PACKAGE_EXPORT_ENABLED: process.env.PROJECT_PACKAGE_EXPORT_ENABLED,
+    ACCOUNT_DELETION_ENABLED: process.env.ACCOUNT_DELETION_ENABLED,
+    PUBLIC_PRICING_ENABLED: process.env.PUBLIC_PRICING_ENABLED,
+    EMAIL_PROVIDER: process.env.EMAIL_PROVIDER,
+    RESEND_API_KEY: process.env.RESEND_API_KEY,
+    EMAIL_FROM: process.env.EMAIL_FROM,
+    SUPPORT_EMAIL: process.env.SUPPORT_EMAIL,
+    LEGAL_TERMS_VERSION: process.env.LEGAL_TERMS_VERSION,
+    LEGAL_PRIVACY_VERSION: process.env.LEGAL_PRIVACY_VERSION,
+    EXPORT_RETENTION_HOURS: process.env.EXPORT_RETENTION_HOURS,
+    EXPORT_MAX_BYTES: process.env.EXPORT_MAX_BYTES,
+    RATE_LIMIT_SECRET: process.env.RATE_LIMIT_SECRET,
     AI_PROVIDER_DEFAULT: process.env.AI_PROVIDER_DEFAULT,
     AI_REAL_GENERATION_ENABLED: process.env.AI_REAL_GENERATION_ENABLED,
     AI_FAKE_OPENAI_ENABLED: process.env.AI_FAKE_OPENAI_ENABLED,

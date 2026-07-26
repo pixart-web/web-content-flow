@@ -56,6 +56,9 @@ export const ModelName = {
   Session: 'Session',
   VerificationToken: 'VerificationToken',
   Project: 'Project',
+  PasswordResetToken: 'PasswordResetToken',
+  ContentExport: 'ContentExport',
+  RateLimitBucket: 'RateLimitBucket',
   ProjectModule: 'ProjectModule',
   ProjectBrief: 'ProjectBrief',
   BrandProfile: 'BrandProfile',
@@ -91,6 +94,9 @@ export const UserScalarFieldEnum = {
   emailVerified: 'emailVerified',
   image: 'image',
   passwordHash: 'passwordHash',
+  plan: 'plan',
+  onboardingStep: 'onboardingStep',
+  onboardingCompletedAt: 'onboardingCompletedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -149,6 +155,53 @@ export const ProjectScalarFieldEnum = {
 } as const
 
 export type ProjectScalarFieldEnum = (typeof ProjectScalarFieldEnum)[keyof typeof ProjectScalarFieldEnum]
+
+
+export const PasswordResetTokenScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  tokenHash: 'tokenHash',
+  expiresAt: 'expiresAt',
+  usedAt: 'usedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type PasswordResetTokenScalarFieldEnum = (typeof PasswordResetTokenScalarFieldEnum)[keyof typeof PasswordResetTokenScalarFieldEnum]
+
+
+export const ContentExportScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  requestedByUserId: 'requestedByUserId',
+  status: 'status',
+  format: 'format',
+  scope: 'scope',
+  selectedVersionIds: 'selectedVersionIds',
+  filename: 'filename',
+  mimeType: 'mimeType',
+  payload: 'payload',
+  byteSize: 'byteSize',
+  checksum: 'checksum',
+  errorCode: 'errorCode',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt',
+  completedAt: 'completedAt'
+} as const
+
+export type ContentExportScalarFieldEnum = (typeof ContentExportScalarFieldEnum)[keyof typeof ContentExportScalarFieldEnum]
+
+
+export const RateLimitBucketScalarFieldEnum = {
+  id: 'id',
+  action: 'action',
+  subjectHash: 'subjectHash',
+  windowStart: 'windowStart',
+  count: 'count',
+  expiresAt: 'expiresAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type RateLimitBucketScalarFieldEnum = (typeof RateLimitBucketScalarFieldEnum)[keyof typeof RateLimitBucketScalarFieldEnum]
 
 
 export const ProjectModuleScalarFieldEnum = {

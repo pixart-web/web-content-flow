@@ -19,6 +19,7 @@ import type { Result } from "@/lib/result/result";
 import { getPrisma } from "@/server/db/prisma";
 import { getNewJobGenerationConfiguration } from "@/server/ai/job-configuration";
 import { createPhase2Repository } from "@/server/repositories/phase-2-repository";
+import { resolvePlanPolicy } from "@/server/plans/plan-policy";
 
 type SetupError = {
   code: "NOT_FOUND" | "VALIDATION" | "CONFLICT" | "INTERNAL";
@@ -29,6 +30,19 @@ export async function createDraftProject(
   userId: string,
 ): Promise<Result<{ projectId: string; revision: number }, SetupError>> {
   try {
+    const account = await getPrisma().user.findUnique({
+      where: { id: userId },
+      select: { plan: true, _count: { select: { projects: true } } },
+    });
+    const policy = account ? resolvePlanPolicy(account.plan) : null;
+    if (!account || !policy || account._count.projects >= policy.projectLimit)
+      return {
+        ok: false,
+        error: {
+          code: "VALIDATION",
+          message: "Your current plan has reached its project limit.",
+        },
+      };
     const project = await createPhase2Repository(getPrisma()).createDraft(
       userId,
       emptyProjectBrief as unknown as Prisma.InputJsonValue,
@@ -183,6 +197,10 @@ export async function finalizeProject(input: {
             upsert: { create: {}, update: {} },
           },
         },
+      });
+      await tx.user.update({
+        where: { id: input.userId },
+        data: { onboardingStep: 8, onboardingCompletedAt: new Date() },
       });
       return tx.generationJob.create({
         data: {

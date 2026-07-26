@@ -17,8 +17,21 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "Web Content Flow",
-  description: "Repository foundation verification.",
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
+  ),
+  title: {
+    default: "Web Content Flow",
+    template: "%s · Web Content Flow",
+  },
+  description:
+    "Create a connected Brand Profile, website content, campaigns and editorial plan from one business Brief.",
+  openGraph: {
+    title: "Web Content Flow",
+    description:
+      "One Brief. One connected workflow. A complete digital presence.",
+    type: "website",
+  },
 };
 
 export default function RootLayout({

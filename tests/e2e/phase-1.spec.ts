@@ -23,7 +23,10 @@ test("public root loads and signed-out app access returns to sign in", async ({
 }) => {
   await page.goto("/");
   await expect(
-    page.getByRole("heading", { level: 1, name: "Web Content Flow" }),
+    page.getByRole("heading", {
+      level: 1,
+      name: "Build your brand and content system from one Brief.",
+    }),
   ).toBeVisible();
 
   await page.goto("/app");
@@ -38,9 +41,12 @@ test("creates an account with a safely hashed password", async ({ page }) => {
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill("Phase-one-safe-password!");
   await page.getByRole("button", { name: "Create account" }).click();
-  await expect(page).toHaveURL(/\/app$/);
+  await expect(page).toHaveURL(/\/app\/onboarding$/);
   await expect(
-    page.getByRole("heading", { level: 1, name: "Dashboard" }),
+    page.getByRole("heading", {
+      level: 1,
+      name: "Create one connected content system",
+    }),
   ).toBeVisible();
 });
 

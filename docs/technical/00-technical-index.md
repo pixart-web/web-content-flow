@@ -14,7 +14,9 @@ This architecture defines an implementation-ready MVP monolith, durable generati
 6. [Observability](19-observability-and-analytics.md), [Testing](20-testing-strategy.md), [Performance/Cost](21-performance-and-cost-controls.md)
 7. [Local Development](22-local-development.md), [Environments](23-deployment-and-environments.md), [Migrations](24-migrations-and-seeding.md)
 8. [Implementation Phases](25-implementation-phases.md), [Risks](26-technical-risks.md), [ADRs](27-architecture-decision-records.md), [Acceptance](28-technical-acceptance-checklist.md)
-9. [Phase 0 Implementation Record](29-phase-0-implementation.md), [Phase 1 Implementation Record](30-phase-1-implementation.md), [Phase 2 Implementation Record](31-phase-2-implementation.md), [Phase 3 Implementation Record](32-phase-3-implementation.md), [Phase 4.1 Website Implementation Record](33-phase-4-1-website-implementation.md), [Phase 4.2 Social Implementation Record](34-phase-4-2-social-implementation.md), [Phase 4.3 Ads & Creative Implementation Record](35-phase-4-3-ads-creative-implementation.md), [Phase 4.4 Video & Reels Implementation Record](36-phase-4-4-video-reels-implementation.md), [Phase 4.5 General Copy Implementation Record](37-phase-4-5-general-copy-implementation.md), [Phase 4.6 Content Calendar Implementation Record](38-phase-4-6-content-calendar-implementation.md), [Phase 5 Real AI Provider Record](39-phase-5-real-ai-provider-implementation.md)
+9. [Phase 0 Implementation Record](29-phase-0-implementation.md), [Phase 1 Implementation Record](30-phase-1-implementation.md), [Phase 2 Implementation Record](31-phase-2-implementation.md), [Phase 3 Implementation Record](32-phase-3-implementation.md), [Phase 4.1 Website Implementation Record](33-phase-4-1-website-implementation.md), [Phase 4.2 Social Implementation Record](34-phase-4-2-social-implementation.md), [Phase 4.3 Ads & Creative Implementation Record](35-phase-4-3-ads-creative-implementation.md), [Phase 4.4 Video & Reels Implementation Record](36-phase-4-4-video-reels-implementation.md), [Phase 4.5 General Copy Implementation Record](37-phase-4-5-general-copy-implementation.md), [Phase 4.6 Content Calendar Implementation Record](38-phase-4-6-content-calendar-implementation.md), [Phase 5 Real AI Provider Record](39-phase-5-real-ai-provider-implementation.md), [Phase 6 Production Readiness Record](40-phase-6-production-readiness-launch.md)
+10. Operations: [Deployment](../operations/01-deployment-runbook.md), [Worker](../operations/02-worker-operations.md), [Backup/Restore](../operations/03-backup-and-restore.md), [Incidents](../operations/04-incident-response.md), [Release/Rollback](../operations/05-release-and-rollback.md), [Smoke Tests](../operations/06-production-smoke-tests.md)
+11. Security: [Review](../security/01-security-review.md), [Retention](../security/02-data-retention-and-deletion.md), [Abuse](../security/03-abuse-and-rate-limits.md), and [Production Readiness Checklist](26-production-readiness-checklist.md)
 
 Reference artifacts: [diagrams](../../architecture/diagrams/system-context.md), [schemas](../../architecture/schemas/brand-profile.schema.ts), [contracts](../../architecture/contracts/ai-provider.ts), and [fixtures](../../architecture/examples/mock-brand-profile.json).
 
@@ -36,7 +38,8 @@ Use an ADR for durable architectural choices. Status moves Proposed → Accepted
 - Password-recovery email delivery and the long-term managed identity/provider strategy.
 - Worker host/trigger and database-queue leasing mechanism compatible with chosen deployment.
 - Platform-managed OpenAI key versus BYOK; model names and budgets.
-- Exact launch export subset and data-retention/deletion periods.
+- Final account-deletion workflow and legally approved retention periods.
 - Whether staging is needed before external MVP testing.
+- Production email, monitoring, hosting, database backup, and alert-routing evidence.
 
 All baseline choices are **Proposed**, not vendor commitments.

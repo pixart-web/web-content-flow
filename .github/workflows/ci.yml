@@ -16,6 +16,9 @@ env:
   AI_PROVIDER_DEFAULT: MOCK
   AI_REAL_GENERATION_ENABLED: "false"
   AI_FAKE_OPENAI_ENABLED: "true"
+  APP_ENV: test
+  EMAIL_PROVIDER: MOCK
+  RATE_LIMIT_SECRET: ci-only-rate-limit-secret-with-at-least-32-characters
 
 jobs:
   validate:
@@ -58,7 +61,17 @@ jobs:
       - run: pnpm test:quota
       - run: pnpm test:integration
       - run: pnpm test:worker
+      - run: pnpm test:email
+      - run: pnpm test:export
+      - run: pnpm test:security
+      - run: pnpm audit --prod
       - run: pnpm build
+        env:
+          AI_FAKE_OPENAI_ENABLED: "false"
+          EMAIL_PROVIDER: RESEND
+          RESEND_API_KEY: re_ci_build_only_not_a_real_provider_key
+          EMAIL_FROM: noreply@example.test
+          SUPPORT_EMAIL: support@example.test
 
   e2e:
     runs-on: ubuntu-latest

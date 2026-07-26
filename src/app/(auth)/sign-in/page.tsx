@@ -35,8 +35,12 @@ export default async function SignInPage({
       </div>
       <div className="text-secondary mt-6 space-y-3 text-sm">
         <p>
-          Password recovery is not available until secure email delivery is
-          configured.
+          <Link
+            className="text-link font-semibold underline"
+            href="/forgot-password"
+          >
+            Forgot your password?
+          </Link>
         </p>
         <p>
           New to Web Content Flow?{" "}

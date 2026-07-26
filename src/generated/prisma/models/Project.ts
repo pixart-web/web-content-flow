@@ -229,6 +229,7 @@ export type ProjectWhereInput = {
   modules?: Prisma.ProjectModuleListRelationFilter
   generationUsage?: Prisma.GenerationUsageListRelationFilter
   usageReservations?: Prisma.UsageReservationListRelationFilter
+  contentExports?: Prisma.ContentExportListRelationFilter
   currentBrandProfileVersion?: Prisma.XOR<Prisma.BrandProfileVersionNullableScalarRelationFilter, Prisma.BrandProfileVersionWhereInput> | null
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
 }
@@ -251,6 +252,7 @@ export type ProjectOrderByWithRelationInput = {
   modules?: Prisma.ProjectModuleOrderByRelationAggregateInput
   generationUsage?: Prisma.GenerationUsageOrderByRelationAggregateInput
   usageReservations?: Prisma.UsageReservationOrderByRelationAggregateInput
+  contentExports?: Prisma.ContentExportOrderByRelationAggregateInput
   currentBrandProfileVersion?: Prisma.BrandProfileVersionOrderByWithRelationInput
   user?: Prisma.UserOrderByWithRelationInput
 }
@@ -276,6 +278,7 @@ export type ProjectWhereUniqueInput = Prisma.AtLeast<{
   modules?: Prisma.ProjectModuleListRelationFilter
   generationUsage?: Prisma.GenerationUsageListRelationFilter
   usageReservations?: Prisma.UsageReservationListRelationFilter
+  contentExports?: Prisma.ContentExportListRelationFilter
   currentBrandProfileVersion?: Prisma.XOR<Prisma.BrandProfileVersionNullableScalarRelationFilter, Prisma.BrandProfileVersionWhereInput> | null
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
 }, "id" | "currentBrandProfileVersionId">
@@ -328,6 +331,7 @@ export type ProjectCreateInput = {
   modules?: Prisma.ProjectModuleCreateNestedManyWithoutProjectInput
   generationUsage?: Prisma.GenerationUsageCreateNestedManyWithoutProjectInput
   usageReservations?: Prisma.UsageReservationCreateNestedManyWithoutProjectInput
+  contentExports?: Prisma.ContentExportCreateNestedManyWithoutProjectInput
   currentBrandProfileVersion?: Prisma.BrandProfileVersionCreateNestedOneWithoutCurrentForProjectInput
   user: Prisma.UserCreateNestedOneWithoutProjectsInput
 }
@@ -350,6 +354,7 @@ export type ProjectUncheckedCreateInput = {
   modules?: Prisma.ProjectModuleUncheckedCreateNestedManyWithoutProjectInput
   generationUsage?: Prisma.GenerationUsageUncheckedCreateNestedManyWithoutProjectInput
   usageReservations?: Prisma.UsageReservationUncheckedCreateNestedManyWithoutProjectInput
+  contentExports?: Prisma.ContentExportUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUpdateInput = {
@@ -368,6 +373,7 @@ export type ProjectUpdateInput = {
   modules?: Prisma.ProjectModuleUpdateManyWithoutProjectNestedInput
   generationUsage?: Prisma.GenerationUsageUpdateManyWithoutProjectNestedInput
   usageReservations?: Prisma.UsageReservationUpdateManyWithoutProjectNestedInput
+  contentExports?: Prisma.ContentExportUpdateManyWithoutProjectNestedInput
   currentBrandProfileVersion?: Prisma.BrandProfileVersionUpdateOneWithoutCurrentForProjectNestedInput
   user?: Prisma.UserUpdateOneRequiredWithoutProjectsNestedInput
 }
@@ -390,6 +396,7 @@ export type ProjectUncheckedUpdateInput = {
   modules?: Prisma.ProjectModuleUncheckedUpdateManyWithoutProjectNestedInput
   generationUsage?: Prisma.GenerationUsageUncheckedUpdateManyWithoutProjectNestedInput
   usageReservations?: Prisma.UsageReservationUncheckedUpdateManyWithoutProjectNestedInput
+  contentExports?: Prisma.ContentExportUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateManyInput = {
@@ -532,6 +539,20 @@ export type ProjectUncheckedUpdateManyWithoutUserNestedInput = {
 
 export type EnumProjectStatusFieldUpdateOperationsInput = {
   set?: $Enums.ProjectStatus
+}
+
+export type ProjectCreateNestedOneWithoutContentExportsInput = {
+  create?: Prisma.XOR<Prisma.ProjectCreateWithoutContentExportsInput, Prisma.ProjectUncheckedCreateWithoutContentExportsInput>
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutContentExportsInput
+  connect?: Prisma.ProjectWhereUniqueInput
+}
+
+export type ProjectUpdateOneRequiredWithoutContentExportsNestedInput = {
+  create?: Prisma.XOR<Prisma.ProjectCreateWithoutContentExportsInput, Prisma.ProjectUncheckedCreateWithoutContentExportsInput>
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutContentExportsInput
+  upsert?: Prisma.ProjectUpsertWithoutContentExportsInput
+  connect?: Prisma.ProjectWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ProjectUpdateToOneWithWhereWithoutContentExportsInput, Prisma.ProjectUpdateWithoutContentExportsInput>, Prisma.ProjectUncheckedUpdateWithoutContentExportsInput>
 }
 
 export type ProjectCreateNestedOneWithoutModulesInput = {
@@ -680,6 +701,7 @@ export type ProjectCreateWithoutUserInput = {
   modules?: Prisma.ProjectModuleCreateNestedManyWithoutProjectInput
   generationUsage?: Prisma.GenerationUsageCreateNestedManyWithoutProjectInput
   usageReservations?: Prisma.UsageReservationCreateNestedManyWithoutProjectInput
+  contentExports?: Prisma.ContentExportCreateNestedManyWithoutProjectInput
   currentBrandProfileVersion?: Prisma.BrandProfileVersionCreateNestedOneWithoutCurrentForProjectInput
 }
 
@@ -700,6 +722,7 @@ export type ProjectUncheckedCreateWithoutUserInput = {
   modules?: Prisma.ProjectModuleUncheckedCreateNestedManyWithoutProjectInput
   generationUsage?: Prisma.GenerationUsageUncheckedCreateNestedManyWithoutProjectInput
   usageReservations?: Prisma.UsageReservationUncheckedCreateNestedManyWithoutProjectInput
+  contentExports?: Prisma.ContentExportUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutUserInput = {
@@ -744,6 +767,102 @@ export type ProjectScalarWhereInput = {
   currentBrandProfileVersionId?: Prisma.StringNullableFilter<"Project"> | string | null
 }
 
+export type ProjectCreateWithoutContentExportsInput = {
+  id?: string
+  name: string
+  brandName: string
+  type: string
+  status?: $Enums.ProjectStatus
+  outputLanguage?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  brief?: Prisma.ProjectBriefCreateNestedOneWithoutProjectInput
+  brandProfile?: Prisma.BrandProfileCreateNestedOneWithoutProjectInput
+  generationJobs?: Prisma.GenerationJobCreateNestedManyWithoutProjectInput
+  contentItems?: Prisma.ContentItemCreateNestedManyWithoutProjectInput
+  modules?: Prisma.ProjectModuleCreateNestedManyWithoutProjectInput
+  generationUsage?: Prisma.GenerationUsageCreateNestedManyWithoutProjectInput
+  usageReservations?: Prisma.UsageReservationCreateNestedManyWithoutProjectInput
+  currentBrandProfileVersion?: Prisma.BrandProfileVersionCreateNestedOneWithoutCurrentForProjectInput
+  user: Prisma.UserCreateNestedOneWithoutProjectsInput
+}
+
+export type ProjectUncheckedCreateWithoutContentExportsInput = {
+  id?: string
+  userId: string
+  name: string
+  brandName: string
+  type: string
+  status?: $Enums.ProjectStatus
+  outputLanguage?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  currentBrandProfileVersionId?: string | null
+  brief?: Prisma.ProjectBriefUncheckedCreateNestedOneWithoutProjectInput
+  brandProfile?: Prisma.BrandProfileUncheckedCreateNestedOneWithoutProjectInput
+  generationJobs?: Prisma.GenerationJobUncheckedCreateNestedManyWithoutProjectInput
+  contentItems?: Prisma.ContentItemUncheckedCreateNestedManyWithoutProjectInput
+  modules?: Prisma.ProjectModuleUncheckedCreateNestedManyWithoutProjectInput
+  generationUsage?: Prisma.GenerationUsageUncheckedCreateNestedManyWithoutProjectInput
+  usageReservations?: Prisma.UsageReservationUncheckedCreateNestedManyWithoutProjectInput
+}
+
+export type ProjectCreateOrConnectWithoutContentExportsInput = {
+  where: Prisma.ProjectWhereUniqueInput
+  create: Prisma.XOR<Prisma.ProjectCreateWithoutContentExportsInput, Prisma.ProjectUncheckedCreateWithoutContentExportsInput>
+}
+
+export type ProjectUpsertWithoutContentExportsInput = {
+  update: Prisma.XOR<Prisma.ProjectUpdateWithoutContentExportsInput, Prisma.ProjectUncheckedUpdateWithoutContentExportsInput>
+  create: Prisma.XOR<Prisma.ProjectCreateWithoutContentExportsInput, Prisma.ProjectUncheckedCreateWithoutContentExportsInput>
+  where?: Prisma.ProjectWhereInput
+}
+
+export type ProjectUpdateToOneWithWhereWithoutContentExportsInput = {
+  where?: Prisma.ProjectWhereInput
+  data: Prisma.XOR<Prisma.ProjectUpdateWithoutContentExportsInput, Prisma.ProjectUncheckedUpdateWithoutContentExportsInput>
+}
+
+export type ProjectUpdateWithoutContentExportsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  brandName?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
+  outputLanguage?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  brief?: Prisma.ProjectBriefUpdateOneWithoutProjectNestedInput
+  brandProfile?: Prisma.BrandProfileUpdateOneWithoutProjectNestedInput
+  generationJobs?: Prisma.GenerationJobUpdateManyWithoutProjectNestedInput
+  contentItems?: Prisma.ContentItemUpdateManyWithoutProjectNestedInput
+  modules?: Prisma.ProjectModuleUpdateManyWithoutProjectNestedInput
+  generationUsage?: Prisma.GenerationUsageUpdateManyWithoutProjectNestedInput
+  usageReservations?: Prisma.UsageReservationUpdateManyWithoutProjectNestedInput
+  currentBrandProfileVersion?: Prisma.BrandProfileVersionUpdateOneWithoutCurrentForProjectNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutProjectsNestedInput
+}
+
+export type ProjectUncheckedUpdateWithoutContentExportsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  userId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  brandName?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumProjectStatusFieldUpdateOperationsInput | $Enums.ProjectStatus
+  outputLanguage?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  currentBrandProfileVersionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  brief?: Prisma.ProjectBriefUncheckedUpdateOneWithoutProjectNestedInput
+  brandProfile?: Prisma.BrandProfileUncheckedUpdateOneWithoutProjectNestedInput
+  generationJobs?: Prisma.GenerationJobUncheckedUpdateManyWithoutProjectNestedInput
+  contentItems?: Prisma.ContentItemUncheckedUpdateManyWithoutProjectNestedInput
+  modules?: Prisma.ProjectModuleUncheckedUpdateManyWithoutProjectNestedInput
+  generationUsage?: Prisma.GenerationUsageUncheckedUpdateManyWithoutProjectNestedInput
+  usageReservations?: Prisma.UsageReservationUncheckedUpdateManyWithoutProjectNestedInput
+}
+
 export type ProjectCreateWithoutModulesInput = {
   id?: string
   name: string
@@ -759,6 +878,7 @@ export type ProjectCreateWithoutModulesInput = {
   contentItems?: Prisma.ContentItemCreateNestedManyWithoutProjectInput
   generationUsage?: Prisma.GenerationUsageCreateNestedManyWithoutProjectInput
   usageReservations?: Prisma.UsageReservationCreateNestedManyWithoutProjectInput
+  contentExports?: Prisma.ContentExportCreateNestedManyWithoutProjectInput
   currentBrandProfileVersion?: Prisma.BrandProfileVersionCreateNestedOneWithoutCurrentForProjectInput
   user: Prisma.UserCreateNestedOneWithoutProjectsInput
 }
@@ -780,6 +900,7 @@ export type ProjectUncheckedCreateWithoutModulesInput = {
   contentItems?: Prisma.ContentItemUncheckedCreateNestedManyWithoutProjectInput
   generationUsage?: Prisma.GenerationUsageUncheckedCreateNestedManyWithoutProjectInput
   usageReservations?: Prisma.UsageReservationUncheckedCreateNestedManyWithoutProjectInput
+  contentExports?: Prisma.ContentExportUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutModulesInput = {
@@ -813,6 +934,7 @@ export type ProjectUpdateWithoutModulesInput = {
   contentItems?: Prisma.ContentItemUpdateManyWithoutProjectNestedInput
   generationUsage?: Prisma.GenerationUsageUpdateManyWithoutProjectNestedInput
   usageReservations?: Prisma.UsageReservationUpdateManyWithoutProjectNestedInput
+  contentExports?: Prisma.ContentExportUpdateManyWithoutProjectNestedInput
   currentBrandProfileVersion?: Prisma.BrandProfileVersionUpdateOneWithoutCurrentForProjectNestedInput
   user?: Prisma.UserUpdateOneRequiredWithoutProjectsNestedInput
 }
@@ -834,6 +956,7 @@ export type ProjectUncheckedUpdateWithoutModulesInput = {
   contentItems?: Prisma.ContentItemUncheckedUpdateManyWithoutProjectNestedInput
   generationUsage?: Prisma.GenerationUsageUncheckedUpdateManyWithoutProjectNestedInput
   usageReservations?: Prisma.UsageReservationUncheckedUpdateManyWithoutProjectNestedInput
+  contentExports?: Prisma.ContentExportUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutBriefInput = {
@@ -851,6 +974,7 @@ export type ProjectCreateWithoutBriefInput = {
   modules?: Prisma.ProjectModuleCreateNestedManyWithoutProjectInput
   generationUsage?: Prisma.GenerationUsageCreateNestedManyWithoutProjectInput
   usageReservations?: Prisma.UsageReservationCreateNestedManyWithoutProjectInput
+  contentExports?: Prisma.ContentExportCreateNestedManyWithoutProjectInput
   currentBrandProfileVersion?: Prisma.BrandProfileVersionCreateNestedOneWithoutCurrentForProjectInput
   user: Prisma.UserCreateNestedOneWithoutProjectsInput
 }
@@ -872,6 +996,7 @@ export type ProjectUncheckedCreateWithoutBriefInput = {
   modules?: Prisma.ProjectModuleUncheckedCreateNestedManyWithoutProjectInput
   generationUsage?: Prisma.GenerationUsageUncheckedCreateNestedManyWithoutProjectInput
   usageReservations?: Prisma.UsageReservationUncheckedCreateNestedManyWithoutProjectInput
+  contentExports?: Prisma.ContentExportUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutBriefInput = {
@@ -905,6 +1030,7 @@ export type ProjectUpdateWithoutBriefInput = {
   modules?: Prisma.ProjectModuleUpdateManyWithoutProjectNestedInput
   generationUsage?: Prisma.GenerationUsageUpdateManyWithoutProjectNestedInput
   usageReservations?: Prisma.UsageReservationUpdateManyWithoutProjectNestedInput
+  contentExports?: Prisma.ContentExportUpdateManyWithoutProjectNestedInput
   currentBrandProfileVersion?: Prisma.BrandProfileVersionUpdateOneWithoutCurrentForProjectNestedInput
   user?: Prisma.UserUpdateOneRequiredWithoutProjectsNestedInput
 }
@@ -926,6 +1052,7 @@ export type ProjectUncheckedUpdateWithoutBriefInput = {
   modules?: Prisma.ProjectModuleUncheckedUpdateManyWithoutProjectNestedInput
   generationUsage?: Prisma.GenerationUsageUncheckedUpdateManyWithoutProjectNestedInput
   usageReservations?: Prisma.UsageReservationUncheckedUpdateManyWithoutProjectNestedInput
+  contentExports?: Prisma.ContentExportUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutBrandProfileInput = {
@@ -943,6 +1070,7 @@ export type ProjectCreateWithoutBrandProfileInput = {
   modules?: Prisma.ProjectModuleCreateNestedManyWithoutProjectInput
   generationUsage?: Prisma.GenerationUsageCreateNestedManyWithoutProjectInput
   usageReservations?: Prisma.UsageReservationCreateNestedManyWithoutProjectInput
+  contentExports?: Prisma.ContentExportCreateNestedManyWithoutProjectInput
   currentBrandProfileVersion?: Prisma.BrandProfileVersionCreateNestedOneWithoutCurrentForProjectInput
   user: Prisma.UserCreateNestedOneWithoutProjectsInput
 }
@@ -964,6 +1092,7 @@ export type ProjectUncheckedCreateWithoutBrandProfileInput = {
   modules?: Prisma.ProjectModuleUncheckedCreateNestedManyWithoutProjectInput
   generationUsage?: Prisma.GenerationUsageUncheckedCreateNestedManyWithoutProjectInput
   usageReservations?: Prisma.UsageReservationUncheckedCreateNestedManyWithoutProjectInput
+  contentExports?: Prisma.ContentExportUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutBrandProfileInput = {
@@ -997,6 +1126,7 @@ export type ProjectUpdateWithoutBrandProfileInput = {
   modules?: Prisma.ProjectModuleUpdateManyWithoutProjectNestedInput
   generationUsage?: Prisma.GenerationUsageUpdateManyWithoutProjectNestedInput
   usageReservations?: Prisma.UsageReservationUpdateManyWithoutProjectNestedInput
+  contentExports?: Prisma.ContentExportUpdateManyWithoutProjectNestedInput
   currentBrandProfileVersion?: Prisma.BrandProfileVersionUpdateOneWithoutCurrentForProjectNestedInput
   user?: Prisma.UserUpdateOneRequiredWithoutProjectsNestedInput
 }
@@ -1018,6 +1148,7 @@ export type ProjectUncheckedUpdateWithoutBrandProfileInput = {
   modules?: Prisma.ProjectModuleUncheckedUpdateManyWithoutProjectNestedInput
   generationUsage?: Prisma.GenerationUsageUncheckedUpdateManyWithoutProjectNestedInput
   usageReservations?: Prisma.UsageReservationUncheckedUpdateManyWithoutProjectNestedInput
+  contentExports?: Prisma.ContentExportUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutCurrentBrandProfileVersionInput = {
@@ -1036,6 +1167,7 @@ export type ProjectCreateWithoutCurrentBrandProfileVersionInput = {
   modules?: Prisma.ProjectModuleCreateNestedManyWithoutProjectInput
   generationUsage?: Prisma.GenerationUsageCreateNestedManyWithoutProjectInput
   usageReservations?: Prisma.UsageReservationCreateNestedManyWithoutProjectInput
+  contentExports?: Prisma.ContentExportCreateNestedManyWithoutProjectInput
   user: Prisma.UserCreateNestedOneWithoutProjectsInput
 }
 
@@ -1056,6 +1188,7 @@ export type ProjectUncheckedCreateWithoutCurrentBrandProfileVersionInput = {
   modules?: Prisma.ProjectModuleUncheckedCreateNestedManyWithoutProjectInput
   generationUsage?: Prisma.GenerationUsageUncheckedCreateNestedManyWithoutProjectInput
   usageReservations?: Prisma.UsageReservationUncheckedCreateNestedManyWithoutProjectInput
+  contentExports?: Prisma.ContentExportUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutCurrentBrandProfileVersionInput = {
@@ -1090,6 +1223,7 @@ export type ProjectUpdateWithoutCurrentBrandProfileVersionInput = {
   modules?: Prisma.ProjectModuleUpdateManyWithoutProjectNestedInput
   generationUsage?: Prisma.GenerationUsageUpdateManyWithoutProjectNestedInput
   usageReservations?: Prisma.UsageReservationUpdateManyWithoutProjectNestedInput
+  contentExports?: Prisma.ContentExportUpdateManyWithoutProjectNestedInput
   user?: Prisma.UserUpdateOneRequiredWithoutProjectsNestedInput
 }
 
@@ -1110,6 +1244,7 @@ export type ProjectUncheckedUpdateWithoutCurrentBrandProfileVersionInput = {
   modules?: Prisma.ProjectModuleUncheckedUpdateManyWithoutProjectNestedInput
   generationUsage?: Prisma.GenerationUsageUncheckedUpdateManyWithoutProjectNestedInput
   usageReservations?: Prisma.UsageReservationUncheckedUpdateManyWithoutProjectNestedInput
+  contentExports?: Prisma.ContentExportUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutGenerationJobsInput = {
@@ -1127,6 +1262,7 @@ export type ProjectCreateWithoutGenerationJobsInput = {
   modules?: Prisma.ProjectModuleCreateNestedManyWithoutProjectInput
   generationUsage?: Prisma.GenerationUsageCreateNestedManyWithoutProjectInput
   usageReservations?: Prisma.UsageReservationCreateNestedManyWithoutProjectInput
+  contentExports?: Prisma.ContentExportCreateNestedManyWithoutProjectInput
   currentBrandProfileVersion?: Prisma.BrandProfileVersionCreateNestedOneWithoutCurrentForProjectInput
   user: Prisma.UserCreateNestedOneWithoutProjectsInput
 }
@@ -1148,6 +1284,7 @@ export type ProjectUncheckedCreateWithoutGenerationJobsInput = {
   modules?: Prisma.ProjectModuleUncheckedCreateNestedManyWithoutProjectInput
   generationUsage?: Prisma.GenerationUsageUncheckedCreateNestedManyWithoutProjectInput
   usageReservations?: Prisma.UsageReservationUncheckedCreateNestedManyWithoutProjectInput
+  contentExports?: Prisma.ContentExportUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutGenerationJobsInput = {
@@ -1181,6 +1318,7 @@ export type ProjectUpdateWithoutGenerationJobsInput = {
   modules?: Prisma.ProjectModuleUpdateManyWithoutProjectNestedInput
   generationUsage?: Prisma.GenerationUsageUpdateManyWithoutProjectNestedInput
   usageReservations?: Prisma.UsageReservationUpdateManyWithoutProjectNestedInput
+  contentExports?: Prisma.ContentExportUpdateManyWithoutProjectNestedInput
   currentBrandProfileVersion?: Prisma.BrandProfileVersionUpdateOneWithoutCurrentForProjectNestedInput
   user?: Prisma.UserUpdateOneRequiredWithoutProjectsNestedInput
 }
@@ -1202,6 +1340,7 @@ export type ProjectUncheckedUpdateWithoutGenerationJobsInput = {
   modules?: Prisma.ProjectModuleUncheckedUpdateManyWithoutProjectNestedInput
   generationUsage?: Prisma.GenerationUsageUncheckedUpdateManyWithoutProjectNestedInput
   usageReservations?: Prisma.UsageReservationUncheckedUpdateManyWithoutProjectNestedInput
+  contentExports?: Prisma.ContentExportUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutContentItemsInput = {
@@ -1219,6 +1358,7 @@ export type ProjectCreateWithoutContentItemsInput = {
   modules?: Prisma.ProjectModuleCreateNestedManyWithoutProjectInput
   generationUsage?: Prisma.GenerationUsageCreateNestedManyWithoutProjectInput
   usageReservations?: Prisma.UsageReservationCreateNestedManyWithoutProjectInput
+  contentExports?: Prisma.ContentExportCreateNestedManyWithoutProjectInput
   currentBrandProfileVersion?: Prisma.BrandProfileVersionCreateNestedOneWithoutCurrentForProjectInput
   user: Prisma.UserCreateNestedOneWithoutProjectsInput
 }
@@ -1240,6 +1380,7 @@ export type ProjectUncheckedCreateWithoutContentItemsInput = {
   modules?: Prisma.ProjectModuleUncheckedCreateNestedManyWithoutProjectInput
   generationUsage?: Prisma.GenerationUsageUncheckedCreateNestedManyWithoutProjectInput
   usageReservations?: Prisma.UsageReservationUncheckedCreateNestedManyWithoutProjectInput
+  contentExports?: Prisma.ContentExportUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutContentItemsInput = {
@@ -1273,6 +1414,7 @@ export type ProjectUpdateWithoutContentItemsInput = {
   modules?: Prisma.ProjectModuleUpdateManyWithoutProjectNestedInput
   generationUsage?: Prisma.GenerationUsageUpdateManyWithoutProjectNestedInput
   usageReservations?: Prisma.UsageReservationUpdateManyWithoutProjectNestedInput
+  contentExports?: Prisma.ContentExportUpdateManyWithoutProjectNestedInput
   currentBrandProfileVersion?: Prisma.BrandProfileVersionUpdateOneWithoutCurrentForProjectNestedInput
   user?: Prisma.UserUpdateOneRequiredWithoutProjectsNestedInput
 }
@@ -1294,6 +1436,7 @@ export type ProjectUncheckedUpdateWithoutContentItemsInput = {
   modules?: Prisma.ProjectModuleUncheckedUpdateManyWithoutProjectNestedInput
   generationUsage?: Prisma.GenerationUsageUncheckedUpdateManyWithoutProjectNestedInput
   usageReservations?: Prisma.UsageReservationUncheckedUpdateManyWithoutProjectNestedInput
+  contentExports?: Prisma.ContentExportUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutGenerationUsageInput = {
@@ -1311,6 +1454,7 @@ export type ProjectCreateWithoutGenerationUsageInput = {
   contentItems?: Prisma.ContentItemCreateNestedManyWithoutProjectInput
   modules?: Prisma.ProjectModuleCreateNestedManyWithoutProjectInput
   usageReservations?: Prisma.UsageReservationCreateNestedManyWithoutProjectInput
+  contentExports?: Prisma.ContentExportCreateNestedManyWithoutProjectInput
   currentBrandProfileVersion?: Prisma.BrandProfileVersionCreateNestedOneWithoutCurrentForProjectInput
   user: Prisma.UserCreateNestedOneWithoutProjectsInput
 }
@@ -1332,6 +1476,7 @@ export type ProjectUncheckedCreateWithoutGenerationUsageInput = {
   contentItems?: Prisma.ContentItemUncheckedCreateNestedManyWithoutProjectInput
   modules?: Prisma.ProjectModuleUncheckedCreateNestedManyWithoutProjectInput
   usageReservations?: Prisma.UsageReservationUncheckedCreateNestedManyWithoutProjectInput
+  contentExports?: Prisma.ContentExportUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutGenerationUsageInput = {
@@ -1365,6 +1510,7 @@ export type ProjectUpdateWithoutGenerationUsageInput = {
   contentItems?: Prisma.ContentItemUpdateManyWithoutProjectNestedInput
   modules?: Prisma.ProjectModuleUpdateManyWithoutProjectNestedInput
   usageReservations?: Prisma.UsageReservationUpdateManyWithoutProjectNestedInput
+  contentExports?: Prisma.ContentExportUpdateManyWithoutProjectNestedInput
   currentBrandProfileVersion?: Prisma.BrandProfileVersionUpdateOneWithoutCurrentForProjectNestedInput
   user?: Prisma.UserUpdateOneRequiredWithoutProjectsNestedInput
 }
@@ -1386,6 +1532,7 @@ export type ProjectUncheckedUpdateWithoutGenerationUsageInput = {
   contentItems?: Prisma.ContentItemUncheckedUpdateManyWithoutProjectNestedInput
   modules?: Prisma.ProjectModuleUncheckedUpdateManyWithoutProjectNestedInput
   usageReservations?: Prisma.UsageReservationUncheckedUpdateManyWithoutProjectNestedInput
+  contentExports?: Prisma.ContentExportUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutUsageReservationsInput = {
@@ -1403,6 +1550,7 @@ export type ProjectCreateWithoutUsageReservationsInput = {
   contentItems?: Prisma.ContentItemCreateNestedManyWithoutProjectInput
   modules?: Prisma.ProjectModuleCreateNestedManyWithoutProjectInput
   generationUsage?: Prisma.GenerationUsageCreateNestedManyWithoutProjectInput
+  contentExports?: Prisma.ContentExportCreateNestedManyWithoutProjectInput
   currentBrandProfileVersion?: Prisma.BrandProfileVersionCreateNestedOneWithoutCurrentForProjectInput
   user: Prisma.UserCreateNestedOneWithoutProjectsInput
 }
@@ -1424,6 +1572,7 @@ export type ProjectUncheckedCreateWithoutUsageReservationsInput = {
   contentItems?: Prisma.ContentItemUncheckedCreateNestedManyWithoutProjectInput
   modules?: Prisma.ProjectModuleUncheckedCreateNestedManyWithoutProjectInput
   generationUsage?: Prisma.GenerationUsageUncheckedCreateNestedManyWithoutProjectInput
+  contentExports?: Prisma.ContentExportUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutUsageReservationsInput = {
@@ -1457,6 +1606,7 @@ export type ProjectUpdateWithoutUsageReservationsInput = {
   contentItems?: Prisma.ContentItemUpdateManyWithoutProjectNestedInput
   modules?: Prisma.ProjectModuleUpdateManyWithoutProjectNestedInput
   generationUsage?: Prisma.GenerationUsageUpdateManyWithoutProjectNestedInput
+  contentExports?: Prisma.ContentExportUpdateManyWithoutProjectNestedInput
   currentBrandProfileVersion?: Prisma.BrandProfileVersionUpdateOneWithoutCurrentForProjectNestedInput
   user?: Prisma.UserUpdateOneRequiredWithoutProjectsNestedInput
 }
@@ -1478,6 +1628,7 @@ export type ProjectUncheckedUpdateWithoutUsageReservationsInput = {
   contentItems?: Prisma.ContentItemUncheckedUpdateManyWithoutProjectNestedInput
   modules?: Prisma.ProjectModuleUncheckedUpdateManyWithoutProjectNestedInput
   generationUsage?: Prisma.GenerationUsageUncheckedUpdateManyWithoutProjectNestedInput
+  contentExports?: Prisma.ContentExportUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateManyUserInput = {
@@ -1508,6 +1659,7 @@ export type ProjectUpdateWithoutUserInput = {
   modules?: Prisma.ProjectModuleUpdateManyWithoutProjectNestedInput
   generationUsage?: Prisma.GenerationUsageUpdateManyWithoutProjectNestedInput
   usageReservations?: Prisma.UsageReservationUpdateManyWithoutProjectNestedInput
+  contentExports?: Prisma.ContentExportUpdateManyWithoutProjectNestedInput
   currentBrandProfileVersion?: Prisma.BrandProfileVersionUpdateOneWithoutCurrentForProjectNestedInput
 }
 
@@ -1528,6 +1680,7 @@ export type ProjectUncheckedUpdateWithoutUserInput = {
   modules?: Prisma.ProjectModuleUncheckedUpdateManyWithoutProjectNestedInput
   generationUsage?: Prisma.GenerationUsageUncheckedUpdateManyWithoutProjectNestedInput
   usageReservations?: Prisma.UsageReservationUncheckedUpdateManyWithoutProjectNestedInput
+  contentExports?: Prisma.ContentExportUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateManyWithoutUserInput = {
@@ -1553,6 +1706,7 @@ export type ProjectCountOutputType = {
   modules: number
   generationUsage: number
   usageReservations: number
+  contentExports: number
 }
 
 export type ProjectCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1561,6 +1715,7 @@ export type ProjectCountOutputTypeSelect<ExtArgs extends runtime.Types.Extension
   modules?: boolean | ProjectCountOutputTypeCountModulesArgs
   generationUsage?: boolean | ProjectCountOutputTypeCountGenerationUsageArgs
   usageReservations?: boolean | ProjectCountOutputTypeCountUsageReservationsArgs
+  contentExports?: boolean | ProjectCountOutputTypeCountContentExportsArgs
 }
 
 /**
@@ -1608,6 +1763,13 @@ export type ProjectCountOutputTypeCountUsageReservationsArgs<ExtArgs extends run
   where?: Prisma.UsageReservationWhereInput
 }
 
+/**
+ * ProjectCountOutputType without action
+ */
+export type ProjectCountOutputTypeCountContentExportsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ContentExportWhereInput
+}
+
 
 export type ProjectSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1627,6 +1789,7 @@ export type ProjectSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   modules?: boolean | Prisma.Project$modulesArgs<ExtArgs>
   generationUsage?: boolean | Prisma.Project$generationUsageArgs<ExtArgs>
   usageReservations?: boolean | Prisma.Project$usageReservationsArgs<ExtArgs>
+  contentExports?: boolean | Prisma.Project$contentExportsArgs<ExtArgs>
   currentBrandProfileVersion?: boolean | Prisma.Project$currentBrandProfileVersionArgs<ExtArgs>
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   _count?: boolean | Prisma.ProjectCountOutputTypeDefaultArgs<ExtArgs>
@@ -1684,6 +1847,7 @@ export type ProjectInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs
   modules?: boolean | Prisma.Project$modulesArgs<ExtArgs>
   generationUsage?: boolean | Prisma.Project$generationUsageArgs<ExtArgs>
   usageReservations?: boolean | Prisma.Project$usageReservationsArgs<ExtArgs>
+  contentExports?: boolean | Prisma.Project$contentExportsArgs<ExtArgs>
   currentBrandProfileVersion?: boolean | Prisma.Project$currentBrandProfileVersionArgs<ExtArgs>
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   _count?: boolean | Prisma.ProjectCountOutputTypeDefaultArgs<ExtArgs>
@@ -1707,6 +1871,7 @@ export type $ProjectPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     modules: Prisma.$ProjectModulePayload<ExtArgs>[]
     generationUsage: Prisma.$GenerationUsagePayload<ExtArgs>[]
     usageReservations: Prisma.$UsageReservationPayload<ExtArgs>[]
+    contentExports: Prisma.$ContentExportPayload<ExtArgs>[]
     currentBrandProfileVersion: Prisma.$BrandProfileVersionPayload<ExtArgs> | null
     user: Prisma.$UserPayload<ExtArgs>
   }
@@ -2122,6 +2287,7 @@ export interface Prisma__ProjectClient<T, Null = never, ExtArgs extends runtime.
   modules<T extends Prisma.Project$modulesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Project$modulesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProjectModulePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   generationUsage<T extends Prisma.Project$generationUsageArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Project$generationUsageArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$GenerationUsagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   usageReservations<T extends Prisma.Project$usageReservationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Project$usageReservationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UsageReservationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  contentExports<T extends Prisma.Project$contentExportsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Project$contentExportsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ContentExportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   currentBrandProfileVersion<T extends Prisma.Project$currentBrandProfileVersionArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Project$currentBrandProfileVersionArgs<ExtArgs>>): Prisma.Prisma__BrandProfileVersionClient<runtime.Types.Result.GetResult<Prisma.$BrandProfileVersionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   user<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
@@ -2719,6 +2885,30 @@ export type Project$usageReservationsArgs<ExtArgs extends runtime.Types.Extensio
   take?: number
   skip?: number
   distinct?: Prisma.UsageReservationScalarFieldEnum | Prisma.UsageReservationScalarFieldEnum[]
+}
+
+/**
+ * Project.contentExports
+ */
+export type Project$contentExportsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ContentExport
+   */
+  select?: Prisma.ContentExportSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ContentExport
+   */
+  omit?: Prisma.ContentExportOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ContentExportInclude<ExtArgs> | null
+  where?: Prisma.ContentExportWhereInput
+  orderBy?: Prisma.ContentExportOrderByWithRelationInput | Prisma.ContentExportOrderByWithRelationInput[]
+  cursor?: Prisma.ContentExportWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ContentExportScalarFieldEnum | Prisma.ContentExportScalarFieldEnum[]
 }
 
 /**

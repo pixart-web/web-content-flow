@@ -426,14 +426,6 @@ export type ProjectBriefUncheckedUpdateOneWithoutProjectNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ProjectBriefUpdateToOneWithWhereWithoutProjectInput, Prisma.ProjectBriefUpdateWithoutProjectInput>, Prisma.ProjectBriefUncheckedUpdateWithoutProjectInput>
 }
 
-export type IntFieldUpdateOperationsInput = {
-  set?: number
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
-}
-
 export type ProjectBriefCreateWithoutProjectInput = {
   id?: string
   schemaVersion: string

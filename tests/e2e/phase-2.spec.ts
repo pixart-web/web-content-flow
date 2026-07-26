@@ -10,7 +10,7 @@ test("creates a project, resumes durable generation, and reviews the mock Brand 
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill("Phase-two-safe-password!");
   await page.getByRole("button", { name: "Create account" }).click();
-  await page.getByRole("link", { name: "Create project" }).click();
+  await page.getByRole("button", { name: "Create first project" }).click();
 
   await page.getByLabel("Project name").fill("UrbanStride Launch");
   await page.getByLabel("Brand name").fill("UrbanStride");

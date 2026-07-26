@@ -33,6 +33,9 @@ Calendar changes must preserve exact source-version capture, IANA timezone valid
 - Content items, versions, Library queries, and item jobs must traverse project ownership and use neutral unavailable responses.
 - Never log passwords, hashes, session tokens, authentication cookies, or full database errors.
 - Authentication return URLs must remain internal and allowlisted.
+- Password-reset tokens must be random, digest-only at rest, expiring, single-use, and absent from logs/analytics.
+- Export selection and downloads must remain owner-scoped, bounded, expiring, and safe against path and CSV formula injection.
+- Rollout flags never replace authorization, validation, plan enforcement, or usage enforcement.
 
 ## Documentation and tests
 
@@ -67,3 +70,4 @@ Synthetic seed data requires `SEED_DEMO_DATA=true` and must never run in product
 - [ ] Documentation/ADRs and `.env.example` are updated when needed.
 - [ ] Error messages are safe and contain no internals.
 - [ ] Project reads are owner-scoped on the server and IDOR negative tests pass.
+- [ ] Migrations, health checks, worker shutdown, retention tasks, release notes, and rollback impact were reviewed.

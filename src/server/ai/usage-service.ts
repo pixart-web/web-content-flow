@@ -11,6 +11,7 @@ import type {
   GenerationPurpose,
   NormalizedUsage,
 } from "@/server/ai/ai-provider";
+import { resolvePlanPolicy } from "@/server/plans/plan-policy";
 
 const dayStart = (date: Date) =>
   new Date(
@@ -33,7 +34,12 @@ export async function reserveUsage(
     async (tx) => {
       const job = await tx.generationJob.findUniqueOrThrow({
         where: { id: input.jobId },
-        include: { project: true, usageReservation: true },
+        include: {
+          project: {
+            include: { user: { select: { plan: true } } },
+          },
+          usageReservation: true,
+        },
       });
       if (job.mode === "MOCK") return null;
       if (job.usageReservation) return job.usageReservation;
@@ -77,6 +83,8 @@ export async function reserveUsage(
           }),
         ]);
       const reserved = reservations._sum.reservedTokens ?? 0;
+      const plan = resolvePlanPolicy(job.project.user.plan);
+      if (!plan) throw new Error("UNKNOWN_PLAN");
       if (
         (projectDay._sum.totalTokens ?? 0) + reserved + input.expectedTokens >
         env.AI_DAILY_PROJECT_TOKEN_LIMIT
@@ -84,7 +92,7 @@ export async function reserveUsage(
         throw new Error("PROJECT_DAILY_QUOTA");
       if (
         (projectMonth._sum.totalTokens ?? 0) + reserved + input.expectedTokens >
-        env.AI_MONTHLY_PROJECT_TOKEN_LIMIT
+        Math.min(env.AI_MONTHLY_PROJECT_TOKEN_LIMIT, plan.monthlyRealTokens)
       )
         throw new Error("PROJECT_MONTHLY_QUOTA");
       if (

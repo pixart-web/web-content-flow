@@ -3,6 +3,7 @@ import { requireUser } from "@/server/auth/require-user";
 import { getGenerationAvailability } from "@/server/ai/provider-registry";
 import { listOwnedUsage } from "@/server/ai/usage-service";
 import { getPrisma } from "@/server/db/prisma";
+import Link from "next/link";
 
 export default async function SettingsPage() {
   const user = await requireUser("/app/settings");
@@ -18,6 +19,25 @@ export default async function SettingsPage() {
         <p className="text-secondary text-sm">Account</p>
         <h1 className="font-display mt-1 text-3xl font-semibold">Settings</h1>
       </header>
+      <nav
+        className="mt-6 grid gap-3 sm:grid-cols-2"
+        aria-label="Settings sections"
+      >
+        {[
+          ["Account", "/app/settings/account"],
+          ["Security", "/app/settings/security"],
+          ["Usage", "/app/settings/usage"],
+          ["Privacy", "/app/settings/privacy"],
+        ].map(([label, href]) => (
+          <Link
+            className="border-default bg-surface hover:bg-surface-subtle rounded-control min-h-11 border p-3 font-semibold"
+            href={href!}
+            key={href}
+          >
+            {label}
+          </Link>
+        ))}
+      </nav>
       <section className="border-default bg-surface rounded-panel mt-8 border p-6">
         <h2 className="font-display text-xl font-semibold">Account identity</h2>
         <dl className="mt-5 space-y-4">

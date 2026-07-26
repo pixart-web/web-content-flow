@@ -43,6 +43,21 @@ export type VerificationToken = Prisma.VerificationTokenModel
  */
 export type Project = Prisma.ProjectModel
 /**
+ * Model PasswordResetToken
+ * 
+ */
+export type PasswordResetToken = Prisma.PasswordResetTokenModel
+/**
+ * Model ContentExport
+ * 
+ */
+export type ContentExport = Prisma.ContentExportModel
+/**
+ * Model RateLimitBucket
+ * 
+ */
+export type RateLimitBucket = Prisma.RateLimitBucketModel
+/**
  * Model ProjectModule
  * 
  */

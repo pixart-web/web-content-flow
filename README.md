@@ -1,6 +1,6 @@
 # Web Content Flow
 
-Current status: **Phase 5 real AI provider foundation**. Product modules use durable mock jobs and can use opt-in OpenAI structured text generation through the same provider-neutral boundary. Real mode records usage and provenance and enforces bounded retries, repair, context, concurrency, and quotas. No external publishing, media rendering, browsing, or billing is implemented.
+Current status: **Phase 6 controlled-launch foundation**. The product includes durable mock and opt-in OpenAI text generation, a public entry point, resumable onboarding, credentials recovery, usage visibility, safe project exports, health checks, rollout controls, and operational runbooks. Public production launch still requires the external gates in the readiness checklist.
 
 ## Prerequisites
 
@@ -33,6 +33,9 @@ The server validates:
 - `AUTH_URL`, the canonical authentication origin
 - opt-in AI provider, model policy, timeout, concurrency, context, quota, and safe-debug variables documented in `.env.example`
 - `OPENAI_API_KEY` only when real generation is enabled; mock mode requires no AI key
+- rollout, registration, export, support/legal, retention, email-provider, and rate-limit variables documented in `.env.example`
+
+Production rejects mock email delivery and an absent rate-limit signing secret. Vendor-specific production values must be stored in the deployment secret manager.
 
 Generate the secret with `openssl rand -base64 32`. Never use the placeholder outside `.env.example`.
 
@@ -82,6 +85,10 @@ The seed refuses to run in production. These credentials are synthetic developme
 | `pnpm prisma:migrate`                 | Apply committed migrations                     |
 | `pnpm prisma:seed`                    | Run the guarded synthetic seed                 |
 | `pnpm worker` / `pnpm worker:once`    | Run the durable generation worker              |
+| `pnpm maintenance`                    | Run bounded retention and cleanup tasks        |
+| `pnpm test:email`                     | Password-recovery and email contract tests     |
+| `pnpm test:export`                    | Export rendering and safety tests              |
+| `pnpm test:security`                  | Rate-limit and health/security tests           |
 | `pnpm check`                          | Non-browser validation suite                   |
 
 ## Structure
@@ -99,13 +106,13 @@ The seed refuses to run in production. These credentials are synthetic developme
 
 Start with the [Product Index](docs/00-product-index.md), [Design Index](docs/design/00-design-index.md), [UX Index](docs/ux/00-ux-index.md), and [Technical Index](docs/technical/00-technical-index.md).
 
-## Mock generation
+## Generation modes
 
-Mock mode is the only current generation mode. It supports Brand Profile, the internal foundation-copy proof, Website pages, Social content, Ads & Creative, Video & Reels planning, and General Copy jobs, performs no network call, and requires no AI, email, publishing, media, or external-platform key. Run `pnpm worker` beside `pnpm dev`.
+Mock mode supports every implemented module without an AI key or network call. Real text generation is opt-in through the OpenAI adapter and the same schemas, jobs, provenance, quotas, and immutable versions. Run `pnpm worker` beside `pnpm dev`.
 
 ## Current limitations
 
-There is no real AI integration, website builder/publishing, Social or advertising publishing, ad-account/spend management, rendered image/video generation, Video/General Copy module, Calendar, export, billing, collaboration, or marketing landing page. The Phase 3 `FOUNDATION_COPY` item remains an internal platform proof. Password recovery remains unavailable pending an email provider and abuse controls.
+There is no website builder/publishing, social or advertising publishing, ad-account/spend management, rendered image/video generation, billing checkout, collaboration, teams, uploads, or marketplace. Account deletion remains disabled pending legal and deletion-policy approval. Privacy and Terms are draft surfaces, not legal approval.
 
 See the [Phase 1 implementation record](docs/technical/30-phase-1-implementation.md).
 
@@ -124,5 +131,9 @@ See the [Phase 4.4 Video & Reels implementation record](docs/technical/36-phase-
 See the [Phase 4.5 General Copy implementation record](docs/technical/37-phase-4-5-general-copy-implementation.md).
 
 See the [Phase 4.6 Content Calendar implementation record](docs/technical/38-phase-4-6-content-calendar-implementation.md).
+
+See the [Phase 5 real AI implementation record](docs/technical/39-phase-5-real-ai-provider-implementation.md).
+
+See the [Phase 6 implementation record](docs/technical/40-phase-6-production-readiness-launch.md) and [Production Readiness Checklist](docs/technical/26-production-readiness-checklist.md).
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) before making changes.

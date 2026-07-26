@@ -7,10 +7,28 @@ const once = process.argv.includes("--once");
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) throw new Error("DATABASE_URL is required.");
 const prisma = createPrismaClient(databaseUrl);
+let shuttingDown = false;
+let heartbeat: ReturnType<typeof setInterval> | undefined;
+
+for (const signal of ["SIGTERM", "SIGINT"] as const)
+  process.on(signal, () => {
+    shuttingDown = true;
+  });
 
 async function run() {
   try {
+    heartbeat = setInterval(() => {
+      // Operational stdout is consumed by the process supervisor.
+      // eslint-disable-next-line no-console
+      console.log(
+        JSON.stringify({
+          event: "worker.heartbeat",
+          state: shuttingDown ? "draining" : "running",
+        }),
+      );
+    }, 30_000);
     do {
+      if (shuttingDown) break;
       const processed = await processNextJob(prisma);
       if (once) break;
       await new Promise((resolve) =>
@@ -18,6 +36,7 @@ async function run() {
       );
     } while (true);
   } finally {
+    if (heartbeat) clearInterval(heartbeat);
     await prisma.$disconnect();
   }
 }

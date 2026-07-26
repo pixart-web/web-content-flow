@@ -369,3 +369,40 @@ Each row must become a separate ADR file or expanded section before acceptance. 
 
 - **Decision:** Keep deterministic mock generation as a product/development mode and use a fake OpenAI transport for real-path automated tests. Never make live provider calls in CI.
 - **Consequence:** Provider, worker, quota, repair, and provenance behavior remain deterministic and secret-free.
+
+## Phase 6 accepted decisions
+
+### ADR-050 — Explicit rollout state and independent server flags
+
+**Status:** Accepted.
+
+- **Decision:** Model private, invite-only, public, and maintenance rollout states; independently gate registration, exports, project packages, and real AI on the server.
+- **Consequence:** Launch can progress gradually without treating UI hiding as authorization.
+
+### ADR-051 — Digest-only single-use password reset
+
+**Status:** Accepted.
+
+- **Decision:** Generate random reset tokens, store only SHA-256 digests, expire after 30 minutes, consume transactionally, and invalidate all sessions after reset.
+- **Consequence:** Database disclosure does not reveal usable reset links; password recovery requires a production email provider and sender-domain controls.
+
+### ADR-052 — Bounded database-backed exports
+
+**Status:** Accepted.
+
+- **Decision:** Render small current/selected immutable versions synchronously and persist expiring export bytes in PostgreSQL. Support TXT, Markdown, JSON, and Calendar CSV; gate the JSON project package separately.
+- **Consequence:** MVP export needs no storage/queue vendor, but large ZIP/PDF/DOCX archives and long retention remain excluded.
+
+### ADR-053 — Policy plans without billing
+
+**Status:** Accepted.
+
+- **Decision:** Represent `FREE` and `INTERNAL` as server-side entitlement policies and show truthful usage. Do not infer billing, subscriptions, checkout, or paid entitlement.
+- **Consequence:** Limits are enforceable before a commercial billing model is selected.
+
+### ADR-054 — Separate health, worker, and maintenance processes
+
+**Status:** Accepted.
+
+- **Decision:** Keep liveness dependency-free, make readiness verify configuration/database/migrations, run generation in a long-lived worker, and run retention cleanup as a bounded scheduled command.
+- **Consequence:** Deployment contracts are explicit and do not pretend request functions are durable queues or schedulers.

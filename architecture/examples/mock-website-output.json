@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "1.0",
+  "sitePurpose": "Introduce the fictional UrbanStride brand and guide visitors toward its everyday walking-shoe collection.",
+  "pages": [{
+    "name": "Home", "slugSuggestion": "/", "purpose": "Explain the offer and direct visitors to the collection.", "navigationLabel": "Home", "seoTitle": "UrbanStride | Comfortable Shoes for City Walking", "seoDescription": "Explore fictional UrbanStride walking shoes designed for comfortable everyday city movement.",
+    "sections": [
+      { "type": "HERO", "eyebrow": "Built for city movement", "headline": "Move well through the city.", "body": "Comfortable everyday shoes with a clean look for long days on foot.", "proofPlaceholder": null, "callToAction": "Explore the collection", "notes": "Use a realistic street-level product image." },
+      { "type": "BENEFITS", "eyebrow": null, "headline": "Comfort without the technical look", "body": "A practical balance of cushioning, durable materials, and restrained design.", "proofPlaceholder": "Add verified material and comfort specifications.", "callToAction": "Find your everyday pair", "notes": null }
+    ]
+  }],
+  "provenance": { "provider": "mock", "model": "fixture-v1", "promptVersion": "website-1", "schemaVersion": "1.0", "brandProfileVersionId": "bpv_urbanstride_001", "generationJobId": "job_website_urban_001", "generatedAt": "2026-07-17T09:05:00.000Z", "mock": true }
+}

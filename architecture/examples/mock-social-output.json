@@ -1,0 +1,5 @@
+{
+  "schemaVersion": "1.0",
+  "items": [{ "title": "The long-way-home post", "objective": "ENGAGEMENT", "format": "POST", "platform": "LINKEDIN", "visualIdea": "A natural street-level photograph of shoes in motion at the end of a workday.", "caption": "Some city days are measured in meetings. Others are measured in blocks walked. UrbanStride is a fictional concept built around making both feel more comfortable.", "hashtags": ["#CityWalking", "#EverydayComfort"], "callToAction": "What makes a shoe work for your everyday route?", "suggestedDate": "2026-07-21" }],
+  "provenance": { "provider": "mock", "model": "fixture-v1", "promptVersion": "social-1", "schemaVersion": "1.0", "brandProfileVersionId": "bpv_urbanstride_001", "generationJobId": "job_social_urban_001", "generatedAt": "2026-07-17T09:10:00.000Z", "mock": true }
+}

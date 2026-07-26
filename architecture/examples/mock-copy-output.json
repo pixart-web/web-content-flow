@@ -1,0 +1,5 @@
+{
+  "schemaVersion": "1.0",
+  "items": [{ "title": "UrbanStride company introduction", "category": "COMPANY_INTRODUCTION", "purpose": "Introduce the fictional brand in a concise, practical way.", "subject": "UrbanStride", "content": "UrbanStride is a fictional footwear concept focused on comfortable everyday movement through the city. It combines a restrained visual approach with practical guidance for long days on foot.", "callToAction": "Explore the fictional concept" }],
+  "provenance": { "provider": "mock", "model": "fixture-v1", "promptVersion": "copy-1", "schemaVersion": "1.0", "brandProfileVersionId": "bpv_urbanstride_001", "generationJobId": "job_copy_urban_001", "generatedAt": "2026-07-17T09:25:00.000Z", "mock": true }
+}

@@ -1,0 +1,2 @@
+ALTER TYPE "GenerationModule" ADD VALUE 'CALENDAR';
+ALTER TYPE "ContentModule" ADD VALUE 'CALENDAR';

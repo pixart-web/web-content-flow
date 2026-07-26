@@ -1,0 +1,11 @@
+.next
+coverage
+node_modules
+playwright-report
+test-results
+pnpm-lock.yaml
+src/generated
+architecture
+design-tokens
+docs
+wireframes

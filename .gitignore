@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Next.js
+.next/
+out/
+
+# Testing
+coverage/
+playwright-report/
+test-results/
+
+# Environment and local secrets
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Tooling and OS
+*.tsbuildinfo
+.DS_Store
+pnpm-debug.log*

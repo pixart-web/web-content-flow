@@ -1,0 +1,98 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+env:
+  NEXT_PUBLIC_APP_URL: http://127.0.0.1:3000
+  AUTH_URL: http://127.0.0.1:3000
+  AUTH_SECRET: ci-only-auth-secret-with-at-least-32-characters
+  DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/web_content_flow_test
+  AI_PROVIDER_DEFAULT: MOCK
+  AI_REAL_GENERATION_ENABLED: "false"
+  AI_FAKE_OPENAI_ENABLED: "true"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: web_content_flow_test
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d web_content_flow_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.9.0
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.14.0
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm prisma:generate
+      - run: pnpm prisma:migrate
+      - run: pnpm format:check
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm tokens:check
+      - run: pnpm test
+      - run: pnpm test:provider
+      - run: pnpm test:prompts
+      - run: pnpm test:usage
+      - run: pnpm test:quota
+      - run: pnpm test:integration
+      - run: pnpm test:worker
+      - run: pnpm build
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: validate
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: web_content_flow_test
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d web_content_flow_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.9.0
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.14.0
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm prisma:generate
+      - run: pnpm prisma:migrate
+      - run: pnpm prisma:seed
+        env:
+          SEED_DEMO_DATA: "true"
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm worker &
+      - run: pnpm test:e2e

@@ -1,0 +1,6 @@
+{
+  "schemaVersion": "1.0",
+  "campaign": { "name": "Fictional City Launch", "platform": "Instagram", "audience": "Adults who walk frequently in cities and prefer restrained footwear design.", "objective": "Introduce the fictional collection.", "offer": "Explore the launch collection; no discount claim." },
+  "concepts": [{ "title": "One pair, a full city day", "salesAngle": "Connect comfort to a realistic work-to-evening route.", "rationale": "The concept makes the benefit concrete without unsupported performance claims.", "visualConcept": "A sequence of street-level moments from morning commute to evening walk.", "imageGenerationPrompt": "Editorial city footwear campaign, realistic natural daylight, one pair across morning and evening urban settings, restrained navy and blue palette, no text.", "variations": [{ "label": "A", "headline": "Comfort for the long way home", "primaryText": "A clean everyday shoe concept made for moving through a full city day.", "description": "Fictional UrbanStride launch concept.", "callToAction": "Explore the collection" }] }],
+  "provenance": { "provider": "mock", "model": "fixture-v1", "promptVersion": "ads-1", "schemaVersion": "1.0", "brandProfileVersionId": "bpv_urbanstride_001", "generationJobId": "job_ads_urban_001", "generatedAt": "2026-07-17T09:15:00.000Z", "mock": true }
+}

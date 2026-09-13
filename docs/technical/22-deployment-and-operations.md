@@ -1,5 +1,7 @@
 # Deployment and AI operations
 
+> Current implementation: `start`, `worker`, `migrate:production`, and `maintenance` are the neutral production process contract. No hosting vendor is selected or operationally verified.
+
 This Phase 5 runbook complements [Local Development](22-local-development.md) and [Deployment Environments](23-deployment-and-environments.md).
 
 ## Deployment sequence

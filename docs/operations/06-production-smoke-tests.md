@@ -1,5 +1,7 @@
 # Production Smoke Tests
 
+Record a named role, verification date, status, blocker, evidence URL/log reference, and rollback action for every execution. Never paste customer content, prompts, email addresses, credentials, worker IDs, or database URLs into the evidence.
+
 Use a designated synthetic account and project. Do not use real customer content.
 
 - [ ] Public home, pricing, privacy, terms, security, help, contact, status render.

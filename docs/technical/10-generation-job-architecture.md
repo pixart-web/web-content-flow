@@ -1,5 +1,7 @@
 # Generation Job Architecture
 
+> Current implementation: mutations are fenced by job ID, lease token, and worker owner; active leases renew before one third of their duration. Retryable provider failures return to `QUEUED` without sleeping in the worker. See [Pre-Beta Remediation](41-pre-beta-remediation-implementation.md).
+
 ## State machine
 
 ```text

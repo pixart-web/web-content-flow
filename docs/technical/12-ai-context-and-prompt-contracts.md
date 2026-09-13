@@ -1,5 +1,7 @@
 # AI Context and Prompt Contracts
 
+> Current implementation: real execution resolves the immutable Prompt Registry identity and uses its instructions, message builder, model policy, budgets, and repair policy. Historical `1.0.0` identities were not rewritten.
+
 Prompts live under future `server/ai/prompts/`; module composition under `server/ai/modules/`; adapters under `server/ai/providers/`. UI components never contain prompt instructions.
 
 ## Context envelope

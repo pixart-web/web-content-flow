@@ -374,7 +374,9 @@ model GenerationJob {
   maxAttempts           Int                 @default(3)
   availableAt           DateTime            @default(now())
   leaseToken            String?
+  leaseOwner            String?
   leaseExpiresAt        DateTime?
+  lastLeaseHeartbeatAt  DateTime?
   cancelRequestedAt     DateTime?
   brandProfileVersionId String?             @unique
   request               Json
@@ -399,6 +401,7 @@ model GenerationJob {
   @@index([projectId, createdAt(sort: Desc)])
   @@index([status, availableAt])
   @@index([status, leaseExpiresAt])
+  @@index([leaseOwner, lastLeaseHeartbeatAt])
   @@index([parentJobId])
   @@index([projectId, mode, createdAt(sort: Desc)])
   @@index([provider, status, availableAt])
@@ -523,4 +526,30 @@ model GenerationJobStep {
 
   @@unique([jobId, key])
   @@index([jobId, ordinal])
+}
+
+model WorkerHeartbeat {
+  workerId    String   @id
+  state       String
+  release     String?
+  startedAt   DateTime @default(now())
+  heartbeatAt DateTime @updatedAt
+
+  @@index([heartbeatAt])
+}
+
+model BetaInterest {
+  id                   String   @id @default(cuid())
+  name                 String
+  email                String   @unique
+  companyOrProject     String
+  role                 String
+  primaryChallenge     String
+  currentTools         String?
+  expectedMonthlyUsage String
+  consentedAt          DateTime
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([createdAt(sort: Desc)])
 }

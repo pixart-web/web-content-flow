@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { getServerEnv } from "@/lib/env/server";
 import { getPrisma } from "@/server/db/prisma";
+import { migrationsAreReady } from "@/server/db/migration-readiness";
 
 export const dynamic = "force-dynamic";
 
@@ -18,13 +19,19 @@ export async function GET() {
   try {
     const env = getServerEnv();
     await withTimeout(getPrisma().$queryRaw`SELECT 1`, 2_000);
-    const migration = await withTimeout(
+    const migrations = await withTimeout(
       getPrisma().$queryRaw<
-        { migration_name: string; finished_at: Date | null }[]
-      >`SELECT migration_name, finished_at FROM "_prisma_migrations" ORDER BY finished_at DESC NULLS LAST LIMIT 1`,
+        {
+          migration_name: string;
+          finished_at: Date | null;
+          rolled_back_at: Date | null;
+          logs: string | null;
+        }[]
+      >`SELECT migration_name, finished_at, rolled_back_at, logs
+        FROM "_prisma_migrations"`,
       2_000,
     );
-    const migrationReady = Boolean(migration[0]?.finished_at);
+    const migrationReady = migrationsAreReady(migrations);
     const ready =
       migrationReady &&
       (!env.AI_REAL_GENERATION_ENABLED || Boolean(env.OPENAI_API_KEY)) &&

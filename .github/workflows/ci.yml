@@ -50,6 +50,9 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm prisma:generate
       - run: pnpm prisma:migrate
+      - run: pnpm exec prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --exit-code
+      - run: pnpm security:secrets
+      - run: pnpm licenses:check
       - run: pnpm format:check
       - run: pnpm lint
       - run: pnpm typecheck
@@ -72,6 +75,7 @@ jobs:
           RESEND_API_KEY: re_ci_build_only_not_a_real_provider_key
           EMAIL_FROM: noreply@example.test
           SUPPORT_EMAIL: support@example.test
+      - run: pnpm security:client-bundle
 
   e2e:
     runs-on: ubuntu-latest

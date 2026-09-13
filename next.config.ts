@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   async headers() {
     const production = process.env.NODE_ENV === "production";
+    const staging = process.env.APP_ENV === "staging";
     const securityHeaders = [
       {
         key: "Content-Security-Policy",
@@ -32,7 +33,12 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/:path*",
-        headers: securityHeaders,
+        headers: [
+          ...securityHeaders,
+          ...(staging
+            ? [{ key: "X-Robots-Tag", value: "noindex, nofollow" }]
+            : []),
+        ],
       },
       {
         source: "/app/:path*",

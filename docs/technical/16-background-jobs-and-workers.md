@@ -1,5 +1,7 @@
 # Background Jobs and Workers
 
+> Current implementation: worker processes persist a privacy-safe heartbeat, renew active job leases, and use lease-scoped fenced mutations. Deployment supervision and alerting remain externally unverified.
+
 The generation worker is a separate Node.js process using the durable PostgreSQL job model. Deploy at least one worker for generation; do not depend on web-request lifetime.
 
 - Start: `pnpm worker`; single-cycle diagnostic: `pnpm worker:once`.

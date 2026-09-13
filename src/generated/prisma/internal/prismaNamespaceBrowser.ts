@@ -68,7 +68,9 @@ export const ModelName = {
   ContentItemVersion: 'ContentItemVersion',
   GenerationUsage: 'GenerationUsage',
   UsageReservation: 'UsageReservation',
-  GenerationJobStep: 'GenerationJobStep'
+  GenerationJobStep: 'GenerationJobStep',
+  WorkerHeartbeat: 'WorkerHeartbeat',
+  BetaInterest: 'BetaInterest'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -279,7 +281,9 @@ export const GenerationJobScalarFieldEnum = {
   maxAttempts: 'maxAttempts',
   availableAt: 'availableAt',
   leaseToken: 'leaseToken',
+  leaseOwner: 'leaseOwner',
   leaseExpiresAt: 'leaseExpiresAt',
+  lastLeaseHeartbeatAt: 'lastLeaseHeartbeatAt',
   cancelRequestedAt: 'cancelRequestedAt',
   brandProfileVersionId: 'brandProfileVersionId',
   request: 'request',
@@ -389,6 +393,34 @@ export const GenerationJobStepScalarFieldEnum = {
 } as const
 
 export type GenerationJobStepScalarFieldEnum = (typeof GenerationJobStepScalarFieldEnum)[keyof typeof GenerationJobStepScalarFieldEnum]
+
+
+export const WorkerHeartbeatScalarFieldEnum = {
+  workerId: 'workerId',
+  state: 'state',
+  release: 'release',
+  startedAt: 'startedAt',
+  heartbeatAt: 'heartbeatAt'
+} as const
+
+export type WorkerHeartbeatScalarFieldEnum = (typeof WorkerHeartbeatScalarFieldEnum)[keyof typeof WorkerHeartbeatScalarFieldEnum]
+
+
+export const BetaInterestScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  email: 'email',
+  companyOrProject: 'companyOrProject',
+  role: 'role',
+  primaryChallenge: 'primaryChallenge',
+  currentTools: 'currentTools',
+  expectedMonthlyUsage: 'expectedMonthlyUsage',
+  consentedAt: 'consentedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BetaInterestScalarFieldEnum = (typeof BetaInterestScalarFieldEnum)[keyof typeof BetaInterestScalarFieldEnum]
 
 
 export const SortOrder = {

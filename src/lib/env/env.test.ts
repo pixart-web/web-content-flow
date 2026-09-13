@@ -31,4 +31,41 @@ describe("environment validation", () => {
       parseClientEnv({ NEXT_PUBLIC_APP_URL: "not-a-url" }),
     ).toThrow();
   });
+
+  it("rejects capture mode in deployed environments", () => {
+    expect(() =>
+      parseServerEnv({
+        NODE_ENV: "production",
+        APP_ENV: "staging",
+        DATABASE_ENVIRONMENT: "staging",
+        NEXT_PUBLIC_APP_URL: "https://staging.example.test",
+        DATABASE_URL: "postgresql://test:test@localhost:5432/test",
+        AUTH_SECRET: "test-secret-that-is-at-least-32-characters",
+        AUTH_URL: "https://staging.example.test",
+        EMAIL_PROVIDER: "RESEND",
+        RESEND_API_KEY: "test-provider-key-not-a-real-secret",
+        RATE_LIMIT_SECRET: "test-rate-limit-secret-at-least-32-characters",
+        PUBLIC_REGISTRATION_ENABLED: "false",
+        MARKETING_CAPTURE_MODE: "true",
+      }),
+    ).toThrow();
+  });
+
+  it("rejects staging paired with a production database marker", () => {
+    expect(() =>
+      parseServerEnv({
+        NODE_ENV: "production",
+        APP_ENV: "staging",
+        DATABASE_ENVIRONMENT: "production",
+        NEXT_PUBLIC_APP_URL: "https://staging.example.test",
+        DATABASE_URL: "postgresql://test:test@localhost:5432/test",
+        AUTH_SECRET: "test-secret-that-is-at-least-32-characters",
+        AUTH_URL: "https://staging.example.test",
+        EMAIL_PROVIDER: "RESEND",
+        RESEND_API_KEY: "test-provider-key-not-a-real-secret",
+        RATE_LIMIT_SECRET: "test-rate-limit-secret-at-least-32-characters",
+        PUBLIC_REGISTRATION_ENABLED: "false",
+      }),
+    ).toThrow(/database environment marker/i);
+  });
 });

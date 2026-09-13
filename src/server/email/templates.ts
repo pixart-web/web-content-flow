@@ -5,7 +5,11 @@ const absoluteUrl = z
   .url()
   .refine((value) => {
     const url = new URL(value);
-    return url.protocol === "https:" || url.hostname === "localhost";
+    return (
+      url.protocol === "https:" ||
+      ((url.hostname === "localhost" || url.hostname === "127.0.0.1") &&
+        url.protocol === "http:")
+    );
   });
 
 export function passwordResetTemplate(input: {

@@ -1,17 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { vi } from "vitest";
-
 import FoundationPage from "./page";
-
-vi.mock("@/server/launch/rollout", () => ({
-  getRolloutPolicy: () => ({
-    appEnvironment: "test",
-    state: "PUBLIC",
-    registrationAvailable: true,
-    requestAccess: false,
-    maintenance: false,
-  }),
-}));
 
 describe("LandingPage", () => {
   it("renders the public product entry point", () => {
@@ -20,10 +8,14 @@ describe("LandingPage", () => {
     expect(
       screen.getByRole("heading", {
         level: 1,
-        name: "Build your brand and content system from one Brief.",
+        name: "From one brief to your entire content system.",
       }),
     ).toBeInTheDocument();
-    expect(screen.getByText("Web Content Flow")).toBeVisible();
+    expect(screen.getAllByText("Web Content Flow")[0]).toBeVisible();
     expect(screen.getByRole("main")).toBeInTheDocument();
+    expect(
+      screen.getAllByRole("link", { name: "Join the private beta" })[0],
+    ).toHaveAttribute("href", "/contact");
+    expect(screen.queryByText(/testimonial/i)).not.toBeInTheDocument();
   });
 });

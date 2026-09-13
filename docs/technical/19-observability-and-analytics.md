@@ -1,5 +1,7 @@
 # Observability and Analytics
 
+> Current implementation: worker heartbeat and safe transactional-email failure events exist without content or email labels. Alert destinations and production thresholds remain blocked on infrastructure selection.
+
 Emit JSON structured logs with timestamp, level, service/runtime, environment, requestId, route template, user/project pseudonymous IDs when necessary, jobId, module, operation, duration, status, safe error code, attempt, provider/model identifiers, token counts/cost estimate. Centralize redaction and allowlists.
 
 Never log full briefs, rendered prompts with customer content, generated/edited content, secrets, API keys, cookies/session tokens, auth credentials, raw provider request/response, or export bodies. Controlled local debug may use synthetic UrbanStride fixtures only.

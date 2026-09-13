@@ -1,5 +1,7 @@
 # AI Provider Architecture
 
+> Current implementation: provider retries are scheduled durably by the job boundary, not by the SDK. Retry-After is normalized and clamped. Live-provider behavior remains operationally unverified.
+
 One application-facing `AiProvider` supports `mock` and `openai` implementations. The selected provider is configured server-side per job mode; there is no production routing or model chooser in MVP.
 
 The contract accepts request metadata, typed input, a runtime schema, timeout/cancellation signal, prompt/schema/model configuration, and returns validated candidate data plus normalized provider/model/usage metadata. Provider adapters do not retry or persist; the job handler controls attempts and transactions.

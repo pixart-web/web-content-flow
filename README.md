@@ -2,6 +2,8 @@
 
 Current status: **Phase 6 controlled-launch foundation**. The product includes durable mock and opt-in OpenAI text generation, a public entry point, resumable onboarding, credentials recovery, usage visibility, safe project exports, health checks, rollout controls, and operational runbooks. Public production launch still requires the external gates in the readiness checklist.
 
+The repository now contains a proposed, unprovisioned Render staging contract in `render.yaml`. No staging URL, managed database, backup, alert, email domain, or restore has been operationally verified. See [Staging Operationalization](docs/technical/42-staging-operationalization.md).
+
 ## Prerequisites
 
 - Node.js 24.14.0 LTS or newer in the Node 24 line (see `.nvmrc`)
@@ -80,12 +82,18 @@ The seed refuses to run in production. These credentials are synthetic developme
 | `pnpm test:worker`                    | PostgreSQL generation-worker tests             |
 | `pnpm test:coverage`                  | V8 coverage report                             |
 | `pnpm test:e2e`                       | Playwright Chromium desktop/mobile smoke tests |
+| `pnpm test:a11y`                      | Axe smoke on desktop and mobile projects       |
 | `pnpm tokens:check`                   | Verify canonical token integration             |
 | `pnpm prisma:generate`                | Generate the Prisma client                     |
 | `pnpm prisma:migrate`                 | Apply committed migrations                     |
 | `pnpm prisma:seed`                    | Run the guarded synthetic seed                 |
+| `pnpm capture:seed`                   | Prepare isolated Northstar capture data        |
+| `pnpm capture:stills`                 | Capture authenticated desktop/mobile stills    |
 | `pnpm worker` / `pnpm worker:once`    | Run the durable generation worker              |
 | `pnpm maintenance`                    | Run bounded retention and cleanup tasks        |
+| `pnpm restore:verify`                 | Read-only restored-database integrity checks   |
+| `pnpm licenses:check`                 | Production dependency licence inventory        |
+| `pnpm secrets:scan`                   | Current tracked-source secret scan             |
 | `pnpm test:email`                     | Password-recovery and email contract tests     |
 | `pnpm test:export`                    | Export rendering and safety tests              |
 | `pnpm test:security`                  | Rate-limit and health/security tests           |
@@ -94,6 +102,8 @@ The seed refuses to run in production. These credentials are synthetic developme
 ## Structure
 
 - `src/app`: public, authentication, and protected application routes
+- `src/components/marketing`: isolated public-site shell, visuals, navigation, and beta form
+- `src/content`: repository-controlled typed marketing content
 - `src/components`: future primitives/shared patterns
 - `src/domain`: production brief, profile, provenance, and job contracts
 - `src/features`: feature-oriented authentication, project, and content UI
@@ -135,5 +145,9 @@ See the [Phase 4.6 Content Calendar implementation record](docs/technical/38-pha
 See the [Phase 5 real AI implementation record](docs/technical/39-phase-5-real-ai-provider-implementation.md).
 
 See the [Phase 6 implementation record](docs/technical/40-phase-6-production-readiness-launch.md) and [Production Readiness Checklist](docs/technical/26-production-readiness-checklist.md).
+
+See the [Phase 21 marketing website implementation record](docs/technical/43-marketing-website-implementation.md), [Brand DNA](docs/brand/01-brand-dna.md), and [Website Experience Blueprint](docs/marketing/01-website-experience-blueprint.md).
+
+See the [Phase 22 product media and launch-readiness record](docs/technical/44-product-media-and-launch-readiness.md). Capture mode is local/test-only and must never use a shared or production database.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) before making changes.

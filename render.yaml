@@ -1,0 +1,150 @@
+databases:
+  - name: web-content-flow-staging-db
+    databaseName: web_content_flow_staging
+    user: web_content_flow
+    plan: basic-256mb
+    region: frankfurt
+
+services:
+  - type: web
+    name: web-content-flow-staging-web
+    runtime: node
+    region: frankfurt
+    plan: starter
+    branch: main
+    autoDeployTrigger: checksPass
+    domains:
+      - app-staging.webcontentflow.com
+    maxShutdownDelaySeconds: 90
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm prisma:generate && pnpm build
+    preDeployCommand: pnpm migrate:production
+    startCommand: pnpm start
+    healthCheckPath: /health/ready
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: web-content-flow-staging-db
+          property: connectionString
+      - key: DATABASE_ENVIRONMENT
+        value: staging
+      - key: NODE_VERSION
+        value: 24.14.0
+      - key: APP_ENV
+        value: staging
+      - key: APP_RELEASE
+        sync: false
+      - key: NEXT_PUBLIC_APP_URL
+        value: https://app-staging.webcontentflow.com
+      - key: AUTH_URL
+        value: https://app-staging.webcontentflow.com
+      - key: AUTH_SECRET
+        generateValue: true
+      - key: RATE_LIMIT_SECRET
+        generateValue: true
+      - key: ROLLOUT_STATE
+        value: INVITE_ONLY
+      - key: PUBLIC_REGISTRATION_ENABLED
+        value: "false"
+      - key: MARKETING_INDEXING_ENABLED
+        value: "false"
+      - key: MARKETING_CAPTURE_MODE
+        value: "false"
+      - key: EMAIL_PROVIDER
+        value: RESEND
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        value: staging@updates.webcontentflow.com
+      - key: SUPPORT_EMAIL
+        value: support@webcontentflow.com
+      - key: AI_PROVIDER_DEFAULT
+        value: MOCK
+      - key: AI_REAL_GENERATION_ENABLED
+        value: "false"
+      - key: AI_FAKE_OPENAI_ENABLED
+        value: "false"
+
+  - type: worker
+    name: web-content-flow-staging-worker
+    runtime: node
+    region: frankfurt
+    plan: starter
+    branch: main
+    autoDeployTrigger: checksPass
+    maxShutdownDelaySeconds: 90
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm prisma:generate
+    startCommand: pnpm worker
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: web-content-flow-staging-db
+          property: connectionString
+      - key: DATABASE_ENVIRONMENT
+        value: staging
+      - key: NODE_VERSION
+        value: 24.14.0
+      - key: APP_ENV
+        value: staging
+      - key: APP_RELEASE
+        sync: false
+      - key: MARKETING_CAPTURE_MODE
+        value: "false"
+      - key: NEXT_PUBLIC_APP_URL
+        value: https://app-staging.webcontentflow.com
+      - key: AUTH_URL
+        value: https://app-staging.webcontentflow.com
+      - key: AUTH_SECRET
+        sync: false
+      - key: RATE_LIMIT_SECRET
+        sync: false
+      - key: EMAIL_PROVIDER
+        value: RESEND
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        value: staging@updates.webcontentflow.com
+      - key: AI_PROVIDER_DEFAULT
+        value: MOCK
+      - key: AI_REAL_GENERATION_ENABLED
+        value: "false"
+      - key: AI_FAKE_OPENAI_ENABLED
+        value: "false"
+
+  - type: cron
+    name: web-content-flow-staging-maintenance
+    runtime: node
+    region: frankfurt
+    plan: starter
+    branch: main
+    schedule: "17 * * * *"
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm prisma:generate
+    startCommand: pnpm maintenance
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: web-content-flow-staging-db
+          property: connectionString
+      - key: DATABASE_ENVIRONMENT
+        value: staging
+      - key: NODE_VERSION
+        value: 24.14.0
+      - key: APP_ENV
+        value: staging
+      - key: APP_RELEASE
+        sync: false
+      - key: MARKETING_CAPTURE_MODE
+        value: "false"
+      - key: NEXT_PUBLIC_APP_URL
+        value: https://app-staging.webcontentflow.com
+      - key: AUTH_URL
+        value: https://app-staging.webcontentflow.com
+      - key: AUTH_SECRET
+        sync: false
+      - key: RATE_LIMIT_SECRET
+        sync: false
+      - key: EMAIL_PROVIDER
+        value: RESEND
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        value: staging@updates.webcontentflow.com

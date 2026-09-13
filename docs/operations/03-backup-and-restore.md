@@ -1,5 +1,21 @@
 # Backup and Restore
 
+## Required evidence
+
+| Field | Value |
+|---|---|
+| Named owner role / verification date / status | |
+| Database provider | UNVERIFIED |
+| Backup policy and PITR | UNVERIFIED |
+| Retention and encryption | UNVERIFIED |
+| Backup identifier / latest successful backup | UNVERIFIED |
+| Alert destination | UNVERIFIED |
+| Restore environment/date/operator/duration | UNVERIFIED |
+| `pnpm restore:verify` result | UNVERIFIED |
+| Blocker / rollback action | |
+
+The restore verifier is read-only and does not prove that a provider backup exists.
+
 ## Backup
 
 Require provider-managed encrypted daily backups and point-in-time recovery. Before schema changes, capture and record a recovery point. Restrict dump access and never place dumps in source control or support tickets.

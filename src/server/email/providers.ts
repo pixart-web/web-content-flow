@@ -13,13 +13,64 @@ import type {
 class MockEmailProvider implements EmailProvider {
   readonly name = "MOCK" as const;
 
-  async send(): Promise<EmailDeliveryResult> {
-    return {
+  async send(message: TransactionalEmail): Promise<EmailDeliveryResult> {
+    const result = {
       ok: true,
       provider: "MOCK",
       messageId: `mock-${randomUUID()}`,
-    };
+    } as const;
+    if (process.env.NODE_ENV === "test")
+      capturedTestEmails.push({ ...message, result });
+    return result;
   }
+}
+
+const capturedTestEmails: {
+  to: string;
+  subject: string;
+  text: string;
+  html: string;
+  templateKey: string;
+  correlationId: string;
+  result: EmailDeliveryResult;
+}[] = [];
+
+export function getCapturedTestEmails() {
+  if (process.env.NODE_ENV !== "test") return [];
+  return capturedTestEmails.map((entry) => ({ ...entry }));
+}
+
+export function clearCapturedTestEmails() {
+  if (process.env.NODE_ENV === "test") capturedTestEmails.length = 0;
+}
+
+export async function sendTransactionalEmailSafely(
+  message: TransactionalEmail,
+) {
+  let last: EmailDeliveryResult | null = null;
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    try {
+      last = await getEmailProvider().send(message);
+    } catch {
+      last = {
+        ok: false,
+        provider: getServerEnv().EMAIL_PROVIDER,
+        code: "CONFIGURATION",
+        retryable: false,
+      };
+    }
+    if (last.ok || !last.retryable) break;
+  }
+  if (!last?.ok)
+    console.error(
+      JSON.stringify({
+        event: "transactional_email.failed",
+        templateKey: message.templateKey,
+        correlationId: message.correlationId,
+        code: last?.code ?? "UNAVAILABLE",
+      }),
+    );
+  return last;
 }
 
 class ResendEmailProvider implements EmailProvider {

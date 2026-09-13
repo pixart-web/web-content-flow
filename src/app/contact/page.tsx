@@ -1,22 +1,30 @@
-import { LegalPage } from "@/components/shared/legal-page";
-import { getServerEnv } from "@/lib/env/server";
+import type { Metadata } from "next";
+
+import { BetaForm } from "@/components/marketing/beta-form";
+import { MarketingPage, Section } from "@/components/marketing/marketing-shell";
+
+export const metadata: Metadata = {
+  title: "Join the private beta",
+  description: "Request early access to the Web Content Flow private beta.",
+  alternates: { canonical: "/contact" },
+};
 
 export default function ContactPage() {
-  const email = getServerEnv().SUPPORT_EMAIL;
   return (
-    <LegalPage title="Contact and launch access">
-      <p>
-        Email{" "}
-        <a className="text-link underline" href={`mailto:${email}`}>
-          {email}
-        </a>
-        . Do not include passwords, API keys, reset links or full project
-        content.
-      </p>
-      <p>
-        Support is provided during available working hours; 24/7 coverage is not
-        claimed.
-      </p>
-    </LegalPage>
+    <MarketingPage>
+      <section className="marketing-page-hero">
+        <div className="marketing-container">
+          <p className="eyebrow">PRIVATE BETA</p>
+          <h1>Help shape a more connected content workflow.</h1>
+          <p className="lead">
+            Tell us how you work today. Submitting this form records interest;
+            it does not guarantee access or create an account.
+          </p>
+        </div>
+      </section>
+      <Section>
+        <BetaForm />
+      </Section>
+    </MarketingPage>
   );
 }

@@ -25,7 +25,7 @@ test("public root loads and signed-out app access returns to sign in", async ({
   await expect(
     page.getByRole("heading", {
       level: 1,
-      name: "Build your brand and content system from one Brief.",
+      name: "From one brief to your entire content system.",
     }),
   ).toBeVisible();
 

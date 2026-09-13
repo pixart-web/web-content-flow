@@ -170,6 +170,77 @@ afterAll(async () => {
   await prisma.$disconnect();
 });
 
+describe("renewable fenced leases", () => {
+  it("allows only one acquisition and rejects the old owner", async () => {
+    const deferredUntil = new Date(Date.now() + 3_600_000);
+    await prisma.generationJob.updateMany({
+      where: { status: "QUEUED" },
+      data: { availableAt: deferredUntil },
+    });
+    const project = await prisma.project.create({
+      data: {
+        id: "lease-project",
+        userId: "phase2-owner",
+        name: "Lease proof",
+        brandName: "UrbanStride",
+        type: "E-commerce",
+      },
+    });
+    const queued = await prisma.generationJob.create({
+      data: {
+        projectId: project.id,
+        scopeType: "BRAND_PROFILE",
+        module: "BRAND_PROFILE",
+        status: "QUEUED",
+        availableAt: new Date(0),
+        mode: "MOCK",
+        idempotencyKey: "lease-proof",
+        request: {},
+      },
+    });
+    const { leaseNextJob } =
+      await import("../../src/workers/generation-worker");
+    const { assertJobLease, createLeaseFencedPrisma, renewJobLease } =
+      await import("../../src/workers/job-lease");
+    const first = await leaseNextJob(prisma, "worker-a");
+    expect(first?.id).toBe(queued.id);
+    expect(await leaseNextJob(prisma, "worker-b")).toBeNull();
+    const lease = {
+      jobId: first!.id,
+      leaseToken: first!.leaseToken!,
+      workerId: first!.leaseOwner!,
+      leaseExpiresAt: first!.leaseExpiresAt!,
+    };
+    await expect(renewJobLease(prisma, lease, 90_000)).resolves.toBeInstanceOf(
+      Date,
+    );
+    await expect(
+      renewJobLease(prisma, { ...lease, leaseToken: "wrong" }, 90_000),
+    ).rejects.toThrow();
+    const fenced = createLeaseFencedPrisma(prisma, lease);
+    await prisma.generationJob.update({
+      where: { id: queued.id },
+      data: {
+        leaseToken: "replacement",
+        leaseOwner: "worker-b",
+        leaseExpiresAt: new Date(Date.now() + 90_000),
+      },
+    });
+    await expect(assertJobLease(prisma, lease)).rejects.toThrow();
+    await expect(
+      fenced.generationJob.update({
+        where: { id: queued.id },
+        data: { status: "COMPLETED" },
+      }),
+    ).rejects.toThrow();
+    await prisma.project.delete({ where: { id: project.id } });
+    await prisma.generationJob.updateMany({
+      where: { status: "QUEUED", availableAt: deferredUntil },
+      data: { availableAt: new Date() },
+    });
+  });
+});
+
 async function createJob(id: string, scenario = "success") {
   return prisma.project.create({
     data: {

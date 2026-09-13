@@ -1,5 +1,7 @@
 # Backup and Recovery
 
+> Current implementation: `pnpm restore:verify` provides a read-only relational integrity check. Managed backup, PITR, retention, alerts, and an actual restore remain **EXTERNAL VERIFICATION REQUIRED**.
+
 ## Required production contract
 
 The managed PostgreSQL provider must offer encrypted automated backups and point-in-time recovery. Target working assumptions are 24-hour RPO and 4-hour RTO; Product/Ops must approve them before launch.

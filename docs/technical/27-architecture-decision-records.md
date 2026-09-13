@@ -1,5 +1,27 @@
 # Architecture Decision Records
 
+## ADR-055 — Renewable fenced job leases
+
+**Status:** Accepted. Workers own jobs through a random token plus worker identity and expiry. Active mutations use a lease-scoped Prisma fence; renewal uses database time.
+
+## ADR-056 — Durable bounded provider retries
+
+**Status:** Accepted. Retryable provider errors are requeued with bounded backoff; workers never sleep while holding a lease.
+
+## ADR-057 — Compiled expected migration
+
+**Status:** Accepted. Readiness compares Prisma migration state with a release-controlled expected migration constant.
+
+## ADR-058 — Render staging topology
+
+**Status:** Proposed, selected but not provisioned.
+
+- **Decision:** Use Render Frankfurt for the Next.js web service, independent background worker, hourly cron maintenance and paid managed PostgreSQL. Use Resend for transactional email, Better Stack for uptime/logs/alerts and Cloudflare for DNS.
+- **Reason:** One provider covers the required long-running worker, cron, pre-deploy migration, health check and isolated PostgreSQL PITR recovery with low solo-operator complexity.
+- **Alternatives:** Vercel plus a separate worker/database platform; Railway; Fly.io. These either increase provider boundaries or require more operational assembly for this MVP.
+- **Migration cost:** services are portable Node processes and PostgreSQL; Render-specific state is confined to `render.yaml` and runbooks.
+- **Approval gate:** provisioning, checkout pricing, domain ownership, data region, DPA and restore test.
+
 ## Template
 
 ```text
@@ -406,3 +428,77 @@ Each row must become a separate ADR file or expanded section before acceptance. 
 
 - **Decision:** Keep liveness dependency-free, make readiness verify configuration/database/migrations, run generation in a long-lived worker, and run retention cleanup as a bounded scheduled command.
 - **Consequence:** Deployment contracts are explicit and do not pretend request functions are durable queues or schedulers.
+
+## Phase 21 accepted decisions
+
+### ADR-059 — Shared application, isolated marketing layer
+
+**Status:** Accepted.
+
+- **Decision:** Build the marketing website in the existing Next.js application with dedicated marketing components, semantic CSS variables and repository content. Do not create a second deployment or alter authenticated product styling.
+- **Consequence:** Configuration, security headers and release workflow stay unified while the public experience can evolve independently.
+
+### ADR-060 — Flow Mark and marketing-specific semantic tokens
+
+**Status:** Accepted.
+
+- **Decision:** Use the continuous-path Flow Mark and dark-led marketing tokens scoped under `.marketing-site`. Keep existing application tokens authoritative inside the authenticated product.
+- **Consequence:** The public identity becomes distinctive without forcing a disruptive product redesign.
+
+### ADR-061 — CSS-first purposeful motion
+
+**Status:** Accepted.
+
+- **Decision:** Implement the initial Content Constellation and transition system with CSS and semantic HTML. Do not add an animation library before interaction complexity justifies it.
+- **Consequence:** JavaScript stays bounded, reduced-motion support is direct, and authentic product clips can replace prototypes later.
+
+### ADR-062 — Poster-first deferred media
+
+**Status:** Accepted.
+
+- **Decision:** Ship SVG/HTML product-native visuals and an explicit capture backlog. Future video must use posters, WebM/MP4 fallbacks, muted inline playback and intersection-based loading.
+- **Consequence:** The initial site makes no fabricated product-media claims and does not front-load unused media.
+
+### ADR-063 — Repository-controlled marketing content
+
+**Status:** Accepted.
+
+- **Decision:** Keep initial repeated content in typed repository objects and page modules. Defer a CMS until editorial cadence, ownership and workflow require it.
+- **Consequence:** No paid CMS or runtime dependency is introduced; a future adapter can preserve page contracts.
+
+### ADR-064 — Analytics disabled behind future consent configuration
+
+**Status:** Accepted.
+
+- **Decision:** Document privacy-safe marketing event names but activate no analytics provider. Never send form values, generated content, credentials or authenticated identifiers.
+- **Consequence:** The site adds no tracking or consent burden before a provider and legal basis are approved.
+
+## Phase 22 accepted decisions
+
+### ADR-065 — Guarded synthetic capture fixture
+
+**Status:** Accepted.
+
+- **Decision:** Use a deterministic local/test-only Northstar Roasters fixture with normal authentication, mock AI, mock email and no analytics.
+- **Consequence:** Authentic product capture is reproducible without customer data or a provider bypass.
+
+### ADR-066 — Poster-first typed product media
+
+**Status:** Accepted.
+
+- **Decision:** Register media states explicitly and render authentic posters until real WebM/MP4 files exist.
+- **Consequence:** Missing or unapproved video cannot create a broken frame or an exaggerated production claim.
+
+### ADR-067 — Explicit database environment marker
+
+**Status:** Accepted.
+
+- **Decision:** Pair deployed `APP_ENV` with `DATABASE_ENVIRONMENT` and fail validation on staging/production mismatch.
+- **Consequence:** A staging service cannot silently accept a database explicitly marked production, independent of hostname naming.
+
+### ADR-068 — Legal source package without approval claims
+
+**Status:** Accepted.
+
+- **Decision:** Maintain factual inventories and `[LEGAL REVIEW REQUIRED]` decisions internally while public pages remain restrained.
+- **Consequence:** External counsel receives an implementation-based package without presenting engineering drafts as legal advice.

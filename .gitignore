@@ -21,3 +21,8 @@ test-results/
 *.tsbuildinfo
 .DS_Store
 pnpm-debug.log*
+
+# Generated delivery and working artifacts
+dist/
+output/
+tmp/

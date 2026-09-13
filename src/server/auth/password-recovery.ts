@@ -7,7 +7,7 @@ import type { Options } from "@node-rs/argon2";
 
 import { getServerEnv } from "@/lib/env/server";
 import { getPrisma } from "@/server/db/prisma";
-import { getEmailProvider } from "@/server/email/providers";
+import { sendTransactionalEmailSafely } from "@/server/email/providers";
 import {
   passwordChangedTemplate,
   passwordResetTemplate,
@@ -54,7 +54,7 @@ export async function requestPasswordReset(email: string) {
     resetUrl: resetUrl.toString(),
     expiresMinutes: RESET_MINUTES,
   });
-  await getEmailProvider().send({
+  await sendTransactionalEmailSafely({
     to: user.email,
     from: env.EMAIL_FROM,
     subject: template.subject,
@@ -98,7 +98,7 @@ export async function resetPassword(input: {
 
   const env = getServerEnv();
   const template = passwordChangedTemplate();
-  await getEmailProvider().send({
+  await sendTransactionalEmailSafely({
     to: result.email,
     from: env.EMAIL_FROM,
     subject: template.subject,

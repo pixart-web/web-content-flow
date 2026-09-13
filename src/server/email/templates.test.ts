@@ -22,4 +22,25 @@ describe("transactional email templates", () => {
       }),
     ).toThrow();
   });
+
+  it.each(["localhost", "127.0.0.1"])(
+    "accepts documented local reset host %s",
+    (host) => {
+      expect(() =>
+        passwordResetTemplate({
+          resetUrl: `http://${host}:3000/reset-password?token=synthetic`,
+          expiresMinutes: 30,
+        }),
+      ).not.toThrow();
+    },
+  );
+
+  it("rejects an arbitrary HTTP origin", () => {
+    expect(() =>
+      passwordResetTemplate({
+        resetUrl: "http://example.test/reset-password?token=synthetic",
+        expiresMinutes: 30,
+      }),
+    ).toThrow();
+  });
 });

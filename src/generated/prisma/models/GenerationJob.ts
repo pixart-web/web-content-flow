@@ -64,7 +64,9 @@ export type GenerationJobMinAggregateOutputType = {
   maxAttempts: number | null
   availableAt: Date | null
   leaseToken: string | null
+  leaseOwner: string | null
   leaseExpiresAt: Date | null
+  lastLeaseHeartbeatAt: Date | null
   cancelRequestedAt: Date | null
   brandProfileVersionId: string | null
   safeErrorCode: string | null
@@ -98,7 +100,9 @@ export type GenerationJobMaxAggregateOutputType = {
   maxAttempts: number | null
   availableAt: Date | null
   leaseToken: string | null
+  leaseOwner: string | null
   leaseExpiresAt: Date | null
+  lastLeaseHeartbeatAt: Date | null
   cancelRequestedAt: Date | null
   brandProfileVersionId: string | null
   safeErrorCode: string | null
@@ -132,7 +136,9 @@ export type GenerationJobCountAggregateOutputType = {
   maxAttempts: number
   availableAt: number
   leaseToken: number
+  leaseOwner: number
   leaseExpiresAt: number
+  lastLeaseHeartbeatAt: number
   cancelRequestedAt: number
   brandProfileVersionId: number
   request: number
@@ -185,7 +191,9 @@ export type GenerationJobMinAggregateInputType = {
   maxAttempts?: true
   availableAt?: true
   leaseToken?: true
+  leaseOwner?: true
   leaseExpiresAt?: true
+  lastLeaseHeartbeatAt?: true
   cancelRequestedAt?: true
   brandProfileVersionId?: true
   safeErrorCode?: true
@@ -219,7 +227,9 @@ export type GenerationJobMaxAggregateInputType = {
   maxAttempts?: true
   availableAt?: true
   leaseToken?: true
+  leaseOwner?: true
   leaseExpiresAt?: true
+  lastLeaseHeartbeatAt?: true
   cancelRequestedAt?: true
   brandProfileVersionId?: true
   safeErrorCode?: true
@@ -253,7 +263,9 @@ export type GenerationJobCountAggregateInputType = {
   maxAttempts?: true
   availableAt?: true
   leaseToken?: true
+  leaseOwner?: true
   leaseExpiresAt?: true
+  lastLeaseHeartbeatAt?: true
   cancelRequestedAt?: true
   brandProfileVersionId?: true
   request?: true
@@ -377,7 +389,9 @@ export type GenerationJobGroupByOutputType = {
   maxAttempts: number
   availableAt: Date
   leaseToken: string | null
+  leaseOwner: string | null
   leaseExpiresAt: Date | null
+  lastLeaseHeartbeatAt: Date | null
   cancelRequestedAt: Date | null
   brandProfileVersionId: string | null
   request: runtime.JsonValue
@@ -437,7 +451,9 @@ export type GenerationJobWhereInput = {
   maxAttempts?: Prisma.IntFilter<"GenerationJob"> | number
   availableAt?: Prisma.DateTimeFilter<"GenerationJob"> | Date | string
   leaseToken?: Prisma.StringNullableFilter<"GenerationJob"> | string | null
+  leaseOwner?: Prisma.StringNullableFilter<"GenerationJob"> | string | null
   leaseExpiresAt?: Prisma.DateTimeNullableFilter<"GenerationJob"> | Date | string | null
+  lastLeaseHeartbeatAt?: Prisma.DateTimeNullableFilter<"GenerationJob"> | Date | string | null
   cancelRequestedAt?: Prisma.DateTimeNullableFilter<"GenerationJob"> | Date | string | null
   brandProfileVersionId?: Prisma.StringNullableFilter<"GenerationJob"> | string | null
   request?: Prisma.JsonFilter<"GenerationJob">
@@ -483,7 +499,9 @@ export type GenerationJobOrderByWithRelationInput = {
   maxAttempts?: Prisma.SortOrder
   availableAt?: Prisma.SortOrder
   leaseToken?: Prisma.SortOrderInput | Prisma.SortOrder
+  leaseOwner?: Prisma.SortOrderInput | Prisma.SortOrder
   leaseExpiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  lastLeaseHeartbeatAt?: Prisma.SortOrderInput | Prisma.SortOrder
   cancelRequestedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   brandProfileVersionId?: Prisma.SortOrderInput | Prisma.SortOrder
   request?: Prisma.SortOrder
@@ -534,7 +552,9 @@ export type GenerationJobWhereUniqueInput = Prisma.AtLeast<{
   maxAttempts?: Prisma.IntFilter<"GenerationJob"> | number
   availableAt?: Prisma.DateTimeFilter<"GenerationJob"> | Date | string
   leaseToken?: Prisma.StringNullableFilter<"GenerationJob"> | string | null
+  leaseOwner?: Prisma.StringNullableFilter<"GenerationJob"> | string | null
   leaseExpiresAt?: Prisma.DateTimeNullableFilter<"GenerationJob"> | Date | string | null
+  lastLeaseHeartbeatAt?: Prisma.DateTimeNullableFilter<"GenerationJob"> | Date | string | null
   cancelRequestedAt?: Prisma.DateTimeNullableFilter<"GenerationJob"> | Date | string | null
   request?: Prisma.JsonFilter<"GenerationJob">
   safeErrorCode?: Prisma.StringNullableFilter<"GenerationJob"> | string | null
@@ -579,7 +599,9 @@ export type GenerationJobOrderByWithAggregationInput = {
   maxAttempts?: Prisma.SortOrder
   availableAt?: Prisma.SortOrder
   leaseToken?: Prisma.SortOrderInput | Prisma.SortOrder
+  leaseOwner?: Prisma.SortOrderInput | Prisma.SortOrder
   leaseExpiresAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  lastLeaseHeartbeatAt?: Prisma.SortOrderInput | Prisma.SortOrder
   cancelRequestedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   brandProfileVersionId?: Prisma.SortOrderInput | Prisma.SortOrder
   request?: Prisma.SortOrder
@@ -624,7 +646,9 @@ export type GenerationJobScalarWhereWithAggregatesInput = {
   maxAttempts?: Prisma.IntWithAggregatesFilter<"GenerationJob"> | number
   availableAt?: Prisma.DateTimeWithAggregatesFilter<"GenerationJob"> | Date | string
   leaseToken?: Prisma.StringNullableWithAggregatesFilter<"GenerationJob"> | string | null
+  leaseOwner?: Prisma.StringNullableWithAggregatesFilter<"GenerationJob"> | string | null
   leaseExpiresAt?: Prisma.DateTimeNullableWithAggregatesFilter<"GenerationJob"> | Date | string | null
+  lastLeaseHeartbeatAt?: Prisma.DateTimeNullableWithAggregatesFilter<"GenerationJob"> | Date | string | null
   cancelRequestedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"GenerationJob"> | Date | string | null
   brandProfileVersionId?: Prisma.StringNullableWithAggregatesFilter<"GenerationJob"> | string | null
   request?: Prisma.JsonWithAggregatesFilter<"GenerationJob">
@@ -659,7 +683,9 @@ export type GenerationJobCreateInput = {
   maxAttempts?: number
   availableAt?: Date | string
   leaseToken?: string | null
+  leaseOwner?: string | null
   leaseExpiresAt?: Date | string | null
+  lastLeaseHeartbeatAt?: Date | string | null
   cancelRequestedAt?: Date | string | null
   request: Prisma.JsonNullValueInput | runtime.InputJsonValue
   safeErrorCode?: string | null
@@ -704,7 +730,9 @@ export type GenerationJobUncheckedCreateInput = {
   maxAttempts?: number
   availableAt?: Date | string
   leaseToken?: string | null
+  leaseOwner?: string | null
   leaseExpiresAt?: Date | string | null
+  lastLeaseHeartbeatAt?: Date | string | null
   cancelRequestedAt?: Date | string | null
   brandProfileVersionId?: string | null
   request: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -745,7 +773,9 @@ export type GenerationJobUpdateInput = {
   maxAttempts?: Prisma.IntFieldUpdateOperationsInput | number
   availableAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   leaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  leaseOwner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   leaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLeaseHeartbeatAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   request?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   safeErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -790,7 +820,9 @@ export type GenerationJobUncheckedUpdateInput = {
   maxAttempts?: Prisma.IntFieldUpdateOperationsInput | number
   availableAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   leaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  leaseOwner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   leaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLeaseHeartbeatAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   brandProfileVersionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   request?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -833,7 +865,9 @@ export type GenerationJobCreateManyInput = {
   maxAttempts?: number
   availableAt?: Date | string
   leaseToken?: string | null
+  leaseOwner?: string | null
   leaseExpiresAt?: Date | string | null
+  lastLeaseHeartbeatAt?: Date | string | null
   cancelRequestedAt?: Date | string | null
   brandProfileVersionId?: string | null
   request: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -868,7 +902,9 @@ export type GenerationJobUpdateManyMutationInput = {
   maxAttempts?: Prisma.IntFieldUpdateOperationsInput | number
   availableAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   leaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  leaseOwner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   leaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLeaseHeartbeatAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   request?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   safeErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -904,7 +940,9 @@ export type GenerationJobUncheckedUpdateManyInput = {
   maxAttempts?: Prisma.IntFieldUpdateOperationsInput | number
   availableAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   leaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  leaseOwner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   leaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLeaseHeartbeatAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   brandProfileVersionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   request?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -961,7 +999,9 @@ export type GenerationJobCountOrderByAggregateInput = {
   maxAttempts?: Prisma.SortOrder
   availableAt?: Prisma.SortOrder
   leaseToken?: Prisma.SortOrder
+  leaseOwner?: Prisma.SortOrder
   leaseExpiresAt?: Prisma.SortOrder
+  lastLeaseHeartbeatAt?: Prisma.SortOrder
   cancelRequestedAt?: Prisma.SortOrder
   brandProfileVersionId?: Prisma.SortOrder
   request?: Prisma.SortOrder
@@ -1005,7 +1045,9 @@ export type GenerationJobMaxOrderByAggregateInput = {
   maxAttempts?: Prisma.SortOrder
   availableAt?: Prisma.SortOrder
   leaseToken?: Prisma.SortOrder
+  leaseOwner?: Prisma.SortOrder
   leaseExpiresAt?: Prisma.SortOrder
+  lastLeaseHeartbeatAt?: Prisma.SortOrder
   cancelRequestedAt?: Prisma.SortOrder
   brandProfileVersionId?: Prisma.SortOrder
   safeErrorCode?: Prisma.SortOrder
@@ -1039,7 +1081,9 @@ export type GenerationJobMinOrderByAggregateInput = {
   maxAttempts?: Prisma.SortOrder
   availableAt?: Prisma.SortOrder
   leaseToken?: Prisma.SortOrder
+  leaseOwner?: Prisma.SortOrder
   leaseExpiresAt?: Prisma.SortOrder
+  lastLeaseHeartbeatAt?: Prisma.SortOrder
   cancelRequestedAt?: Prisma.SortOrder
   brandProfileVersionId?: Prisma.SortOrder
   safeErrorCode?: Prisma.SortOrder
@@ -1317,7 +1361,9 @@ export type GenerationJobCreateWithoutProjectInput = {
   maxAttempts?: number
   availableAt?: Date | string
   leaseToken?: string | null
+  leaseOwner?: string | null
   leaseExpiresAt?: Date | string | null
+  lastLeaseHeartbeatAt?: Date | string | null
   cancelRequestedAt?: Date | string | null
   request: Prisma.JsonNullValueInput | runtime.InputJsonValue
   safeErrorCode?: string | null
@@ -1360,7 +1406,9 @@ export type GenerationJobUncheckedCreateWithoutProjectInput = {
   maxAttempts?: number
   availableAt?: Date | string
   leaseToken?: string | null
+  leaseOwner?: string | null
   leaseExpiresAt?: Date | string | null
+  lastLeaseHeartbeatAt?: Date | string | null
   cancelRequestedAt?: Date | string | null
   brandProfileVersionId?: string | null
   request: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -1432,7 +1480,9 @@ export type GenerationJobScalarWhereInput = {
   maxAttempts?: Prisma.IntFilter<"GenerationJob"> | number
   availableAt?: Prisma.DateTimeFilter<"GenerationJob"> | Date | string
   leaseToken?: Prisma.StringNullableFilter<"GenerationJob"> | string | null
+  leaseOwner?: Prisma.StringNullableFilter<"GenerationJob"> | string | null
   leaseExpiresAt?: Prisma.DateTimeNullableFilter<"GenerationJob"> | Date | string | null
+  lastLeaseHeartbeatAt?: Prisma.DateTimeNullableFilter<"GenerationJob"> | Date | string | null
   cancelRequestedAt?: Prisma.DateTimeNullableFilter<"GenerationJob"> | Date | string | null
   brandProfileVersionId?: Prisma.StringNullableFilter<"GenerationJob"> | string | null
   request?: Prisma.JsonFilter<"GenerationJob">
@@ -1467,7 +1517,9 @@ export type GenerationJobCreateWithoutBrandProfileVersionInput = {
   maxAttempts?: number
   availableAt?: Date | string
   leaseToken?: string | null
+  leaseOwner?: string | null
   leaseExpiresAt?: Date | string | null
+  lastLeaseHeartbeatAt?: Date | string | null
   cancelRequestedAt?: Date | string | null
   request: Prisma.JsonNullValueInput | runtime.InputJsonValue
   safeErrorCode?: string | null
@@ -1511,7 +1563,9 @@ export type GenerationJobUncheckedCreateWithoutBrandProfileVersionInput = {
   maxAttempts?: number
   availableAt?: Date | string
   leaseToken?: string | null
+  leaseOwner?: string | null
   leaseExpiresAt?: Date | string | null
+  lastLeaseHeartbeatAt?: Date | string | null
   cancelRequestedAt?: Date | string | null
   request: Prisma.JsonNullValueInput | runtime.InputJsonValue
   safeErrorCode?: string | null
@@ -1567,7 +1621,9 @@ export type GenerationJobUpdateWithoutBrandProfileVersionInput = {
   maxAttempts?: Prisma.IntFieldUpdateOperationsInput | number
   availableAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   leaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  leaseOwner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   leaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLeaseHeartbeatAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   request?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   safeErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1611,7 +1667,9 @@ export type GenerationJobUncheckedUpdateWithoutBrandProfileVersionInput = {
   maxAttempts?: Prisma.IntFieldUpdateOperationsInput | number
   availableAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   leaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  leaseOwner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   leaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLeaseHeartbeatAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   request?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   safeErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1651,7 +1709,9 @@ export type GenerationJobCreateWithoutChildJobsInput = {
   maxAttempts?: number
   availableAt?: Date | string
   leaseToken?: string | null
+  leaseOwner?: string | null
   leaseExpiresAt?: Date | string | null
+  lastLeaseHeartbeatAt?: Date | string | null
   cancelRequestedAt?: Date | string | null
   request: Prisma.JsonNullValueInput | runtime.InputJsonValue
   safeErrorCode?: string | null
@@ -1695,7 +1755,9 @@ export type GenerationJobUncheckedCreateWithoutChildJobsInput = {
   maxAttempts?: number
   availableAt?: Date | string
   leaseToken?: string | null
+  leaseOwner?: string | null
   leaseExpiresAt?: Date | string | null
+  lastLeaseHeartbeatAt?: Date | string | null
   cancelRequestedAt?: Date | string | null
   brandProfileVersionId?: string | null
   request: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -1740,7 +1802,9 @@ export type GenerationJobCreateWithoutParentJobInput = {
   maxAttempts?: number
   availableAt?: Date | string
   leaseToken?: string | null
+  leaseOwner?: string | null
   leaseExpiresAt?: Date | string | null
+  lastLeaseHeartbeatAt?: Date | string | null
   cancelRequestedAt?: Date | string | null
   request: Prisma.JsonNullValueInput | runtime.InputJsonValue
   safeErrorCode?: string | null
@@ -1783,7 +1847,9 @@ export type GenerationJobUncheckedCreateWithoutParentJobInput = {
   maxAttempts?: number
   availableAt?: Date | string
   leaseToken?: string | null
+  leaseOwner?: string | null
   leaseExpiresAt?: Date | string | null
+  lastLeaseHeartbeatAt?: Date | string | null
   cancelRequestedAt?: Date | string | null
   brandProfileVersionId?: string | null
   request: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -1845,7 +1911,9 @@ export type GenerationJobUpdateWithoutChildJobsInput = {
   maxAttempts?: Prisma.IntFieldUpdateOperationsInput | number
   availableAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   leaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  leaseOwner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   leaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLeaseHeartbeatAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   request?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   safeErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1889,7 +1957,9 @@ export type GenerationJobUncheckedUpdateWithoutChildJobsInput = {
   maxAttempts?: Prisma.IntFieldUpdateOperationsInput | number
   availableAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   leaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  leaseOwner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   leaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLeaseHeartbeatAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   brandProfileVersionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   request?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -1945,7 +2015,9 @@ export type GenerationJobCreateWithoutSourcedContentItemsInput = {
   maxAttempts?: number
   availableAt?: Date | string
   leaseToken?: string | null
+  leaseOwner?: string | null
   leaseExpiresAt?: Date | string | null
+  lastLeaseHeartbeatAt?: Date | string | null
   cancelRequestedAt?: Date | string | null
   request: Prisma.JsonNullValueInput | runtime.InputJsonValue
   safeErrorCode?: string | null
@@ -1989,7 +2061,9 @@ export type GenerationJobUncheckedCreateWithoutSourcedContentItemsInput = {
   maxAttempts?: number
   availableAt?: Date | string
   leaseToken?: string | null
+  leaseOwner?: string | null
   leaseExpiresAt?: Date | string | null
+  lastLeaseHeartbeatAt?: Date | string | null
   cancelRequestedAt?: Date | string | null
   brandProfileVersionId?: string | null
   request: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -2045,7 +2119,9 @@ export type GenerationJobUpdateWithoutSourcedContentItemsInput = {
   maxAttempts?: Prisma.IntFieldUpdateOperationsInput | number
   availableAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   leaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  leaseOwner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   leaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLeaseHeartbeatAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   request?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   safeErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2089,7 +2165,9 @@ export type GenerationJobUncheckedUpdateWithoutSourcedContentItemsInput = {
   maxAttempts?: Prisma.IntFieldUpdateOperationsInput | number
   availableAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   leaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  leaseOwner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   leaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLeaseHeartbeatAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   brandProfileVersionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   request?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -2129,7 +2207,9 @@ export type GenerationJobCreateWithoutProducedContentVersionInput = {
   maxAttempts?: number
   availableAt?: Date | string
   leaseToken?: string | null
+  leaseOwner?: string | null
   leaseExpiresAt?: Date | string | null
+  lastLeaseHeartbeatAt?: Date | string | null
   cancelRequestedAt?: Date | string | null
   request: Prisma.JsonNullValueInput | runtime.InputJsonValue
   safeErrorCode?: string | null
@@ -2173,7 +2253,9 @@ export type GenerationJobUncheckedCreateWithoutProducedContentVersionInput = {
   maxAttempts?: number
   availableAt?: Date | string
   leaseToken?: string | null
+  leaseOwner?: string | null
   leaseExpiresAt?: Date | string | null
+  lastLeaseHeartbeatAt?: Date | string | null
   cancelRequestedAt?: Date | string | null
   brandProfileVersionId?: string | null
   request: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -2229,7 +2311,9 @@ export type GenerationJobUpdateWithoutProducedContentVersionInput = {
   maxAttempts?: Prisma.IntFieldUpdateOperationsInput | number
   availableAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   leaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  leaseOwner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   leaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLeaseHeartbeatAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   request?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   safeErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2273,7 +2357,9 @@ export type GenerationJobUncheckedUpdateWithoutProducedContentVersionInput = {
   maxAttempts?: Prisma.IntFieldUpdateOperationsInput | number
   availableAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   leaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  leaseOwner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   leaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLeaseHeartbeatAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   brandProfileVersionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   request?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -2313,7 +2399,9 @@ export type GenerationJobCreateWithoutGenerationUsageInput = {
   maxAttempts?: number
   availableAt?: Date | string
   leaseToken?: string | null
+  leaseOwner?: string | null
   leaseExpiresAt?: Date | string | null
+  lastLeaseHeartbeatAt?: Date | string | null
   cancelRequestedAt?: Date | string | null
   request: Prisma.JsonNullValueInput | runtime.InputJsonValue
   safeErrorCode?: string | null
@@ -2357,7 +2445,9 @@ export type GenerationJobUncheckedCreateWithoutGenerationUsageInput = {
   maxAttempts?: number
   availableAt?: Date | string
   leaseToken?: string | null
+  leaseOwner?: string | null
   leaseExpiresAt?: Date | string | null
+  lastLeaseHeartbeatAt?: Date | string | null
   cancelRequestedAt?: Date | string | null
   brandProfileVersionId?: string | null
   request: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -2413,7 +2503,9 @@ export type GenerationJobUpdateWithoutGenerationUsageInput = {
   maxAttempts?: Prisma.IntFieldUpdateOperationsInput | number
   availableAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   leaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  leaseOwner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   leaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLeaseHeartbeatAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   request?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   safeErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2457,7 +2549,9 @@ export type GenerationJobUncheckedUpdateWithoutGenerationUsageInput = {
   maxAttempts?: Prisma.IntFieldUpdateOperationsInput | number
   availableAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   leaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  leaseOwner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   leaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLeaseHeartbeatAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   brandProfileVersionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   request?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -2497,7 +2591,9 @@ export type GenerationJobCreateWithoutUsageReservationInput = {
   maxAttempts?: number
   availableAt?: Date | string
   leaseToken?: string | null
+  leaseOwner?: string | null
   leaseExpiresAt?: Date | string | null
+  lastLeaseHeartbeatAt?: Date | string | null
   cancelRequestedAt?: Date | string | null
   request: Prisma.JsonNullValueInput | runtime.InputJsonValue
   safeErrorCode?: string | null
@@ -2541,7 +2637,9 @@ export type GenerationJobUncheckedCreateWithoutUsageReservationInput = {
   maxAttempts?: number
   availableAt?: Date | string
   leaseToken?: string | null
+  leaseOwner?: string | null
   leaseExpiresAt?: Date | string | null
+  lastLeaseHeartbeatAt?: Date | string | null
   cancelRequestedAt?: Date | string | null
   brandProfileVersionId?: string | null
   request: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -2597,7 +2695,9 @@ export type GenerationJobUpdateWithoutUsageReservationInput = {
   maxAttempts?: Prisma.IntFieldUpdateOperationsInput | number
   availableAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   leaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  leaseOwner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   leaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLeaseHeartbeatAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   request?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   safeErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2641,7 +2741,9 @@ export type GenerationJobUncheckedUpdateWithoutUsageReservationInput = {
   maxAttempts?: Prisma.IntFieldUpdateOperationsInput | number
   availableAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   leaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  leaseOwner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   leaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLeaseHeartbeatAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   brandProfileVersionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   request?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -2681,7 +2783,9 @@ export type GenerationJobCreateWithoutStepsInput = {
   maxAttempts?: number
   availableAt?: Date | string
   leaseToken?: string | null
+  leaseOwner?: string | null
   leaseExpiresAt?: Date | string | null
+  lastLeaseHeartbeatAt?: Date | string | null
   cancelRequestedAt?: Date | string | null
   request: Prisma.JsonNullValueInput | runtime.InputJsonValue
   safeErrorCode?: string | null
@@ -2725,7 +2829,9 @@ export type GenerationJobUncheckedCreateWithoutStepsInput = {
   maxAttempts?: number
   availableAt?: Date | string
   leaseToken?: string | null
+  leaseOwner?: string | null
   leaseExpiresAt?: Date | string | null
+  lastLeaseHeartbeatAt?: Date | string | null
   cancelRequestedAt?: Date | string | null
   brandProfileVersionId?: string | null
   request: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -2781,7 +2887,9 @@ export type GenerationJobUpdateWithoutStepsInput = {
   maxAttempts?: Prisma.IntFieldUpdateOperationsInput | number
   availableAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   leaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  leaseOwner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   leaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLeaseHeartbeatAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   request?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   safeErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2825,7 +2933,9 @@ export type GenerationJobUncheckedUpdateWithoutStepsInput = {
   maxAttempts?: Prisma.IntFieldUpdateOperationsInput | number
   availableAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   leaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  leaseOwner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   leaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLeaseHeartbeatAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   brandProfileVersionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   request?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -2866,7 +2976,9 @@ export type GenerationJobCreateManyProjectInput = {
   maxAttempts?: number
   availableAt?: Date | string
   leaseToken?: string | null
+  leaseOwner?: string | null
   leaseExpiresAt?: Date | string | null
+  lastLeaseHeartbeatAt?: Date | string | null
   cancelRequestedAt?: Date | string | null
   brandProfileVersionId?: string | null
   request: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -2901,7 +3013,9 @@ export type GenerationJobUpdateWithoutProjectInput = {
   maxAttempts?: Prisma.IntFieldUpdateOperationsInput | number
   availableAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   leaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  leaseOwner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   leaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLeaseHeartbeatAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   request?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   safeErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2944,7 +3058,9 @@ export type GenerationJobUncheckedUpdateWithoutProjectInput = {
   maxAttempts?: Prisma.IntFieldUpdateOperationsInput | number
   availableAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   leaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  leaseOwner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   leaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLeaseHeartbeatAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   brandProfileVersionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   request?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -2986,7 +3102,9 @@ export type GenerationJobUncheckedUpdateManyWithoutProjectInput = {
   maxAttempts?: Prisma.IntFieldUpdateOperationsInput | number
   availableAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   leaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  leaseOwner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   leaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLeaseHeartbeatAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   brandProfileVersionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   request?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -3022,7 +3140,9 @@ export type GenerationJobCreateManyParentJobInput = {
   maxAttempts?: number
   availableAt?: Date | string
   leaseToken?: string | null
+  leaseOwner?: string | null
   leaseExpiresAt?: Date | string | null
+  lastLeaseHeartbeatAt?: Date | string | null
   cancelRequestedAt?: Date | string | null
   brandProfileVersionId?: string | null
   request: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -3057,7 +3177,9 @@ export type GenerationJobUpdateWithoutParentJobInput = {
   maxAttempts?: Prisma.IntFieldUpdateOperationsInput | number
   availableAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   leaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  leaseOwner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   leaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLeaseHeartbeatAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   request?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   safeErrorCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -3100,7 +3222,9 @@ export type GenerationJobUncheckedUpdateWithoutParentJobInput = {
   maxAttempts?: Prisma.IntFieldUpdateOperationsInput | number
   availableAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   leaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  leaseOwner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   leaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLeaseHeartbeatAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   brandProfileVersionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   request?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -3142,7 +3266,9 @@ export type GenerationJobUncheckedUpdateManyWithoutParentJobInput = {
   maxAttempts?: Prisma.IntFieldUpdateOperationsInput | number
   availableAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   leaseToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  leaseOwner?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   leaseExpiresAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  lastLeaseHeartbeatAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   cancelRequestedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   brandProfileVersionId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   request?: Prisma.JsonNullValueInput | runtime.InputJsonValue
@@ -3237,7 +3363,9 @@ export type GenerationJobSelect<ExtArgs extends runtime.Types.Extensions.Interna
   maxAttempts?: boolean
   availableAt?: boolean
   leaseToken?: boolean
+  leaseOwner?: boolean
   leaseExpiresAt?: boolean
+  lastLeaseHeartbeatAt?: boolean
   cancelRequestedAt?: boolean
   brandProfileVersionId?: boolean
   request?: boolean
@@ -3284,7 +3412,9 @@ export type GenerationJobSelectCreateManyAndReturn<ExtArgs extends runtime.Types
   maxAttempts?: boolean
   availableAt?: boolean
   leaseToken?: boolean
+  leaseOwner?: boolean
   leaseExpiresAt?: boolean
+  lastLeaseHeartbeatAt?: boolean
   cancelRequestedAt?: boolean
   brandProfileVersionId?: boolean
   request?: boolean
@@ -3324,7 +3454,9 @@ export type GenerationJobSelectUpdateManyAndReturn<ExtArgs extends runtime.Types
   maxAttempts?: boolean
   availableAt?: boolean
   leaseToken?: boolean
+  leaseOwner?: boolean
   leaseExpiresAt?: boolean
+  lastLeaseHeartbeatAt?: boolean
   cancelRequestedAt?: boolean
   brandProfileVersionId?: boolean
   request?: boolean
@@ -3364,7 +3496,9 @@ export type GenerationJobSelectScalar = {
   maxAttempts?: boolean
   availableAt?: boolean
   leaseToken?: boolean
+  leaseOwner?: boolean
   leaseExpiresAt?: boolean
+  lastLeaseHeartbeatAt?: boolean
   cancelRequestedAt?: boolean
   brandProfileVersionId?: boolean
   request?: boolean
@@ -3377,7 +3511,7 @@ export type GenerationJobSelectScalar = {
   completedAt?: boolean
 }
 
-export type GenerationJobOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "projectId" | "parentJobId" | "scopeType" | "scopeId" | "module" | "status" | "mode" | "provider" | "modelTier" | "modelId" | "promptKey" | "promptVersion" | "generationPurpose" | "briefRevision" | "providerAttemptCount" | "normalizedProviderError" | "repairAttempted" | "idempotencyKey" | "attempt" | "maxAttempts" | "availableAt" | "leaseToken" | "leaseExpiresAt" | "cancelRequestedAt" | "brandProfileVersionId" | "request" | "safeErrorCode" | "safeErrorDetails" | "usage" | "createdAt" | "updatedAt" | "startedAt" | "completedAt", ExtArgs["result"]["generationJob"]>
+export type GenerationJobOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "projectId" | "parentJobId" | "scopeType" | "scopeId" | "module" | "status" | "mode" | "provider" | "modelTier" | "modelId" | "promptKey" | "promptVersion" | "generationPurpose" | "briefRevision" | "providerAttemptCount" | "normalizedProviderError" | "repairAttempted" | "idempotencyKey" | "attempt" | "maxAttempts" | "availableAt" | "leaseToken" | "leaseOwner" | "leaseExpiresAt" | "lastLeaseHeartbeatAt" | "cancelRequestedAt" | "brandProfileVersionId" | "request" | "safeErrorCode" | "safeErrorDetails" | "usage" | "createdAt" | "updatedAt" | "startedAt" | "completedAt", ExtArgs["result"]["generationJob"]>
 export type GenerationJobInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   parentJob?: boolean | Prisma.GenerationJob$parentJobArgs<ExtArgs>
@@ -3438,7 +3572,9 @@ export type $GenerationJobPayload<ExtArgs extends runtime.Types.Extensions.Inter
     maxAttempts: number
     availableAt: Date
     leaseToken: string | null
+    leaseOwner: string | null
     leaseExpiresAt: Date | null
+    lastLeaseHeartbeatAt: Date | null
     cancelRequestedAt: Date | null
     brandProfileVersionId: string | null
     request: runtime.JsonValue
@@ -3904,7 +4040,9 @@ export interface GenerationJobFieldRefs {
   readonly maxAttempts: Prisma.FieldRef<"GenerationJob", 'Int'>
   readonly availableAt: Prisma.FieldRef<"GenerationJob", 'DateTime'>
   readonly leaseToken: Prisma.FieldRef<"GenerationJob", 'String'>
+  readonly leaseOwner: Prisma.FieldRef<"GenerationJob", 'String'>
   readonly leaseExpiresAt: Prisma.FieldRef<"GenerationJob", 'DateTime'>
+  readonly lastLeaseHeartbeatAt: Prisma.FieldRef<"GenerationJob", 'DateTime'>
   readonly cancelRequestedAt: Prisma.FieldRef<"GenerationJob", 'DateTime'>
   readonly brandProfileVersionId: Prisma.FieldRef<"GenerationJob", 'String'>
   readonly request: Prisma.FieldRef<"GenerationJob", 'Json'>

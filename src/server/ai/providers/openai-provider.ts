@@ -40,7 +40,7 @@ function normalizeError(error: unknown): ProviderError {
         "RATE_LIMITED",
         true,
         "Generation is temporarily limited by the provider.",
-        undefined,
+        parseRetryAfter(error.headers),
         requestId,
       );
     if (error.status === 400)
@@ -79,6 +79,23 @@ function normalizeError(error: unknown): ProviderError {
     false,
     "The generation provider could not complete the request.",
   );
+}
+
+function parseRetryAfter(
+  headers: Headers | Record<string, string> | undefined,
+) {
+  if (!headers) return undefined;
+  const raw =
+    headers instanceof Headers
+      ? headers.get("retry-after")
+      : (headers["retry-after"] ?? headers["Retry-After"]);
+  if (!raw) return undefined;
+  const seconds = Number(raw);
+  if (Number.isFinite(seconds))
+    return Math.min(Math.max(Math.round(seconds * 1_000), 1_000), 300_000);
+  const date = Date.parse(raw);
+  if (!Number.isFinite(date)) return undefined;
+  return Math.min(Math.max(date - Date.now(), 1_000), 300_000);
 }
 
 export class OpenAIProvider implements AiProvider {

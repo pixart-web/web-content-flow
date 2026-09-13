@@ -414,7 +414,9 @@ export const ModelName = {
   ContentItemVersion: 'ContentItemVersion',
   GenerationUsage: 'GenerationUsage',
   UsageReservation: 'UsageReservation',
-  GenerationJobStep: 'GenerationJobStep'
+  GenerationJobStep: 'GenerationJobStep',
+  WorkerHeartbeat: 'WorkerHeartbeat',
+  BetaInterest: 'BetaInterest'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -430,7 +432,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "account" | "session" | "verificationToken" | "project" | "passwordResetToken" | "contentExport" | "rateLimitBucket" | "projectModule" | "projectBrief" | "brandProfile" | "brandProfileVersion" | "generationJob" | "contentItem" | "contentItemVersion" | "generationUsage" | "usageReservation" | "generationJobStep"
+    modelProps: "user" | "account" | "session" | "verificationToken" | "project" | "passwordResetToken" | "contentExport" | "rateLimitBucket" | "projectModule" | "projectBrief" | "brandProfile" | "brandProfileVersion" | "generationJob" | "contentItem" | "contentItemVersion" | "generationUsage" | "usageReservation" | "generationJobStep" | "workerHeartbeat" | "betaInterest"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1766,6 +1768,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    WorkerHeartbeat: {
+      payload: Prisma.$WorkerHeartbeatPayload<ExtArgs>
+      fields: Prisma.WorkerHeartbeatFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.WorkerHeartbeatFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkerHeartbeatPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.WorkerHeartbeatFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkerHeartbeatPayload>
+        }
+        findFirst: {
+          args: Prisma.WorkerHeartbeatFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkerHeartbeatPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.WorkerHeartbeatFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkerHeartbeatPayload>
+        }
+        findMany: {
+          args: Prisma.WorkerHeartbeatFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkerHeartbeatPayload>[]
+        }
+        create: {
+          args: Prisma.WorkerHeartbeatCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkerHeartbeatPayload>
+        }
+        createMany: {
+          args: Prisma.WorkerHeartbeatCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.WorkerHeartbeatCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkerHeartbeatPayload>[]
+        }
+        delete: {
+          args: Prisma.WorkerHeartbeatDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkerHeartbeatPayload>
+        }
+        update: {
+          args: Prisma.WorkerHeartbeatUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkerHeartbeatPayload>
+        }
+        deleteMany: {
+          args: Prisma.WorkerHeartbeatDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.WorkerHeartbeatUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.WorkerHeartbeatUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkerHeartbeatPayload>[]
+        }
+        upsert: {
+          args: Prisma.WorkerHeartbeatUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkerHeartbeatPayload>
+        }
+        aggregate: {
+          args: Prisma.WorkerHeartbeatAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateWorkerHeartbeat>
+        }
+        groupBy: {
+          args: Prisma.WorkerHeartbeatGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WorkerHeartbeatGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.WorkerHeartbeatCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WorkerHeartbeatCountAggregateOutputType> | number
+        }
+      }
+    }
+    BetaInterest: {
+      payload: Prisma.$BetaInterestPayload<ExtArgs>
+      fields: Prisma.BetaInterestFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.BetaInterestFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BetaInterestPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.BetaInterestFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BetaInterestPayload>
+        }
+        findFirst: {
+          args: Prisma.BetaInterestFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BetaInterestPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.BetaInterestFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BetaInterestPayload>
+        }
+        findMany: {
+          args: Prisma.BetaInterestFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BetaInterestPayload>[]
+        }
+        create: {
+          args: Prisma.BetaInterestCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BetaInterestPayload>
+        }
+        createMany: {
+          args: Prisma.BetaInterestCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.BetaInterestCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BetaInterestPayload>[]
+        }
+        delete: {
+          args: Prisma.BetaInterestDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BetaInterestPayload>
+        }
+        update: {
+          args: Prisma.BetaInterestUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BetaInterestPayload>
+        }
+        deleteMany: {
+          args: Prisma.BetaInterestDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.BetaInterestUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.BetaInterestUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BetaInterestPayload>[]
+        }
+        upsert: {
+          args: Prisma.BetaInterestUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BetaInterestPayload>
+        }
+        aggregate: {
+          args: Prisma.BetaInterestAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateBetaInterest>
+        }
+        groupBy: {
+          args: Prisma.BetaInterestGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BetaInterestGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.BetaInterestCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BetaInterestCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1997,7 +2147,9 @@ export const GenerationJobScalarFieldEnum = {
   maxAttempts: 'maxAttempts',
   availableAt: 'availableAt',
   leaseToken: 'leaseToken',
+  leaseOwner: 'leaseOwner',
   leaseExpiresAt: 'leaseExpiresAt',
+  lastLeaseHeartbeatAt: 'lastLeaseHeartbeatAt',
   cancelRequestedAt: 'cancelRequestedAt',
   brandProfileVersionId: 'brandProfileVersionId',
   request: 'request',
@@ -2107,6 +2259,34 @@ export const GenerationJobStepScalarFieldEnum = {
 } as const
 
 export type GenerationJobStepScalarFieldEnum = (typeof GenerationJobStepScalarFieldEnum)[keyof typeof GenerationJobStepScalarFieldEnum]
+
+
+export const WorkerHeartbeatScalarFieldEnum = {
+  workerId: 'workerId',
+  state: 'state',
+  release: 'release',
+  startedAt: 'startedAt',
+  heartbeatAt: 'heartbeatAt'
+} as const
+
+export type WorkerHeartbeatScalarFieldEnum = (typeof WorkerHeartbeatScalarFieldEnum)[keyof typeof WorkerHeartbeatScalarFieldEnum]
+
+
+export const BetaInterestScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  email: 'email',
+  companyOrProject: 'companyOrProject',
+  role: 'role',
+  primaryChallenge: 'primaryChallenge',
+  currentTools: 'currentTools',
+  expectedMonthlyUsage: 'expectedMonthlyUsage',
+  consentedAt: 'consentedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BetaInterestScalarFieldEnum = (typeof BetaInterestScalarFieldEnum)[keyof typeof BetaInterestScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -2716,6 +2896,8 @@ export type GlobalOmitConfig = {
   generationUsage?: Prisma.GenerationUsageOmit
   usageReservation?: Prisma.UsageReservationOmit
   generationJobStep?: Prisma.GenerationJobStepOmit
+  workerHeartbeat?: Prisma.WorkerHeartbeatOmit
+  betaInterest?: Prisma.BetaInterestOmit
 }
 
 /* Types for Logging */

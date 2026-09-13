@@ -1,5 +1,7 @@
 # Open Decisions
 
+> Current-state note: accepted ADRs are authoritative for implemented technical decisions. Hosting, monitoring, managed backup/PITR, restore ownership, and production email evidence remain unresolved; see the pre-beta remediation record.
+
 All entries are unresolved. “Current recommendation” guides reversible foundation work but is not approval. Decision timing is expressed relative to delivery stages in [Product Roadmap](12-product-roadmap.md).
 
 | Decision | Current recommendation | Alternatives | Decision criteria | Required by | Cost of delay |

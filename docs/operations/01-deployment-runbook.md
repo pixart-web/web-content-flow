@@ -1,5 +1,19 @@
 # Deployment Runbook
 
+## Release evidence
+
+| Field | Required value |
+|---|---|
+| Named deployment role | |
+| Verification date | |
+| Status / blocker | |
+| Web command | `pnpm start` |
+| Worker command | `pnpm worker` |
+| Migration command | `pnpm migrate:production` |
+| Maintenance command | `pnpm maintenance` |
+| Release identifier | |
+| Rollback action and artifact | |
+
 ## Before deployment
 
 - Identify release commit, environment, operator, and incident channel.

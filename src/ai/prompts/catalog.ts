@@ -1,4 +1,4 @@
-import type { z } from "zod";
+import { z } from "zod";
 
 import {
   AdsContentTypeSchema,
@@ -25,8 +25,22 @@ import {
   WebsitePageSnapshotSchema,
   WebsitePageTypeSchema,
 } from "@/domain/website/website-schemas";
-import { GenerationContextSchema } from "@/ai/context/generation-context";
 import { createModulePrompt } from "@/ai/prompts/registry";
+
+const RuntimePromptInputSchema = z.unknown().superRefine((value, context) => {
+  let serialized = "";
+  try {
+    serialized = JSON.stringify(value);
+  } catch {
+    context.addIssue({
+      code: "custom",
+      message: "Context must be serializable.",
+    });
+    return;
+  }
+  if (serialized.length > 2_000_000)
+    context.addIssue({ code: "custom", message: "Context is too large." });
+});
 
 const registrations = [
   {
@@ -76,7 +90,7 @@ for (const registration of registrations)
         registration.module === "BRAND_PROFILE"
           ? "ITEM_GENERATION"
           : "MODULE_GENERATION",
-      inputSchema: GenerationContextSchema,
+      inputSchema: RuntimePromptInputSchema,
       outputSchema: registration.output as z.ZodType<unknown>,
       maximumOutputTokens: registration.module === "WEBSITE" ? 20_000 : 12_000,
     });

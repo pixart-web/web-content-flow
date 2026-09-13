@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 310 64" role="img" aria-labelledby="title">
+  <title id="title">Web Content Flow</title>
+  <path d="M10 46V26c0-7 5-12 12-12h10c6 0 11 5 11 11v22M43 25h11M43 36h11M43 47h11" fill="none" stroke="#101522" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="78" y="40" fill="#101522" font-family="Geist,Inter,Arial,sans-serif" font-size="25" font-weight="650" letter-spacing="-1">Web Content Flow</text>
+</svg>

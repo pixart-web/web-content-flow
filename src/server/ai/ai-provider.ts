@@ -41,6 +41,8 @@ export class ProviderError extends Error {
     message: string,
     readonly retryAfterMs?: number,
     readonly providerRequestId?: string,
+    readonly rejectedOutput?: unknown,
+    readonly validationIssues?: readonly string[],
   ) {
     super(message);
     this.name = "ProviderError";

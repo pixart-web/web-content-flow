@@ -18,6 +18,9 @@ export const serverEnvSchema = z
     NODE_ENV: z.enum(["development", "test", "production"]),
     NEXT_PUBLIC_APP_URL: z.url(),
     DATABASE_URL: z.string().url().startsWith("postgresql://"),
+    DATABASE_ENVIRONMENT: z
+      .enum(["local", "test", "staging", "production"])
+      .default("local"),
     AUTH_SECRET: z.string().min(32),
     AUTH_URL: z.url(),
     APP_ENV: z
@@ -32,6 +35,8 @@ export const serverEnvSchema = z
     PROJECT_PACKAGE_EXPORT_ENABLED: enabledFromEnv,
     ACCOUNT_DELETION_ENABLED: booleanFromEnv,
     PUBLIC_PRICING_ENABLED: enabledFromEnv,
+    MARKETING_INDEXING_ENABLED: booleanFromEnv,
+    MARKETING_CAPTURE_MODE: booleanFromEnv,
     EMAIL_PROVIDER: z.enum(["MOCK", "RESEND"]).default("MOCK"),
     RESEND_API_KEY: z.string().min(20).optional(),
     EMAIL_FROM: z.string().email().default("noreply@webcontentflow.local"),
@@ -65,6 +70,26 @@ export const serverEnvSchema = z
     AI_PROMPT_DEBUG_ENABLED: booleanFromEnv,
   })
   .superRefine((value, context) => {
+    const applicationUrl = new URL(value.NEXT_PUBLIC_APP_URL);
+    const localOrigin =
+      applicationUrl.hostname === "localhost" ||
+      applicationUrl.hostname === "127.0.0.1";
+    if (value.NODE_ENV === "production" && applicationUrl.protocol !== "https:")
+      context.addIssue({
+        code: "custom",
+        path: ["NEXT_PUBLIC_APP_URL"],
+        message: "Production application URLs must use HTTPS.",
+      });
+    if (
+      value.NODE_ENV !== "production" &&
+      applicationUrl.protocol !== "https:" &&
+      !(localOrigin && applicationUrl.protocol === "http:")
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["NEXT_PUBLIC_APP_URL"],
+        message: "Only HTTPS or documented local HTTP origins are allowed.",
+      });
     if (
       value.AI_REAL_GENERATION_ENABLED &&
       !value.AI_FAKE_OPENAI_ENABLED &&
@@ -105,6 +130,62 @@ export const serverEnvSchema = z
         path: ["RATE_LIMIT_SECRET"],
         message: "Production requires RATE_LIMIT_SECRET.",
       });
+    if (
+      value.MARKETING_CAPTURE_MODE &&
+      (value.NODE_ENV === "production" ||
+        !["local", "test"].includes(value.APP_ENV))
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["MARKETING_CAPTURE_MODE"],
+        message:
+          "Marketing capture mode is restricted to local and test runtimes.",
+      });
+    if (
+      ["staging", "production"].includes(value.APP_ENV) &&
+      value.DATABASE_ENVIRONMENT !== value.APP_ENV
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["DATABASE_ENVIRONMENT"],
+        message:
+          "The database environment marker must match the deployed application environment.",
+      });
+    if (
+      value.APP_ENV === "staging" &&
+      (value.PUBLIC_REGISTRATION_ENABLED ||
+        value.MARKETING_INDEXING_ENABLED ||
+        value.AI_REAL_GENERATION_ENABLED ||
+        value.MARKETING_CAPTURE_MODE)
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["APP_ENV"],
+        message:
+          "Staging requires registration, indexing, real AI, and capture mode to remain disabled.",
+      });
+    if (
+      value.MARKETING_CAPTURE_MODE &&
+      (value.PUBLIC_REGISTRATION_ENABLED || value.MARKETING_INDEXING_ENABLED)
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["MARKETING_CAPTURE_MODE"],
+        message:
+          "Capture mode requires public registration and indexing to remain disabled.",
+      });
+    if (
+      value.MARKETING_CAPTURE_MODE &&
+      (value.AI_PROVIDER_DEFAULT !== "MOCK" ||
+        value.AI_REAL_GENERATION_ENABLED ||
+        value.EMAIL_PROVIDER !== "MOCK")
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["MARKETING_CAPTURE_MODE"],
+        message:
+          "Capture mode requires mock AI, disabled real generation, and mock email.",
+      });
   });
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;
@@ -118,6 +199,7 @@ export function getServerEnv(): ServerEnv {
     NODE_ENV: process.env.NODE_ENV,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
     DATABASE_URL: process.env.DATABASE_URL,
+    DATABASE_ENVIRONMENT: process.env.DATABASE_ENVIRONMENT,
     AUTH_SECRET: process.env.AUTH_SECRET,
     AUTH_URL: process.env.AUTH_URL,
     APP_ENV: process.env.APP_ENV,
@@ -128,6 +210,8 @@ export function getServerEnv(): ServerEnv {
     PROJECT_PACKAGE_EXPORT_ENABLED: process.env.PROJECT_PACKAGE_EXPORT_ENABLED,
     ACCOUNT_DELETION_ENABLED: process.env.ACCOUNT_DELETION_ENABLED,
     PUBLIC_PRICING_ENABLED: process.env.PUBLIC_PRICING_ENABLED,
+    MARKETING_INDEXING_ENABLED: process.env.MARKETING_INDEXING_ENABLED,
+    MARKETING_CAPTURE_MODE: process.env.MARKETING_CAPTURE_MODE,
     EMAIL_PROVIDER: process.env.EMAIL_PROVIDER,
     RESEND_API_KEY: process.env.RESEND_API_KEY,
     EMAIL_FROM: process.env.EMAIL_FROM,

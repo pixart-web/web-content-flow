@@ -1,5 +1,11 @@
 # Incident Response
 
+## Ownership record
+
+| Named incident lead role | Alert destination | Last exercise | Status / blocker |
+|---|---|---|---|
+| Unassigned | Unconfigured | Never | BLOCKED pending staging provisioning |
+
 ## Severity
 
 - **SEV-1:** confirmed cross-user disclosure, secret compromise, destructive corruption, or broad outage.

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Poppins } from "next/font/google";
+import { Geist, Geist_Mono, Inter, Poppins } from "next/font/google";
 
 import "./globals.css";
 
@@ -16,6 +16,18 @@ const poppins = Poppins({
   display: "swap",
 });
 
+const geist = Geist({
+  subsets: ["latin"],
+  variable: "--font-loaded-marketing",
+  display: "swap",
+});
+
+const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  variable: "--font-loaded-marketing-mono",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
@@ -25,12 +37,29 @@ export const metadata: Metadata = {
     template: "%s · Web Content Flow",
   },
   description:
-    "Create a connected Brand Profile, website content, campaigns and editorial plan from one business Brief.",
+    "A content operations platform that turns one strategic brief into a connected system of brand-consistent marketing content.",
+  icons: {
+    icon: "/brand/symbol/favicon.svg",
+    apple: "/brand/social/apple-touch-icon.png",
+  },
   openGraph: {
     title: "Web Content Flow",
-    description:
-      "One Brief. One connected workflow. A complete digital presence.",
+    description: "From one brief to your entire content system.",
     type: "website",
+    images: [
+      {
+        url: "/og/og-default.png",
+        width: 1200,
+        height: 630,
+        alt: "Web Content Flow — Create once. Flow everywhere.",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Web Content Flow",
+    description: "From one brief to your entire content system.",
+    images: ["/og/og-default.png"],
   },
 };
 
@@ -40,7 +69,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${poppins.variable}`}>
+    <html
+      lang="en"
+      className={`${inter.variable} ${poppins.variable} ${geist.variable} ${geistMono.variable}`}
+    >
       <body>{children}</body>
     </html>
   );

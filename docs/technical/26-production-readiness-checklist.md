@@ -1,5 +1,9 @@
 # Production Readiness Checklist
 
+> Remediation status: repository controls improved, but deployed worker monitoring and backup/restore evidence remain blocking. Do not mark operational rows complete from local test results.
+
+> Staging update: a Render Blueprint and evidence records exist, but no external service has been provisioned. See [Final Beta Verification](../audits/10-final-beta-verification.md).
+
 States: **Done**, **Blocked**, or **Not applicable**. Evidence must be a durable URL, log, command output, or approved document. “Planned” is not evidence.
 
 | Area | Check | State | Owner | Evidence / blocker |

@@ -10,7 +10,7 @@ import { z } from "zod";
 import { requireUser } from "@/server/auth/require-user";
 import { deleteCurrentSession } from "@/server/auth/session";
 import { getPrisma } from "@/server/db/prisma";
-import { getEmailProvider } from "@/server/email/providers";
+import { sendTransactionalEmailSafely } from "@/server/email/providers";
 import { passwordChangedTemplate } from "@/server/email/templates";
 import { getServerEnv } from "@/lib/env/server";
 
@@ -77,7 +77,7 @@ export async function changePasswordAction(
   ]);
   const env = getServerEnv();
   const template = passwordChangedTemplate();
-  await getEmailProvider().send({
+  await sendTransactionalEmailSafely({
     to: record.email,
     from: env.EMAIL_FROM,
     subject: template.subject,

@@ -1,4 +1,4 @@
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Menu } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -7,6 +7,7 @@ const nav = [
   ["Solutions", "/solutions/founders"],
   ["Resources", "/resources"],
   ["Pricing", "/pricing"],
+  ["About", "/about"],
 ] as const;
 
 export function LogoLockup() {
@@ -34,10 +35,6 @@ export function MarketingHeader() {
       <a className="skip-link" href="#main-content">
         Skip to content
       </a>
-      <aside className="announcement" aria-label="Private beta status">
-        <span>Private beta preparation is underway.</span>
-        <Link href="/contact">Request early access</Link>
-      </aside>
       <header className="marketing-header">
         <div className="marketing-container header-inner">
           <LogoLockup />
@@ -57,7 +54,10 @@ export function MarketingHeader() {
             </Link>
           </div>
           <details className="mobile-menu">
-            <summary aria-label="Open navigation">Menu</summary>
+            <summary aria-label="Open navigation">
+              <Menu aria-hidden size={22} />
+              Menu
+            </summary>
             <nav aria-label="Mobile navigation">
               {nav.map(([label, href]) => (
                 <Link href={href} key={href}>

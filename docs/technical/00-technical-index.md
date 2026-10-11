@@ -4,6 +4,7 @@
 - [Staging Operationalization](42-staging-operationalization.md) — selected staging contract, local evidence, external blockers, and cost baseline.
 - [Marketing Website Implementation](43-marketing-website-implementation.md) — public identity, routes, conversion form, SEO, accessibility, media, and launch boundaries.
 - [Product Media and Launch Readiness](44-product-media-and-launch-readiness.md) — guarded capture, authentic stills, legal package, staging safeguards, and external gates.
+- [UI/UX Redesign Implementation](45-ui-ux-redesign.md) — public dark-premium redesign, authenticated workspace shell, real-data dashboard, responsive behavior, and validation evidence.
 
 ## Purpose
 

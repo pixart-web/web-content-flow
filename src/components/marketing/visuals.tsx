@@ -7,21 +7,25 @@ import {
   PlaySquare,
   ScrollText,
   Share2,
-  Sparkles,
+  Orbit,
 } from "lucide-react";
+import Image from "next/image";
 
 import { canonicalFlow } from "@/content/marketing";
 
 const icons = {
   Brief: ScrollText,
-  "Brand Profile": Sparkles,
+  "Brand Profile": Orbit,
   Website: PanelsTopLeft,
   Social: Share2,
+  "Social Media": Share2,
   Ads: Megaphone,
   Video: PlaySquare,
   Copy: FileOutput,
   Calendar: CalendarDays,
+  "Content Calendar": CalendarDays,
   Library,
+  "Content Library": Library,
   Export: FileOutput,
 } as const;
 
@@ -48,42 +52,48 @@ export function FlowDiagram() {
 }
 
 export function ContentConstellation() {
+  const modules = [
+    ["Brand Profile", "Your brand, always consistent", "brand"],
+    ["Website", "Pages & SEO", "website"],
+    ["Social Media", "Posts & campaigns", "social"],
+    ["Ads", "Copy & creatives", "ads"],
+    ["Video", "Scripts & direction", "video"],
+    ["Content Calendar", "Plan & organise", "calendar"],
+    ["Content Library", "Assets & versions", "library"],
+  ] as const;
   return (
     <div
       className="constellation"
       aria-label="One Brief flowing into connected content modules"
     >
-      <div className="constellation-card brief-card">
-        <span>Brief</span>
-        <strong>Campaign direction</strong>
-        <i />
-        <i />
-      </div>
-      <div className="flow-path" aria-hidden />
       <div className="constellation-core">
-        <span>Brand Profile</span>
-        <strong>One source of truth</strong>
-        <div className="token-row">
-          <i />
-          <i />
-          <i />
-          <i />
-        </div>
+        <Image
+          alt=""
+          aria-hidden
+          height={54}
+          src="/brand/symbol/flow-mark.svg"
+          width={54}
+        />
+        <span>One brief</span>
       </div>
-      <div className="output-grid">
-        {["Website", "Social", "Ads", "Video", "Calendar", "Library"].map(
-          (name) => (
-            <div className="output-card" key={name}>
-              <span>{name}</span>
-              <i />
-              <i />
+      <div className="constellation-orbit" aria-hidden />
+      <div className="constellation-lines" aria-hidden />
+      <div className="constellation-modules">
+        {modules.map(([name, description, position]) => {
+          const Icon = icons[name];
+          return (
+            <div className={`ecosystem-node node-${position}`} key={name}>
+              <span className="ecosystem-icon">
+                <Icon aria-hidden size={20} strokeWidth={1.7} />
+              </span>
+              <span>
+                <strong>{name}</strong>
+                <small>{description}</small>
+              </span>
             </div>
-          ),
-        )}
+          );
+        })}
       </div>
-      <p className="visual-caption">
-        One strategy · connected outputs · retained context
-      </p>
     </div>
   );
 }

@@ -1,6 +1,15 @@
 "use client";
 
-import { LayoutDashboard, Menu, Settings, X, FolderKanban } from "lucide-react";
+import {
+  ChevronRight,
+  FolderKanban,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  Settings,
+  X,
+} from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -21,7 +30,7 @@ const items = [
 function Navigation({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   return (
-    <nav aria-label="Application navigation" className="space-y-1">
+    <nav aria-label="Application navigation" className="app-navigation">
       {items.map((item) => {
         const active = item.exact
           ? pathname === item.href
@@ -30,15 +39,20 @@ function Navigation({ onNavigate }: { onNavigate?: () => void }) {
         return (
           <Link
             aria-current={active ? "page" : undefined}
-            className={`hover:bg-surface-subtle rounded-control flex min-h-11 items-center gap-3 px-3 text-sm font-semibold ${
-              active ? "bg-surface-selected text-link" : "text-secondary"
-            }`}
+            className={`app-navigation-item ${active ? "is-active" : ""}`}
             href={item.href}
             key={item.href}
             {...(onNavigate ? { onClick: onNavigate } : {})}
           >
-            <Icon aria-hidden="true" className="size-5" />
-            {item.label}
+            <Icon
+              aria-hidden="true"
+              className="size-[18px]"
+              strokeWidth={1.8}
+            />
+            <span>{item.label}</span>
+            {active ? (
+              <ChevronRight aria-hidden className="ml-auto size-4" />
+            ) : null}
           </Link>
         );
       })}
@@ -57,6 +71,19 @@ export function AppShell({
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
+  const initials = (user.name ?? user.email)
+    .split(/[\s@._-]+/)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("");
+  const pageLabel = pathname.includes("/projects/")
+    ? "Project workspace"
+    : pathname === "/app/projects"
+      ? "Projects"
+      : pathname.startsWith("/app/settings")
+        ? "Settings"
+        : "Dashboard";
 
   useEffect(() => {
     if (open) closeButtonRef.current?.focus();
@@ -68,46 +95,57 @@ export function AppShell({
   }
 
   return (
-    <div className="bg-canvas text-primary min-h-screen">
-      <aside className="border-default bg-surface fixed inset-y-0 left-0 hidden w-60 border-r p-4 lg:flex lg:flex-col">
-        <Link
-          className="font-display flex min-h-12 items-center px-3 text-lg font-semibold"
-          href="/app"
-        >
-          Web Content Flow
+    <div className="app-shell">
+      <aside className="app-sidebar">
+        <Link className="app-brand" href="/app">
+          <Image
+            alt=""
+            aria-hidden
+            height={30}
+            src="/brand/symbol/flow-mark.svg"
+            width={30}
+          />
+          <span>Web Content Flow</span>
         </Link>
-        <div className="mt-6">
+        <div className="app-sidebar-nav">
           <Navigation />
         </div>
-        <div className="border-default mt-auto border-t pt-4">
-          <p className="truncate px-3 text-sm font-semibold">
-            {user.name ?? "Account"}
-          </p>
-          <p className="text-secondary truncate px-3 text-xs">{user.email}</p>
+        <div className="app-account">
+          <span className="app-avatar" aria-hidden>
+            {initials || "A"}
+          </span>
+          <span className="min-w-0 flex-1">
+            <strong>{user.name ?? "Account"}</strong>
+            <small>{user.email}</small>
+          </span>
           <form action={signOutAction}>
-            <button className="text-secondary hover:bg-surface-subtle rounded-control mt-3 min-h-11 w-full px-3 text-left text-sm font-semibold">
-              Sign out
+            <button aria-label="Sign out" className="app-icon-button">
+              <LogOut aria-hidden size={18} />
             </button>
           </form>
         </div>
       </aside>
 
-      <header className="border-default bg-surface fixed inset-x-0 top-0 z-20 flex h-14 items-center border-b px-4 lg:left-60 lg:h-16">
+      <header className="app-topbar">
         <button
           aria-expanded={open}
           aria-label="Open navigation"
-          className="hover:bg-surface-subtle rounded-control flex size-11 items-center justify-center lg:hidden"
+          className="app-icon-button lg:hidden"
           onClick={() => setOpen(true)}
           ref={menuButtonRef}
         >
           <Menu aria-hidden="true" />
         </button>
-        <p className="font-display ml-2 font-semibold lg:ml-0">
-          Web Content Flow
-        </p>
-        <p className="text-secondary ml-auto hidden text-sm sm:block">
-          {user.email}
-        </p>
+        <div className="app-topbar-title">
+          <span className="lg:hidden">Web Content Flow</span>
+          <span className="hidden lg:inline">{pageLabel}</span>
+        </div>
+        <span
+          className="app-avatar ml-auto"
+          aria-label={`Signed in as ${user.name ?? user.email}`}
+        >
+          {initials || "A"}
+        </span>
       </header>
 
       {open ? (
@@ -142,31 +180,41 @@ export function AppShell({
             className="absolute inset-0 bg-black/40"
             onClick={closeDrawer}
           />
-          <div className="bg-surface shadow-overlay relative h-full w-[min(20rem,88vw)] p-4">
+          <div className="app-mobile-drawer">
             <div className="flex h-12 items-center justify-between">
-              <span className="font-display font-semibold">Navigation</span>
+              <span className="app-brand">
+                <Image
+                  alt=""
+                  aria-hidden
+                  height={28}
+                  src="/brand/symbol/flow-mark.svg"
+                  width={28}
+                />
+                Web Content Flow
+              </span>
               <button
                 aria-label="Close navigation"
-                className="hover:bg-surface-subtle rounded-control flex size-11 items-center justify-center"
+                className="app-icon-button"
                 onClick={closeDrawer}
                 ref={closeButtonRef}
               >
                 <X aria-hidden="true" />
               </button>
             </div>
-            <div className="mt-5">
+            <div className="app-sidebar-nav mt-5">
               <Navigation onNavigate={closeDrawer} />
             </div>
-            <div className="border-default mt-6 border-t pt-4">
-              <p className="truncate px-3 text-sm font-semibold">
-                {user.name ?? "Account"}
-              </p>
-              <p className="text-secondary truncate px-3 text-xs">
-                {user.email}
-              </p>
+            <div className="app-account mt-auto">
+              <span className="app-avatar" aria-hidden>
+                {initials || "A"}
+              </span>
+              <span className="min-w-0 flex-1">
+                <strong>{user.name ?? "Account"}</strong>
+                <small>{user.email}</small>
+              </span>
               <form action={signOutAction}>
-                <button className="text-secondary hover:bg-surface-subtle rounded-control mt-3 min-h-11 w-full px-3 text-left text-sm font-semibold">
-                  Sign out
+                <button aria-label="Sign out" className="app-icon-button">
+                  <LogOut aria-hidden size={18} />
                 </button>
               </form>
             </div>
@@ -174,10 +222,8 @@ export function AppShell({
         </div>
       ) : null}
 
-      <div className="pt-14 lg:pt-16 lg:pl-60">
-        <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-          {children}
-        </main>
+      <div className="app-content-shell">
+        <main className="app-main">{children}</main>
       </div>
     </div>
   );

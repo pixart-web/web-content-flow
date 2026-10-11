@@ -45,35 +45,34 @@ export default function LandingPage() {
             <p className="eyebrow">THE CONTENT OPERATIONS PLATFORM</p>
             <h1>From one brief to your entire content system.</h1>
             <p className="lead">
-              Shape your brand, website, social content, campaigns, video ideas
-              and publishing calendar through one connected workflow.
+              Plan and create consistent content across your website, social
+              media, ads, video and more.
             </p>
             <div className="button-row">
               <Link className="marketing-button" href="/contact">
                 Join the private beta <ArrowRight aria-hidden size={18} />
               </Link>
               <Link className="marketing-button secondary" href="#workflow">
-                Watch the workflow
+                Explore the product
               </Link>
             </div>
-            <p className="support-note">
-              Built for founders and small marketing teams.
-            </p>
           </div>
           <ContentConstellation />
         </div>
       </section>
 
       <div
-        className="marketing-container principle-row"
-        aria-label="Product principles"
+        className="marketing-container module-strip"
+        aria-label="Connected content modules"
       >
         {[
-          "Brand-aware",
-          "Versioned",
-          "Structured",
-          "Editable",
-          "Exportable",
+          "Brand Profile",
+          "Website",
+          "Social Media",
+          "Ads",
+          "Video",
+          "Calendar",
+          "Library",
         ].map((item) => (
           <span key={item}>{item}</span>
         ))}

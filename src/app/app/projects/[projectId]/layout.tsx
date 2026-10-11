@@ -1,5 +1,4 @@
-import Link from "next/link";
-
+import { ProjectNavigation } from "@/components/shared/project-navigation";
 import { requireProjectOwner } from "@/server/auth/authorization";
 import { getPrisma } from "@/server/db/prisma";
 
@@ -58,7 +57,7 @@ export default async function ProjectLayout({
     (await getPrisma().contentItem.count({
       where: { projectId, module: "CALENDAR" },
     })) > 0;
-  const links: readonly (readonly [string, string])[] = [
+  const links = [
     ["Overview", `/app/projects/${projectId}`],
     ["Brief", `/app/projects/${projectId}/brief`],
     ["Brand Profile", `/app/projects/${projectId}/brand-profile`],
@@ -88,30 +87,21 @@ export default async function ProjectLayout({
       : []),
     ["Library", `/app/projects/${projectId}/library`],
     ["Export", `/app/projects/${projectId}/export`],
-  ];
+  ] as const;
 
   return (
-    <div className="space-y-6">
-      <header>
-        <p className="text-secondary text-sm">{project.brandName}</p>
-        <h1 className="font-display mt-1 text-2xl font-semibold">
-          {project.name}
-        </h1>
+    <div className="project-workspace">
+      <header className="project-heading">
+        <div>
+          <p>{project.brandName}</p>
+          <h1>{project.name}</h1>
+        </div>
+        <span>
+          {project.status.charAt(0) +
+            project.status.slice(1).toLocaleLowerCase()}
+        </span>
       </header>
-      <nav
-        aria-label="Project navigation"
-        className="border-default flex gap-1 overflow-x-auto border-b"
-      >
-        {links.map(([label, href]) => (
-          <Link
-            className="hover:bg-surface-subtle rounded-t-control inline-flex min-h-11 shrink-0 items-center px-3 text-sm font-semibold"
-            href={href}
-            key={href}
-          >
-            {label}
-          </Link>
-        ))}
-      </nav>
+      <ProjectNavigation links={links} />
       {children}
     </div>
   );

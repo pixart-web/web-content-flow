@@ -114,4 +114,6 @@ jobs:
           SEED_DEMO_DATA: "true"
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm worker &
+        env:
+          NODE_ENV: test
       - run: pnpm test:e2e

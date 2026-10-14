@@ -42,8 +42,12 @@ async function main() {
 
   try {
     const demo = await prisma.user.upsert({
-      where: { email: "demo@webcontentflow.local" },
-      update: { name: "Demo User", passwordHash },
+      where: { id: "phase1-demo-user" },
+      update: {
+        email: "demo@webcontentflow.local",
+        name: "Demo User",
+        passwordHash,
+      },
       create: {
         id: "phase1-demo-user",
         email: "demo@webcontentflow.local",
@@ -1668,8 +1672,12 @@ async function main() {
     });
 
     await prisma.user.upsert({
-      where: { email: "empty@webcontentflow.local" },
-      update: { name: "Empty Workspace", passwordHash },
+      where: { id: "phase1-empty-user" },
+      update: {
+        email: "empty@webcontentflow.local",
+        name: "Empty Workspace",
+        passwordHash,
+      },
       create: {
         id: "phase1-empty-user",
         email: "empty@webcontentflow.local",

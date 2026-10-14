@@ -70,6 +70,8 @@ jobs:
       - run: pnpm audit --prod
       - run: pnpm build
         env:
+          NEXT_PUBLIC_APP_URL: https://ci.example.test
+          AUTH_URL: https://ci.example.test
           AI_FAKE_OPENAI_ENABLED: "false"
           EMAIL_PROVIDER: RESEND
           RESEND_API_KEY: re_ci_build_only_not_a_real_provider_key

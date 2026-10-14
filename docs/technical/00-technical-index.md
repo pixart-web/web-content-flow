@@ -1,5 +1,7 @@
 # Web Content Flow — Technical Architecture Index
 
+- [Final redesign stabilization audit](../audits/01-final-redesign-stabilization.md) — dependency remediation, authenticated visual evidence, regression results, standalone website boundary, and remaining deployment gates.
+
 - [Pre-Beta Remediation Implementation](41-pre-beta-remediation-implementation.md) — implemented audit corrections, evidence, and remaining external blockers.
 - [Staging Operationalization](42-staging-operationalization.md) — selected staging contract, local evidence, external blockers, and cost baseline.
 - [Marketing Website Implementation](43-marketing-website-implementation.md) — public identity, routes, conversion form, SEO, accessibility, media, and launch boundaries.

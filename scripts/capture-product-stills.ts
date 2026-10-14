@@ -1,11 +1,12 @@
 import { chromium, type Page } from "@playwright/test";
 
 const baseUrl = process.env.CAPTURE_BASE_URL ?? "http://127.0.0.1:3000";
-const output = "public/marketing/product/stills";
+const output = process.env.CAPTURE_OUTPUT ?? "public/marketing/product/stills";
 const projectId = "phase1-urbanstride-project";
 const password = "UrbanStride-demo-2026!";
 
 const routes = [
+  ["dashboard", "/app"],
   ["hero-flow-demo", `/app/projects/${projectId}`],
   ["brief-to-brand", `/app/projects/${projectId}/brand-profile`],
   ["website-generation", `/app/projects/${projectId}/content/website`],
@@ -25,12 +26,19 @@ async function signIn(page: Page) {
 }
 
 async function prepareFrame(page: Page) {
+  await page.evaluate(async () => {
+    await document.fonts.ready;
+    window.scrollTo({ left: 0, top: 0, behavior: "instant" });
+  });
   await page
     .getByText("capture@webcontentflow.local", { exact: true })
     .evaluateAll((elements) => {
       for (const element of elements)
         (element as HTMLElement).style.visibility = "hidden";
     });
+  await page.evaluate(() =>
+    window.scrollTo({ left: 0, top: 0, behavior: "instant" }),
+  );
 }
 
 async function main() {
@@ -41,9 +49,11 @@ async function main() {
       deviceScaleFactor: 1,
       reducedMotion: "reduce",
     });
-    const page = await desktop.newPage();
-    await signIn(page);
+    const authenticationPage = await desktop.newPage();
+    await signIn(authenticationPage);
+    await authenticationPage.close();
     for (const [name, route] of routes) {
+      const page = await desktop.newPage();
       await page.goto(`${baseUrl}${route}`);
       await page.waitForLoadState("networkidle");
       await prepareFrame(page);
@@ -51,6 +61,7 @@ async function main() {
         path: `${output}/${name}.png`,
         fullPage: false,
       });
+      await page.close();
     }
     await desktop.close();
 
@@ -59,9 +70,11 @@ async function main() {
       deviceScaleFactor: 1,
       reducedMotion: "reduce",
     });
-    const mobilePage = await mobile.newPage();
-    await signIn(mobilePage);
+    const mobileAuthenticationPage = await mobile.newPage();
+    await signIn(mobileAuthenticationPage);
+    await mobileAuthenticationPage.close();
     for (const [name, route] of routes) {
+      const mobilePage = await mobile.newPage();
       await mobilePage.goto(`${baseUrl}${route}`);
       await mobilePage.waitForLoadState("networkidle");
       await prepareFrame(mobilePage);
@@ -69,6 +82,7 @@ async function main() {
         path: `${output}/${name}-mobile.png`,
         fullPage: false,
       });
+      await mobilePage.close();
     }
     await mobile.close();
   } finally {

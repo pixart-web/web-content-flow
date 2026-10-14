@@ -2,6 +2,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   allowedDevOrigins: ["127.0.0.1"],
+  ...(process.env.MARKETING_CAPTURE_MODE === "true"
+    ? { devIndicators: false }
+    : {}),
   poweredByHeader: false,
   reactStrictMode: true,
   async headers() {

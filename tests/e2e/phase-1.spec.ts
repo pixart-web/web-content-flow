@@ -55,7 +55,7 @@ test("signs in, shows returning dashboard, and opens owned project", async ({
 }) => {
   await signIn(page);
   await expect(
-    page.getByRole("heading", { level: 1, name: "Dashboard" }),
+    page.getByRole("heading", { level: 1, name: /Good to see you/ }),
   ).toBeVisible();
   await expect(
     page.getByText("UrbanStride", { exact: true }).first(),
@@ -74,9 +74,7 @@ test("shows a truthful empty dashboard", async ({ page }) => {
       name: "Create your first connected content project",
     }),
   ).toBeVisible();
-  await expect(
-    page.getByText(/Start with a guided business brief/),
-  ).toBeVisible();
+  await expect(page.getByText(/Start with one guided brief/)).toBeVisible();
 });
 
 test("does not disclose another user's project", async ({ page }) => {
@@ -123,4 +121,36 @@ test("mobile navigation is labelled and keyboard operable", async ({
   await expect(
     page.getByRole("navigation", { name: "Application navigation" }),
   ).toBeVisible();
+});
+
+test("dashboard recent content and every project navigation destination resolve", async ({
+  page,
+}) => {
+  test.skip(test.info().project.name !== "chromium");
+  await signIn(page);
+
+  const recentContent = page
+    .getByRole("region", { name: "Recent content" })
+    .getByRole("link")
+    .first();
+  await expect(recentContent).toBeVisible();
+  await recentContent.click();
+  await expect(page.getByText("This project is not available")).toHaveCount(0);
+  await expect(page.getByRole("main")).toBeVisible();
+
+  await page.goto("/app/projects/phase1-urbanstride-project");
+  const destinations = await page
+    .getByRole("navigation", { name: "Project navigation" })
+    .getByRole("link")
+    .evaluateAll((links) =>
+      links.map((link) => (link as HTMLAnchorElement).pathname),
+    );
+
+  for (const destination of destinations) {
+    const response = await page.goto(destination);
+    expect(response?.status(), destination).toBeLessThan(400);
+    await expect(page.getByText("This project is not available")).toHaveCount(
+      0,
+    );
+  }
 });

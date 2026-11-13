@@ -197,6 +197,14 @@ export async function queueWebsitePageRegeneration(input: {
   if (existing) return { ok: true, value: { jobId: existing.id } };
   const job = await prisma.generationJob.create({
     data: {
+      // A-19: regeneration follows the same real/mock configuration as
+      // generation; the executor records the exact prompt key it used.
+      ...getNewJobGenerationConfiguration({
+        promptKey: "website.module.generation",
+        purpose: input.sectionId
+          ? "SECTION_REGENERATION"
+          : "WHOLE_ITEM_REGENERATION",
+      }),
       projectId: item.projectId,
       scopeType: input.sectionId ? "CONTENT_SECTION" : "CONTENT_ITEM",
       scopeId: item.id,

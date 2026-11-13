@@ -26,6 +26,48 @@ describe("environment validation", () => {
     });
   });
 
+  it("treats blank optional secrets from .env.example as unset", () => {
+    const env = parseServerEnv({
+      NODE_ENV: "development",
+      NEXT_PUBLIC_APP_URL: "http://localhost:3000",
+      DATABASE_URL: "postgresql://test:test@localhost:5432/test",
+      AUTH_SECRET: "test-secret-that-is-at-least-32-characters",
+      AUTH_URL: "http://localhost:3000",
+      RESEND_API_KEY: "",
+      RATE_LIMIT_SECRET: "",
+      OPENAI_API_KEY: "",
+    });
+
+    expect(env.RESEND_API_KEY).toBeUndefined();
+    expect(env.RATE_LIMIT_SECRET).toBeUndefined();
+    expect(env.OPENAI_API_KEY).toBeUndefined();
+  });
+
+  it("still requires a key when a blank secret's feature is enabled", () => {
+    expect(() =>
+      parseServerEnv({
+        NODE_ENV: "development",
+        NEXT_PUBLIC_APP_URL: "http://localhost:3000",
+        DATABASE_URL: "postgresql://test:test@localhost:5432/test",
+        AUTH_SECRET: "test-secret-that-is-at-least-32-characters",
+        AUTH_URL: "http://localhost:3000",
+        EMAIL_PROVIDER: "RESEND",
+        RESEND_API_KEY: "",
+      }),
+    ).toThrow(/RESEND_API_KEY is required/);
+    expect(() =>
+      parseServerEnv({
+        NODE_ENV: "development",
+        NEXT_PUBLIC_APP_URL: "http://localhost:3000",
+        DATABASE_URL: "postgresql://test:test@localhost:5432/test",
+        AUTH_SECRET: "test-secret-that-is-at-least-32-characters",
+        AUTH_URL: "http://localhost:3000",
+        AI_REAL_GENERATION_ENABLED: "true",
+        OPENAI_API_KEY: "",
+      }),
+    ).toThrow(/OPENAI_API_KEY is required/);
+  });
+
   it("rejects invalid public URLs", () => {
     expect(() =>
       parseClientEnv({ NEXT_PUBLIC_APP_URL: "not-a-url" }),

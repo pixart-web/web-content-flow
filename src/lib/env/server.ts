@@ -12,6 +12,12 @@ const enabledFromEnv = z
   .transform((value) => value === "true");
 const integerFromEnv = (minimum: number, maximum: number, fallback: number) =>
   z.coerce.number().int().min(minimum).max(maximum).default(fallback);
+// Blank values such as `OPENAI_API_KEY=` in .env.example mean "not set".
+const optionalSecretFromEnv = (minimum: number) =>
+  z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.string().min(minimum).optional(),
+  );
 
 export const serverEnvSchema = z
   .object({
@@ -38,18 +44,18 @@ export const serverEnvSchema = z
     MARKETING_INDEXING_ENABLED: booleanFromEnv,
     MARKETING_CAPTURE_MODE: booleanFromEnv,
     EMAIL_PROVIDER: z.enum(["MOCK", "RESEND"]).default("MOCK"),
-    RESEND_API_KEY: z.string().min(20).optional(),
+    RESEND_API_KEY: optionalSecretFromEnv(20),
     EMAIL_FROM: z.string().email().default("noreply@webcontentflow.local"),
     SUPPORT_EMAIL: z.string().email().default("support@webcontentflow.local"),
     LEGAL_TERMS_VERSION: z.string().min(1).max(40).default("draft-2026-07"),
     LEGAL_PRIVACY_VERSION: z.string().min(1).max(40).default("draft-2026-07"),
     EXPORT_RETENTION_HOURS: integerFromEnv(1, 168, 24),
     EXPORT_MAX_BYTES: integerFromEnv(10_000, 20_000_000, 2_000_000),
-    RATE_LIMIT_SECRET: z.string().min(32).optional(),
+    RATE_LIMIT_SECRET: optionalSecretFromEnv(32),
     AI_PROVIDER_DEFAULT: z.enum(["MOCK", "OPENAI"]).default("MOCK"),
     AI_REAL_GENERATION_ENABLED: booleanFromEnv,
     AI_FAKE_OPENAI_ENABLED: booleanFromEnv,
-    OPENAI_API_KEY: z.string().min(20).optional(),
+    OPENAI_API_KEY: optionalSecretFromEnv(20),
     OPENAI_MODEL_STANDARD: z.string().min(2).max(100).default("gpt-5.6-terra"),
     OPENAI_MODEL_PREMIUM: z.string().min(2).max(100).default("gpt-5.6-sol"),
     OPENAI_MODEL_REPAIR: z.string().min(2).max(100).default("gpt-5.6-luna"),

@@ -55,3 +55,10 @@ export function calculateUsageCost(input: {
       million;
   return { amountMinorUnits: cost, currency: price.currency };
 }
+
+export function calculateTrackedUsageCost(
+  costTrackingEnabled: boolean,
+  input: Parameters<typeof calculateUsageCost>[0],
+) {
+  return costTrackingEnabled ? calculateUsageCost(input) : null;
+}

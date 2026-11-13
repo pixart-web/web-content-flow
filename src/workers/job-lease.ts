@@ -1,5 +1,5 @@
 import type { PrismaClient } from "@/generated/prisma/client";
-import type { ServerEnv } from "@/lib/env/server";
+import { getServerEnv, type ServerEnv } from "@/lib/env/server";
 
 export type JobLease = Readonly<{
   jobId: string;
@@ -94,6 +94,16 @@ const retryableProviderErrors = new Set([
   "PROVIDER_SERVER_ERROR",
 ]);
 
+// Automatic retries stop at whichever is lower: the job's own maxAttempts or
+// AI_MAX_RETRIES + 1 total attempts. Manual retries still use maxAttempts.
+export function automaticRetryAllowed(input: {
+  attempt: number;
+  maxAttempts: number;
+  maxRetries: number;
+}) {
+  return input.attempt < Math.min(input.maxAttempts, input.maxRetries + 1);
+}
+
 export function retryDelayMs(attempt: number, retryAfterMs?: number) {
   const schedule = [5_000, 15_000, 45_000, 120_000] as const;
   const base =
@@ -142,7 +152,13 @@ export function createLeaseFencedPrisma(
                   safeErrorDetails: true,
                 },
               });
-              if (current.attempt < current.maxAttempts) {
+              if (
+                automaticRetryAllowed({
+                  attempt: current.attempt,
+                  maxAttempts: current.maxAttempts,
+                  maxRetries: getServerEnv().AI_MAX_RETRIES,
+                })
+              ) {
                 const details =
                   typeof current.safeErrorDetails === "object" &&
                   current.safeErrorDetails !== null &&

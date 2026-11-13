@@ -4,7 +4,7 @@ import { createHash } from "node:crypto";
 
 import type { PrismaClient } from "@/generated/prisma/client";
 import { getServerEnv } from "@/lib/env/server";
-import { calculateUsageCost } from "@/server/ai/pricing";
+import { calculateTrackedUsageCost } from "@/server/ai/pricing";
 import type {
   GenerationModelTier,
   GenerationProvider,
@@ -134,12 +134,15 @@ export async function recordGenerationUsage(
     where: { id: input.jobId },
     include: { project: true },
   });
-  const cost = calculateUsageCost({
-    provider: input.provider,
-    modelId: input.modelId,
-    generatedAt: new Date(),
-    usage: input.usage,
-  });
+  const cost = calculateTrackedUsageCost(
+    getServerEnv().AI_COST_TRACKING_ENABLED,
+    {
+      provider: input.provider,
+      modelId: input.modelId,
+      generatedAt: new Date(),
+      usage: input.usage,
+    },
+  );
   return prisma.generationUsage.upsert({
     where: {
       generationJobId_attemptNumber_repair: {

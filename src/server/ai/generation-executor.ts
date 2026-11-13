@@ -15,6 +15,7 @@ import {
   routeColumns,
   type GatewayRoute,
 } from "@/server/ai/gateway/gateway";
+import { logAiEvent } from "@/server/ai/gateway/ai-events";
 import { resolveTaskPolicy } from "@/server/ai/gateway/task-policy";
 import { debugResolvedPrompt } from "@/server/ai/prompt-debug";
 import {
@@ -23,6 +24,25 @@ import {
   reserveUsage,
 } from "@/server/ai/usage-service";
 import { getPrompt, loadPromptCatalog } from "@/ai/prompts/registry";
+
+function logRequestFailure(
+  error: unknown,
+  facts: {
+    jobId: string;
+    runtimeKey: string;
+    modelRef: string;
+    purpose: GenerationPurpose;
+    repair: boolean;
+    latencyMs: number;
+  },
+) {
+  logAiEvent({
+    ...facts,
+    event: "ai.request.failed",
+    errorCode: error instanceof ProviderError ? error.code : "UNKNOWN",
+    retryable: error instanceof ProviderError && error.retryable,
+  });
+}
 
 function throwIfCancelled(signal: AbortSignal | undefined) {
   if (signal?.aborted)
@@ -162,7 +182,7 @@ export async function generateProductionSnapshot<TOutput>(
   const env = getServerEnv();
   const gateway = createAiGateway(env);
   const policy = resolveTaskPolicy(prompt);
-  const route = gateway.selectRoute({ policy, tier });
+  const route = gateway.selectRoute({ policy, tier, jobId: job.id });
   const provider = gateway.runtimeFor(route);
   const modelId = route.modelId;
   const estimatedInput = Math.ceil(JSON.stringify(promptInput.data).length / 4);
@@ -253,6 +273,17 @@ export async function generateProductionSnapshot<TOutput>(
       job.id,
       result.usage.totalTokens ?? null,
     );
+    logAiEvent({
+      event: "ai.request.completed",
+      jobId: job.id,
+      runtimeKey: route.runtimeKey,
+      modelRef: route.modelRef,
+      purpose: input.purpose,
+      repair: false,
+      latencyMs: performance.now() - startedAt,
+      totalTokens: result.usage.totalTokens ?? null,
+      usageSource: result.usage.usageSource,
+    });
     return finishRealSnapshot({
       schema: input.schema,
       candidate: input.candidate,
@@ -267,13 +298,25 @@ export async function generateProductionSnapshot<TOutput>(
       usageId: usage.id,
     });
   } catch (error: unknown) {
+    logRequestFailure(error, {
+      jobId: job.id,
+      runtimeKey: route.runtimeKey,
+      modelRef: route.modelRef,
+      purpose: input.purpose,
+      repair: false,
+      latencyMs: performance.now() - startedAt,
+    });
     if (
       error instanceof ProviderError &&
       error.code === "SCHEMA_VALIDATION_FAILED" &&
       prompt.repairPolicy === "STRUCTURE_ONCE"
     ) {
       const repairTier = "REPAIR" as const;
-      const repairRoute = gateway.selectRoute({ policy, tier: repairTier });
+      const repairRoute = gateway.selectRoute({
+        policy,
+        tier: repairTier,
+        jobId: job.id,
+      });
       const repairSelection = {
         provider: gateway.runtimeFor(repairRoute),
         modelId: repairRoute.modelId,
@@ -299,9 +342,9 @@ export async function generateProductionSnapshot<TOutput>(
           providerAttemptCount: { increment: 1 },
         },
       });
+      const repairStartedAt = performance.now();
       try {
         throwIfCancelled(signal);
-        const repairStartedAt = performance.now();
         const repaired = await repairSelection.provider.generateStructured(
           {
             input: env.AI_FAKE_OPENAI_ENABLED
@@ -354,6 +397,17 @@ export async function generateProductionSnapshot<TOutput>(
           job.id,
           repaired.usage.totalTokens ?? null,
         );
+        logAiEvent({
+          event: "ai.request.completed",
+          jobId: job.id,
+          runtimeKey: repairRoute.runtimeKey,
+          modelRef: repairRoute.modelRef,
+          purpose: "STRUCTURAL_REPAIR",
+          repair: true,
+          latencyMs: performance.now() - repairStartedAt,
+          totalTokens: repaired.usage.totalTokens ?? null,
+          usageSource: repaired.usage.usageSource,
+        });
         return finishRealSnapshot({
           schema: input.schema,
           candidate: input.candidate,
@@ -368,6 +422,14 @@ export async function generateProductionSnapshot<TOutput>(
           usageId: repairUsage.id,
         });
       } catch (repairError: unknown) {
+        logRequestFailure(repairError, {
+          jobId: job.id,
+          runtimeKey: repairRoute.runtimeKey,
+          modelRef: repairRoute.modelRef,
+          purpose: "STRUCTURAL_REPAIR",
+          repair: true,
+          latencyMs: performance.now() - repairStartedAt,
+        });
         await reconcileUsageReservation(prisma, job.id, null);
         await prisma.generationJob.update({
           where: { id: job.id },

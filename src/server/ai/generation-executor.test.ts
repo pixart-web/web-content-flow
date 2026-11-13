@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 
 import type { PrismaClient } from "@/generated/prisma/client";
@@ -49,13 +49,14 @@ vi.mock("@/ai/prompts/registry", () => ({
     maximumInputTokens: 120_000,
     maximumOutputTokens: 12_000,
     repairPolicy: "NONE",
-    systemInstructions: "test",
-    buildUserMessage: () => "{}",
+    systemInstructions: "SENTINEL-SYSTEM-INSTRUCTIONS",
+    buildUserMessage: () => "SENTINEL-USER-PROMPT",
     safetyNotes: [],
   }),
 }));
 
 const { generateProductionSnapshot } = await import("./generation-executor");
+const { ProviderError } = await import("./ai-provider");
 const { runWithGenerationSignal } = await import("./generation-signal");
 
 const Output = z.object({ value: z.string() });
@@ -176,6 +177,101 @@ describe("generateProductionSnapshot cancellation", () => {
       });
       expect(reserveUsage).not.toHaveBeenCalled();
       expect(generateStructured).not.toHaveBeenCalled();
+    } finally {
+      env.AI_REAL_GENERATION_ENABLED = true;
+    }
+  });
+});
+
+describe("AI events (B-08)", () => {
+  const lines: string[] = [];
+  beforeEach(() => {
+    lines.length = 0;
+    generateStructured.mockReset();
+    reserveUsage.mockReset();
+    const capture = (line: unknown) => {
+      lines.push(String(line));
+    };
+    vi.spyOn(console, "info").mockImplementation(capture);
+    vi.spyOn(console, "warn").mockImplementation(capture);
+  });
+  afterEach(() => vi.restoreAllMocks());
+
+  const events = () =>
+    lines.map((line) => JSON.parse(line) as Record<string, unknown>);
+  const assertNoContent = () => {
+    for (const line of lines)
+      for (const sentinel of [
+        "SENTINEL-USER-PROMPT",
+        "SENTINEL-SYSTEM-INSTRUCTIONS",
+        "SENTINEL-OUTPUT",
+        "candidate",
+      ])
+        expect(line).not.toContain(sentinel);
+  };
+
+  it("logs the route and the completed request without content", async () => {
+    generateStructured.mockResolvedValue({
+      data: { value: "SENTINEL-OUTPUT" },
+      provider: "OPENAI",
+      model: "gpt-test",
+      modelTier: "STANDARD",
+      mock: false,
+      finishState: "COMPLETED",
+      usage: { totalTokens: 42, usageSource: "PROVIDER_REPORTED" },
+    });
+    await generateProductionSnapshot(prisma, input);
+    expect(events()).toEqual([
+      expect.objectContaining({
+        event: "ai.route.selected",
+        jobId: "job_1",
+        taskKey: "copy.test",
+        modelRef: "openai/gpt-test",
+        policy: "default@1.0.0",
+        fallbackUsed: false,
+      }),
+      expect.objectContaining({
+        event: "ai.request.completed",
+        jobId: "job_1",
+        modelRef: "openai/gpt-test",
+        totalTokens: 42,
+        repair: false,
+      }),
+    ]);
+    assertNoContent();
+  });
+
+  it("logs a classified failure", async () => {
+    generateStructured.mockImplementation(async () => {
+      throw new ProviderError("TIMEOUT", true, "Synthetic timeout.");
+    });
+    await expect(generateProductionSnapshot(prisma, input)).rejects.toThrow();
+    expect(events().at(-1)).toMatchObject({
+      event: "ai.request.failed",
+      errorCode: "TIMEOUT",
+      retryable: true,
+      modelRef: "openai/gpt-test",
+    });
+    assertNoContent();
+  });
+
+  it("logs why no route was available", async () => {
+    env.AI_REAL_GENERATION_ENABLED = false;
+    try {
+      await expect(generateProductionSnapshot(prisma, input)).rejects.toThrow();
+      expect(events()).toEqual([
+        expect.objectContaining({
+          event: "ai.route.unavailable",
+          errorCode: "CONFIGURATION_ERROR",
+          exclusions: [
+            {
+              runtimeKey: "openai",
+              modelRef: "openai/gpt-test",
+              reason: "runtime_not_configured",
+            },
+          ],
+        }),
+      ]);
     } finally {
       env.AI_REAL_GENERATION_ENABLED = true;
     }

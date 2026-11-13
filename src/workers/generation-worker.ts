@@ -61,6 +61,11 @@ export async function leaseNextJob(
 ): Promise<LeaseRow | null> {
   const env = getServerEnv();
   const maximumActiveProjectJobs = env.AI_MAX_ACTIVE_PROJECT_JOBS;
+  // B-07: caps in-flight real-provider work across all workers. The runtime
+  // is chosen when the executor routes the job (after leasing), so with one
+  // real runtime this is the per-runtime cap; a per-runtime split needs
+  // routing at enqueue time once a second real runtime exists.
+  const maximumConcurrentRealJobs = env.AI_MAX_CONCURRENT_REQUESTS;
   const leaseToken = randomUUID();
   const durationMs = leaseDurationMs(env);
   const rows = await prisma.$queryRaw<LeaseRow[]>`
@@ -73,12 +78,20 @@ export async function leaseNextJob(
         AND (
           mode = 'MOCK'
           OR (
-            SELECT COUNT(*)
-            FROM "GenerationJob" active
-            WHERE active."projectId" = "GenerationJob"."projectId"
-              AND active.mode = 'REAL'
-              AND active.status IN ('RUNNING', 'VALIDATING', 'SAVING')
-          ) < ${maximumActiveProjectJobs}
+            (
+              SELECT COUNT(*)
+              FROM "GenerationJob" active
+              WHERE active."projectId" = "GenerationJob"."projectId"
+                AND active.mode = 'REAL'
+                AND active.status IN ('RUNNING', 'VALIDATING', 'SAVING')
+            ) < ${maximumActiveProjectJobs}
+            AND (
+              SELECT COUNT(*)
+              FROM "GenerationJob" active
+              WHERE active.mode = 'REAL'
+                AND active.status IN ('RUNNING', 'VALIDATING', 'SAVING')
+            ) < ${maximumConcurrentRealJobs}
+          )
         )
       ORDER BY "availableAt" ASC, "createdAt" ASC
       FOR UPDATE SKIP LOCKED

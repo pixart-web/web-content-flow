@@ -170,6 +170,74 @@ afterAll(async () => {
   await prisma.$disconnect();
 });
 
+describe("real-provider concurrency (B-07)", () => {
+  it("caps in-flight REAL jobs across projects but never blocks MOCK jobs", async () => {
+    const deferredUntil = new Date(Date.now() + 3_600_000);
+    await prisma.generationJob.updateMany({
+      where: { status: "QUEUED" },
+      data: { availableAt: deferredUntil },
+    });
+    const previous = process.env.AI_MAX_CONCURRENT_REQUESTS;
+    process.env.AI_MAX_CONCURRENT_REQUESTS = "1";
+    const projects = await Promise.all(
+      ["concurrency-a", "concurrency-b"].map((id) =>
+        prisma.project.create({
+          data: {
+            id,
+            userId: "phase2-owner",
+            name: id,
+            brandName: "UrbanStride",
+            type: "E-commerce",
+          },
+        }),
+      ),
+    );
+    const job = (projectId: string, key: string, extra: object) =>
+      prisma.generationJob.create({
+        data: {
+          projectId,
+          scopeType: "BRAND_PROFILE",
+          module: "BRAND_PROFILE",
+          availableAt: new Date(0),
+          idempotencyKey: key,
+          request: {},
+          ...extra,
+        },
+      });
+    try {
+      await job(projects[0]!.id, "running-real", {
+        status: "RUNNING",
+        mode: "REAL",
+      });
+      const queuedReal = await job(projects[1]!.id, "queued-real", {
+        status: "QUEUED",
+        mode: "REAL",
+      });
+      const queuedMock = await job(projects[1]!.id, "queued-mock", {
+        status: "QUEUED",
+        mode: "MOCK",
+      });
+      const { leaseNextJob } =
+        await import("../../src/workers/generation-worker");
+      // The REAL job in another project is held back; the MOCK job is not.
+      expect((await leaseNextJob(prisma, "worker-a"))?.id).toBe(queuedMock.id);
+      expect(await leaseNextJob(prisma, "worker-a")).toBeNull();
+      process.env.AI_MAX_CONCURRENT_REQUESTS = "2";
+      expect((await leaseNextJob(prisma, "worker-a"))?.id).toBe(queuedReal.id);
+    } finally {
+      if (previous === undefined) delete process.env.AI_MAX_CONCURRENT_REQUESTS;
+      else process.env.AI_MAX_CONCURRENT_REQUESTS = previous;
+      await prisma.project.deleteMany({
+        where: { id: { in: projects.map((project) => project.id) } },
+      });
+      await prisma.generationJob.updateMany({
+        where: { status: "QUEUED", availableAt: deferredUntil },
+        data: { availableAt: new Date() },
+      });
+    }
+  });
+});
+
 describe("renewable fenced leases", () => {
   it("allows only one acquisition and rejects the old owner", async () => {
     const deferredUntil = new Date(Date.now() + 3_600_000);

@@ -1,3 +1,4 @@
 import { resolveDestructiveTestDatabaseUrl } from "@/test/test-database-url";
 
-process.env.DATABASE_URL = resolveDestructiveTestDatabaseUrl(process.env);
+const testDatabaseUrl = resolveDestructiveTestDatabaseUrl(process.env);
+process.env.DATABASE_URL = testDatabaseUrl;

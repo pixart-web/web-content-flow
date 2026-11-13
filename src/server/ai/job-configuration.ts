@@ -15,10 +15,15 @@ export function getNewJobGenerationConfiguration(input: {
     | "VARIANT_REGENERATION"
     | "CALENDAR_PERIOD_REGENERATION"
     | "CALENDAR_ENTRY_REGENERATION";
+  // Internal proof content (ADR-018) is deterministic by design and must never
+  // be labelled as real generation.
+  forceMock?: boolean;
 }) {
   const env = getServerEnv();
   const real =
-    env.AI_REAL_GENERATION_ENABLED && env.AI_PROVIDER_DEFAULT === "OPENAI";
+    !input.forceMock &&
+    env.AI_REAL_GENERATION_ENABLED &&
+    env.AI_PROVIDER_DEFAULT === "OPENAI";
   return {
     mode: real ? ("REAL" as const) : ("MOCK" as const),
     provider: real ? ("OPENAI" as const) : ("MOCK" as const),

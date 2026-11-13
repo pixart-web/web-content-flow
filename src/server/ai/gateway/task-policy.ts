@@ -21,7 +21,7 @@ export const TaskPolicySchema = z
     policyKey: z.string().min(1),
     policyVersion: z.string().regex(/^\d+\.\d+\.\d+$/),
     privacy: z.enum(privacyLevels),
-    requiredCapabilities: z.array(z.enum(["structured"])),
+    requiredCapabilities: z.array(z.enum(["structured", "embeddings"])),
     // Runtimes tried in order for real generation.
     preferredRuntimes: z.array(z.string().min(1)).min(1),
     externalFallback: z

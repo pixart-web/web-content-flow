@@ -10,7 +10,11 @@ import {
   type GenerationPurpose,
 } from "@/server/ai/ai-provider";
 import { currentGenerationSignal } from "@/server/ai/generation-signal";
-import { createAiGateway } from "@/server/ai/gateway/gateway";
+import {
+  createAiGateway,
+  routeColumns,
+  type GatewayRoute,
+} from "@/server/ai/gateway/gateway";
 import { resolveTaskPolicy } from "@/server/ai/gateway/task-policy";
 import { debugResolvedPrompt } from "@/server/ai/prompt-debug";
 import {
@@ -23,6 +27,66 @@ import { getPrompt, loadPromptCatalog } from "@/ai/prompts/registry";
 function throwIfCancelled(signal: AbortSignal | undefined) {
   if (signal?.aborted)
     throw new ProviderError("CANCELLED", false, "Generation was cancelled.");
+}
+
+type RealProvenance = {
+  generationMode: "REAL";
+  providerName: "MOCK" | "OPENAI";
+  model: string;
+  modelTier: GenerationModelTier;
+  promptKey: string;
+  promptVersion: string;
+  generationPurpose: GenerationPurpose;
+  repairAttempted: boolean;
+  usageRecordIds: string[];
+};
+
+// One place that turns validated provider output into the stored snapshot.
+// When the module snapshot embeds provenance, the application-owned fields
+// replace whatever the model returned (provenance never comes from the model).
+function finishRealSnapshot<TOutput>(input: {
+  schema: z.ZodType<TOutput>;
+  candidate: TOutput;
+  data: TOutput;
+  route: GatewayRoute;
+  model: string;
+  modelTier: GenerationModelTier;
+  promptKey: string;
+  promptVersion: string;
+  purpose: GenerationPurpose;
+  repairAttempted: boolean;
+  usageId: string;
+}): { snapshot: TOutput; provenance: RealProvenance } {
+  const asRecord = (value: unknown) =>
+    typeof value === "object" && value !== null
+      ? (value as Record<string, unknown>)
+      : null;
+  const resultRecord = asRecord(input.data);
+  const candidateProvenance = asRecord(asRecord(input.candidate)?.provenance);
+  const provenance: RealProvenance = {
+    generationMode: "REAL",
+    providerName: input.route.persistedProvider,
+    model: input.model,
+    modelTier: input.modelTier,
+    promptKey: input.promptKey,
+    promptVersion: input.promptVersion,
+    generationPurpose: input.purpose,
+    repairAttempted: input.repairAttempted,
+    usageRecordIds: [input.usageId],
+  };
+  const normalized =
+    resultRecord && candidateProvenance
+      ? {
+          ...resultRecord,
+          provenance: {
+            ...candidateProvenance,
+            ...provenance,
+            provider: input.route.runtimeKey,
+            mock: false,
+          },
+        }
+      : input.data;
+  return { snapshot: input.schema.parse(normalized), provenance };
 }
 
 export async function generateProductionSnapshot<TOutput>(
@@ -130,6 +194,7 @@ export async function generateProductionSnapshot<TOutput>(
       promptVersion: input.promptVersion,
       generationPurpose: input.purpose,
       providerAttemptCount: { increment: 1 },
+      ...routeColumns(route),
     },
   });
   const userMessage = prompt.buildUserMessage(promptInput.data);
@@ -142,6 +207,7 @@ export async function generateProductionSnapshot<TOutput>(
     systemInstructions: prompt.systemInstructions,
     userMessage,
   });
+  const startedAt = performance.now();
   try {
     const result = await provider.generateStructured(
       {
@@ -176,6 +242,8 @@ export async function generateProductionSnapshot<TOutput>(
       attemptNumber: job.providerAttemptCount + 1,
       repair: false,
       usage: result.usage,
+      route: routeColumns(route),
+      latencyMs: performance.now() - startedAt,
       ...(result.providerRequestId
         ? { providerRequestId: result.providerRequestId }
         : {}),
@@ -185,54 +253,19 @@ export async function generateProductionSnapshot<TOutput>(
       job.id,
       result.usage.totalTokens ?? null,
     );
-    const candidateRecord =
-      typeof input.candidate === "object" && input.candidate !== null
-        ? (input.candidate as Record<string, unknown>)
-        : null;
-    const resultRecord =
-      typeof result.data === "object" && result.data !== null
-        ? (result.data as Record<string, unknown>)
-        : null;
-    const candidateProvenance =
-      candidateRecord &&
-      typeof candidateRecord.provenance === "object" &&
-      candidateRecord.provenance !== null
-        ? (candidateRecord.provenance as Record<string, unknown>)
-        : null;
-    const normalized =
-      resultRecord && candidateProvenance
-        ? {
-            ...resultRecord,
-            provenance: {
-              ...candidateProvenance,
-              provider: route.runtimeKey,
-              model: result.model,
-              promptVersion: input.promptVersion,
-              mock: false,
-              generationMode: "REAL",
-              providerName: route.persistedProvider,
-              modelTier: result.modelTier,
-              promptKey: input.promptKey,
-              generationPurpose: input.purpose,
-              repairAttempted: false,
-              usageRecordIds: [usage.id],
-            },
-          }
-        : result.data;
-    return {
-      snapshot: input.schema.parse(normalized),
-      provenance: {
-        generationMode: "REAL",
-        providerName: route.persistedProvider,
-        model: result.model,
-        modelTier: result.modelTier,
-        promptKey: input.promptKey,
-        promptVersion: input.promptVersion,
-        generationPurpose: input.purpose,
-        repairAttempted: false,
-        usageRecordIds: [usage.id],
-      },
-    };
+    return finishRealSnapshot({
+      schema: input.schema,
+      candidate: input.candidate,
+      data: result.data,
+      route,
+      model: result.model,
+      modelTier: result.modelTier,
+      promptKey: input.promptKey,
+      promptVersion: input.promptVersion,
+      purpose: input.purpose,
+      repairAttempted: false,
+      usageId: usage.id,
+    });
   } catch (error: unknown) {
     if (
       error instanceof ProviderError &&
@@ -256,6 +289,8 @@ export async function generateProductionSnapshot<TOutput>(
         attemptNumber: job.providerAttemptCount + 1,
         repair: false,
         usage: { usageSource: "UNAVAILABLE" },
+        route: routeColumns(route),
+        latencyMs: performance.now() - startedAt,
       });
       await prisma.generationJob.update({
         where: { id: job.id },
@@ -266,6 +301,7 @@ export async function generateProductionSnapshot<TOutput>(
       });
       try {
         throwIfCancelled(signal);
+        const repairStartedAt = performance.now();
         const repaired = await repairSelection.provider.generateStructured(
           {
             input: env.AI_FAKE_OPENAI_ENABLED
@@ -307,6 +343,8 @@ export async function generateProductionSnapshot<TOutput>(
           attemptNumber: job.providerAttemptCount + 2,
           repair: true,
           usage: repaired.usage,
+          route: routeColumns(repairRoute),
+          latencyMs: performance.now() - repairStartedAt,
           ...(repaired.providerRequestId
             ? { providerRequestId: repaired.providerRequestId }
             : {}),
@@ -316,54 +354,19 @@ export async function generateProductionSnapshot<TOutput>(
           job.id,
           repaired.usage.totalTokens ?? null,
         );
-        const candidateRecord =
-          typeof input.candidate === "object" && input.candidate !== null
-            ? (input.candidate as Record<string, unknown>)
-            : null;
-        const repairedRecord =
-          typeof repaired.data === "object" && repaired.data !== null
-            ? (repaired.data as Record<string, unknown>)
-            : null;
-        const candidateProvenance =
-          candidateRecord &&
-          typeof candidateRecord.provenance === "object" &&
-          candidateRecord.provenance !== null
-            ? (candidateRecord.provenance as Record<string, unknown>)
-            : null;
-        const normalized =
-          repairedRecord && candidateProvenance
-            ? {
-                ...repairedRecord,
-                provenance: {
-                  ...candidateProvenance,
-                  provider: repairRoute.runtimeKey,
-                  model: repaired.model,
-                  promptVersion: input.promptVersion,
-                  mock: false,
-                  generationMode: "REAL",
-                  providerName: repairRoute.persistedProvider,
-                  modelTier: repairTier,
-                  promptKey: input.promptKey,
-                  generationPurpose: input.purpose,
-                  repairAttempted: true,
-                  usageRecordIds: [repairUsage.id],
-                },
-              }
-            : repaired.data;
-        return {
-          snapshot: input.schema.parse(normalized),
-          provenance: {
-            generationMode: "REAL",
-            providerName: repairRoute.persistedProvider,
-            model: repaired.model,
-            modelTier: repairTier,
-            promptKey: input.promptKey,
-            promptVersion: input.promptVersion,
-            generationPurpose: input.purpose,
-            repairAttempted: true,
-            usageRecordIds: [repairUsage.id],
-          },
-        };
+        return finishRealSnapshot({
+          schema: input.schema,
+          candidate: input.candidate,
+          data: repaired.data,
+          route: repairRoute,
+          model: repaired.model,
+          modelTier: repairTier,
+          promptKey: input.promptKey,
+          promptVersion: input.promptVersion,
+          purpose: input.purpose,
+          repairAttempted: true,
+          usageId: repairUsage.id,
+        });
       } catch (repairError: unknown) {
         await reconcileUsageReservation(prisma, job.id, null);
         await prisma.generationJob.update({

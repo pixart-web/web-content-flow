@@ -54,7 +54,7 @@ export function MarketingHeader() {
             </Link>
           </div>
           <details className="mobile-menu">
-            <summary aria-label="Open navigation">
+            <summary>
               <Menu aria-hidden size={22} />
               Menu
             </summary>

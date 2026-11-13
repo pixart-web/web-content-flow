@@ -59,6 +59,7 @@ export async function queueFoundationCopyGeneration(input: {
         module: "COPY",
         status: "QUEUED",
         ...getNewJobGenerationConfiguration({
+          forceMock: true,
           promptKey: "copy.foundation_copy.generation",
           ...(project.brief ? { briefRevision: project.brief.revision } : {}),
           purpose: "ITEM_GENERATION",
@@ -156,6 +157,7 @@ export async function queueContentRegeneration(input: {
         module: "COPY",
         status: "QUEUED",
         ...getNewJobGenerationConfiguration({
+          forceMock: true,
           promptKey: "copy.foundation_copy.generation",
           ...(project.brief ? { briefRevision: project.brief.revision } : {}),
           purpose: "WHOLE_ITEM_REGENERATION",

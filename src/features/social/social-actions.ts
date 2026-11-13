@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import type { SocialRegenerationTarget } from "@/domain/social/social-schemas";
 import { requireUser } from "@/server/auth/require-user";
+import { checkGenerationRateLimit } from "@/server/security/generation-rate-limit";
 import {
   configureSocialModule,
   queueSocialGeneration,
@@ -27,6 +28,8 @@ export async function configureSocialAction(
 
 export async function generateSocialAction(projectId: string) {
   const user = await requireUser(`/app/projects/${projectId}/content/social`);
+  const limited = await checkGenerationRateLimit(user.id);
+  if (limited) return limited;
   const result = await queueSocialGeneration({ userId: user.id, projectId });
   if (result.ok) {
     revalidatePath(`/app/projects/${projectId}/content/social`);
@@ -44,6 +47,8 @@ export async function regenerateSocialAction(input: {
   const user = await requireUser(
     `/app/projects/${input.projectId}/content/social/${input.itemId}`,
   );
+  const limited = await checkGenerationRateLimit(user.id);
+  if (limited) return limited;
   const result = await queueSocialRegeneration({
     userId: user.id,
     itemId: input.itemId,
@@ -59,6 +64,8 @@ export async function regenerateSocialAction(input: {
 
 export async function retrySocialItemAction(projectId: string, jobId: string) {
   const user = await requireUser(`/app/projects/${projectId}/content/social`);
+  const limited = await checkGenerationRateLimit(user.id);
+  if (limited) return limited;
   const result = await retryFailedSocialItem({ userId: user.id, jobId });
   if (result.ok) revalidatePath(`/app/projects/${projectId}/content/social`);
   return result;

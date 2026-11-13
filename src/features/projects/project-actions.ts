@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { requireUser } from "@/server/auth/require-user";
+import { checkGenerationRateLimit } from "@/server/security/generation-rate-limit";
 import {
   createDraftProject,
   finalizeProject,
@@ -42,6 +43,8 @@ export async function finalizeProjectAction(input: {
   scenario?: "success" | "provider-failure" | "invalid-output" | "timeout";
 }) {
   const user = await requireUser(`/app/projects/new?draft=${input.projectId}`);
+  const limited = await checkGenerationRateLimit(user.id);
+  if (limited) return limited;
   const result = await finalizeProject({ ...input, userId: user.id });
   if (result.ok) {
     revalidatePath(`/app/projects/${input.projectId}`);
@@ -51,6 +54,8 @@ export async function finalizeProjectAction(input: {
 
 export async function retryProfileJobAction(projectId: string) {
   const user = await requireUser(`/app/projects/${projectId}`);
+  const limited = await checkGenerationRateLimit(user.id);
+  if (limited) return { ok: false as const, error: limited.error.message };
   const owned = await createPhase2Repository(getPrisma()).findOwnedProject(
     user.id,
     projectId,
@@ -86,6 +91,8 @@ export async function retryProfileJobAction(projectId: string) {
 
 export async function regenerateProfileAction(projectId: string) {
   const user = await requireUser(`/app/projects/${projectId}/brand-profile`);
+  const limited = await checkGenerationRateLimit(user.id);
+  if (limited) return limited;
   const result = await queueProfileRegeneration({
     userId: user.id,
     projectId,

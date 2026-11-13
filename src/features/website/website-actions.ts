@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { requireUser } from "@/server/auth/require-user";
+import { checkGenerationRateLimit } from "@/server/security/generation-rate-limit";
 import {
   configureWebsiteModule,
   queueWebsiteGeneration,
@@ -26,6 +27,8 @@ export async function configureWebsiteAction(
 
 export async function retryWebsitePageAction(projectId: string, jobId: string) {
   const user = await requireUser(`/app/projects/${projectId}/content/website`);
+  const limited = await checkGenerationRateLimit(user.id);
+  if (limited) return limited;
   const result = await retryFailedWebsitePage({ userId: user.id, jobId });
   if (result.ok) revalidatePath(`/app/projects/${projectId}/content/website`);
   return result;
@@ -33,6 +36,8 @@ export async function retryWebsitePageAction(projectId: string, jobId: string) {
 
 export async function generateWebsiteAction(projectId: string) {
   const user = await requireUser(`/app/projects/${projectId}/content/website`);
+  const limited = await checkGenerationRateLimit(user.id);
+  if (limited) return limited;
   const result = await queueWebsiteGeneration({ userId: user.id, projectId });
   if (result.ok) {
     revalidatePath(`/app/projects/${projectId}/content/website`);
@@ -50,6 +55,8 @@ export async function regenerateWebsitePageAction(input: {
   const user = await requireUser(
     `/app/projects/${input.projectId}/content/website/${input.itemId}`,
   );
+  const limited = await checkGenerationRateLimit(user.id);
+  if (limited) return limited;
   const result = await queueWebsitePageRegeneration({
     userId: user.id,
     itemId: input.itemId,

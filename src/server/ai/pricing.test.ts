@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { calculateUsageCost, registerModelPrice } from "./pricing";
+import {
+  calculateTrackedUsageCost,
+  calculateUsageCost,
+  registerModelPrice,
+} from "./pricing";
 
 describe("AI usage pricing", () => {
   it("calculates integer minor-unit cost from an effective price", () => {
@@ -37,5 +41,32 @@ describe("AI usage pricing", () => {
         usage: { usageSource: "UNAVAILABLE" },
       }),
     ).toBeNull();
+  });
+
+  it("skips cost calculation unless AI_COST_TRACKING_ENABLED is on", () => {
+    registerModelPrice({
+      provider: "OPENAI",
+      modelId: "tracked-model",
+      modelTier: "STANDARD",
+      effectiveFrom: "2026-01-01T00:00:00.000Z",
+      inputCostPerMillionMinorUnits: BigInt(1_000_000),
+      outputCostPerMillionMinorUnits: BigInt(1_000_000),
+      currency: "EUR",
+    });
+    const input = {
+      provider: "OPENAI" as const,
+      modelId: "tracked-model",
+      generatedAt: new Date("2026-06-01T00:00:00.000Z"),
+      usage: {
+        inputTokens: 2,
+        outputTokens: 3,
+        usageSource: "PROVIDER_REPORTED" as const,
+      },
+    };
+    expect(calculateTrackedUsageCost(false, input)).toBeNull();
+    expect(calculateTrackedUsageCost(true, input)).toEqual({
+      amountMinorUnits: BigInt(5),
+      currency: "EUR",
+    });
   });
 });

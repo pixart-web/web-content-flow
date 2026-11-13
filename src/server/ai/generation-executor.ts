@@ -10,6 +10,7 @@ import {
   type GenerationPurpose,
 } from "@/server/ai/ai-provider";
 import { getGenerationProvider } from "@/server/ai/provider-registry";
+import { debugResolvedPrompt } from "@/server/ai/prompt-debug";
 import {
   recordGenerationUsage,
   reconcileUsageReservation,
@@ -121,6 +122,16 @@ export async function generateProductionSnapshot<TOutput>(
       providerAttemptCount: { increment: 1 },
     },
   });
+  const userMessage = prompt.buildUserMessage(promptInput.data);
+  debugResolvedPrompt(env, {
+    jobId: job.id,
+    promptKey: input.promptKey,
+    promptVersion: input.promptVersion,
+    model: modelId,
+    purpose: input.purpose,
+    systemInstructions: prompt.systemInstructions,
+    userMessage,
+  });
   try {
     const result = await provider.generateStructured(
       {
@@ -136,7 +147,7 @@ export async function generateProductionSnapshot<TOutput>(
         schemaVersion: "1.0",
         schemaName: input.promptKey.replaceAll(".", "_"),
         systemInstructions: prompt.systemInstructions,
-        userMessage: prompt.buildUserMessage(promptInput.data),
+        userMessage,
         maximumOutputTokens,
         timeoutMs: env.AI_REQUEST_TIMEOUT_MS,
         ...(input.scenario ? { scenario: input.scenario } : {}),

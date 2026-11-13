@@ -48,6 +48,9 @@ Tamanhos: XS < 0,5 dia · S ≈ 1 dia · M ≈ 2–3 dias · L ≈ 1 semana. **D
 | A-16 | Base de teste separada para os testes de integração e worker (`TEST_DATABASE_URL`) | S | — | Correr os testes não apaga os dados de desenvolvimento |
 | A-17 | Smoke da geração real (OpenAI) no staging, num projeto sintético, com limite de custo | S | A-05, B-03 | Um job por módulo completa; uso e custo registados |
 | A-18 | Ensaio de rollback e de incidente | S | A-05 | Registo em `docs/operations/11-rollback-rehearsal.md` |
+| A-19 | Regeneração de itens em Ads, Social, Video e Website cria jobs sem `getNewJobGenerationConfiguration`, por isso fica sempre em mock mesmo com IA real ligada (achado de 2026-11-13) | S | — | Teste por módulo: com geração real ativa, o job de regeneração nasce `REAL` com o modelo do tier |
+| A-20 | `content-item-handler` (Foundation Copy) marca o job como `REAL` mas nunca chama o executor de IA (achado de 2026-11-13) | S | — | Teste: um job REAL de Foundation Copy regista uma tentativa no provider e uso |
+| A-21 | `pnpm worker` falha localmente sem `NODE_ENV` (o Next define-o, o `tsx` não) | XS | — | `pnpm worker` arranca ao lado de `pnpm dev` só com o `.env` |
 
 ### Fase B — Fundação do gateway (sem mudança de comportamento)
 

@@ -8,19 +8,27 @@ vi.mock("server-only", () => ({}));
 const generateStructured = vi.fn();
 const reserveUsage = vi.fn();
 
-vi.mock("@/lib/env/server", () => ({
-  getServerEnv: () => ({
-    AI_FAKE_OPENAI_ENABLED: false,
-    AI_MAX_REQUEST_INPUT_TOKENS: 120_000,
-    AI_MAX_REQUEST_OUTPUT_TOKENS: 12_000,
-    AI_REQUEST_TIMEOUT_MS: 60_000,
-  }),
-}));
-vi.mock("@/server/ai/provider-registry", () => ({
-  getGenerationProvider: () => ({
-    provider: { name: "OPENAI", generateStructured },
-    modelId: "gpt-test",
-  }),
+const env = {
+  NODE_ENV: "test",
+  AI_REAL_GENERATION_ENABLED: true,
+  AI_FAKE_OPENAI_ENABLED: false,
+  OPENAI_API_KEY: "test-key-not-a-real-secret",
+  OPENAI_MODEL_STANDARD: "gpt-test",
+  OPENAI_MODEL_PREMIUM: "gpt-test-premium",
+  OPENAI_MODEL_REPAIR: "gpt-test-repair",
+  AI_PROMPT_DEBUG_ENABLED: false,
+  AI_MAX_REQUEST_INPUT_TOKENS: 120_000,
+  AI_MAX_REQUEST_OUTPUT_TOKENS: 12_000,
+  AI_REQUEST_TIMEOUT_MS: 60_000,
+};
+
+vi.mock("@/lib/env/server", () => ({ getServerEnv: () => env }));
+// The real gateway and router run; only the network adapter is replaced.
+vi.mock("@/server/ai/providers/openai-provider", () => ({
+  OpenAIProvider: class {
+    readonly name = "OPENAI";
+    generateStructured = generateStructured;
+  },
 }));
 vi.mock("@/server/ai/usage-service", () => ({
   reserveUsage: (...args: unknown[]) => reserveUsage(...args),
@@ -30,6 +38,7 @@ vi.mock("@/server/ai/usage-service", () => ({
 vi.mock("@/ai/prompts/registry", () => ({
   loadPromptCatalog: vi.fn(async () => []),
   getPrompt: () => ({
+    key: "copy.test",
     module: "COPY",
     modelTier: "STANDARD",
     inputSchema: z.unknown(),
@@ -106,5 +115,48 @@ describe("generateProductionSnapshot cancellation", () => {
     ).rejects.toMatchObject({ code: "CANCELLED", retryable: false });
     expect(reserveUsage).not.toHaveBeenCalled();
     expect(generateStructured).not.toHaveBeenCalled();
+  });
+
+  it("persists the gateway route's model and provider", async () => {
+    generateStructured.mockResolvedValue({
+      data: { value: "real" },
+      provider: "OPENAI",
+      model: "gpt-test",
+      modelTier: "STANDARD",
+      mock: false,
+      finishState: "COMPLETED",
+      usage: { totalTokens: 10, usageSource: "PROVIDER_REPORTED" },
+    });
+    const update = vi.mocked(prisma.generationJob.update);
+    update.mockClear();
+    const result = await generateProductionSnapshot(prisma, input);
+    expect(generateStructured.mock.calls[0]?.[0]).toMatchObject({
+      model: "gpt-test",
+      modelTier: "STANDARD",
+    });
+    expect(update.mock.calls[0]?.[0]).toMatchObject({
+      data: { provider: "OPENAI", modelId: "gpt-test", modelTier: "STANDARD" },
+    });
+    expect(result.provenance).toMatchObject({
+      generationMode: "REAL",
+      providerName: "OPENAI",
+      model: "gpt-test",
+    });
+  });
+
+  it("fails as a non-retryable configuration error when real generation is off", async () => {
+    env.AI_REAL_GENERATION_ENABLED = false;
+    try {
+      await expect(
+        generateProductionSnapshot(prisma, input),
+      ).rejects.toMatchObject({
+        code: "CONFIGURATION_ERROR",
+        retryable: false,
+      });
+      expect(reserveUsage).not.toHaveBeenCalled();
+      expect(generateStructured).not.toHaveBeenCalled();
+    } finally {
+      env.AI_REAL_GENERATION_ENABLED = true;
+    }
   });
 });

@@ -116,6 +116,7 @@ Legenda: **Completo** = implementado e com testes; **Parcial** = implementado co
 | Provenance e imutabilidade | Bom | As versões guardam o provider, o modelo, o prompt e versão, o propósito, a reparação e os registos de uso. |
 | Cancelamento | Parcial | Quando o worker perde a lease, as escritas são bloqueadas pelo fencing, mas **a chamada ao provider não é abortada** (o `signal` não é passado). Uma chamada real continua a consumir tokens até ao timeout. |
 | Configuração sem efeito | Dívida | `AI_MAX_CONCURRENT_REQUESTS`, `AI_MAX_RETRIES`, `AI_COST_TRACKING_ENABLED` e `AI_PROMPT_DEBUG_ENABLED` são validadas mas **não são lidas por nenhum código**. |
+| Geração real parcial | Defeito | Verificado em 2026-11-13 com o transporte OpenAI falso: a regeneração em Ads, Social, Video e Website cria jobs sempre em mock, e a Foundation Copy marca o job como REAL sem chamar o provider (backlog A-19, A-20). A geração inicial dos módulos e a General Copy usam o caminho real corretamente. |
 | Repositório público | Risco a confirmar | Docs internos, legais e de auditoria estão visíveis publicamente. Confirmar se é intencional. |
 
 ## 7. Camada de IA atual

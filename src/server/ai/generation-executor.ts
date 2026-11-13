@@ -10,7 +10,8 @@ import {
   type GenerationPurpose,
 } from "@/server/ai/ai-provider";
 import { currentGenerationSignal } from "@/server/ai/generation-signal";
-import { getGenerationProvider } from "@/server/ai/provider-registry";
+import { createAiGateway } from "@/server/ai/gateway/gateway";
+import { resolveTaskPolicy } from "@/server/ai/gateway/task-policy";
 import { debugResolvedPrompt } from "@/server/ai/prompt-debug";
 import {
   recordGenerationUsage,
@@ -95,10 +96,11 @@ export async function generateProductionSnapshot<TOutput>(
   const signal = currentGenerationSignal();
   throwIfCancelled(signal);
   const env = getServerEnv();
-  const { provider, modelId } = getGenerationProvider({
-    provider: "OPENAI",
-    modelTier: tier,
-  });
+  const gateway = createAiGateway(env);
+  const policy = resolveTaskPolicy(prompt);
+  const route = gateway.selectRoute({ policy, tier });
+  const provider = gateway.runtimeFor(route);
+  const modelId = route.modelId;
   const estimatedInput = Math.ceil(JSON.stringify(promptInput.data).length / 4);
   const maximumInputTokens = Math.min(
     prompt.maximumInputTokens,
@@ -121,7 +123,7 @@ export async function generateProductionSnapshot<TOutput>(
   await prisma.generationJob.update({
     where: { id: job.id },
     data: {
-      provider: "OPENAI",
+      provider: route.persistedProvider,
       modelId,
       modelTier: tier,
       promptKey: input.promptKey,
@@ -203,12 +205,12 @@ export async function generateProductionSnapshot<TOutput>(
             ...resultRecord,
             provenance: {
               ...candidateProvenance,
-              provider: "openai",
+              provider: route.runtimeKey,
               model: result.model,
               promptVersion: input.promptVersion,
               mock: false,
               generationMode: "REAL",
-              providerName: "OPENAI",
+              providerName: route.persistedProvider,
               modelTier: result.modelTier,
               promptKey: input.promptKey,
               generationPurpose: input.purpose,
@@ -221,7 +223,7 @@ export async function generateProductionSnapshot<TOutput>(
       snapshot: input.schema.parse(normalized),
       provenance: {
         generationMode: "REAL",
-        providerName: "OPENAI",
+        providerName: route.persistedProvider,
         model: result.model,
         modelTier: result.modelTier,
         promptKey: input.promptKey,
@@ -238,13 +240,14 @@ export async function generateProductionSnapshot<TOutput>(
       prompt.repairPolicy === "STRUCTURE_ONCE"
     ) {
       const repairTier = "REPAIR" as const;
-      const repairSelection = getGenerationProvider({
-        provider: "OPENAI",
-        modelTier: repairTier,
-      });
+      const repairRoute = gateway.selectRoute({ policy, tier: repairTier });
+      const repairSelection = {
+        provider: gateway.runtimeFor(repairRoute),
+        modelId: repairRoute.modelId,
+      };
       await recordGenerationUsage(prisma, {
         jobId: job.id,
-        provider: "OPENAI",
+        provider: route.persistedProvider,
         modelId,
         modelTier: tier,
         promptKey: input.promptKey,
@@ -333,12 +336,12 @@ export async function generateProductionSnapshot<TOutput>(
                 ...repairedRecord,
                 provenance: {
                   ...candidateProvenance,
-                  provider: "openai",
+                  provider: repairRoute.runtimeKey,
                   model: repaired.model,
                   promptVersion: input.promptVersion,
                   mock: false,
                   generationMode: "REAL",
-                  providerName: "OPENAI",
+                  providerName: repairRoute.persistedProvider,
                   modelTier: repairTier,
                   promptKey: input.promptKey,
                   generationPurpose: input.purpose,
@@ -351,7 +354,7 @@ export async function generateProductionSnapshot<TOutput>(
           snapshot: input.schema.parse(normalized),
           provenance: {
             generationMode: "REAL",
-            providerName: "OPENAI",
+            providerName: repairRoute.persistedProvider,
             model: repaired.model,
             modelTier: repairTier,
             promptKey: input.promptKey,

@@ -1,3 +1,4 @@
+import { CONFIGURED_MODEL_PRICES } from "@/server/ai/gateway/model-prices";
 import type {
   GenerationModelTier,
   GenerationProvider,
@@ -16,7 +17,7 @@ export type ModelPrice = Readonly<{
   currency: "EUR";
 }>;
 
-const prices: ModelPrice[] = [];
+const prices: ModelPrice[] = [...CONFIGURED_MODEL_PRICES];
 
 export function registerModelPrice(price: ModelPrice) {
   prices.push(price);

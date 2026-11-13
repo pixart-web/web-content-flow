@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import type { PrismaClient } from "@/generated/prisma/client";
 import { getServerEnv } from "@/lib/env/server";
+import { runWithGenerationSignal } from "@/server/ai/generation-signal";
 
 import { handleBrandProfileJob } from "./handlers/brand-profile-handler";
 import { handleContentItemJob } from "./handlers/content-item-handler";
@@ -117,34 +118,21 @@ export async function processNextJob(
   };
   const durationMs = leaseDurationMs(getServerEnv());
   let leaseLost = false;
+  const leaseAbort = new AbortController();
   const stopHeartbeat = startLeaseHeartbeat({
     prisma,
     lease,
     durationMs,
     onLeaseLost: () => {
       leaseLost = true;
+      leaseAbort.abort();
     },
   });
   const fencedPrisma = createLeaseFencedPrisma(prisma, lease);
   try {
-    if (job.module === "COPY") {
-      const request = job.request as { kind?: string };
-      if (request.kind?.startsWith("COPY_"))
-        await handleCopyJob(fencedPrisma, job);
-      else await handleContentItemJob(fencedPrisma, job);
-    } else if (job.module === "WEBSITE") {
-      await handleWebsiteJob(fencedPrisma, job);
-    } else if (job.module === "SOCIAL") {
-      await handleSocialJob(fencedPrisma, job);
-    } else if (job.module === "ADS") {
-      await handleAdsJob(fencedPrisma, job);
-    } else if (job.module === "VIDEO") {
-      await handleVideoJob(fencedPrisma, job);
-    } else if (job.module === "CALENDAR") {
-      await handleCalendarJob(fencedPrisma, job);
-    } else {
-      await handleBrandProfileJob(fencedPrisma, job);
-    }
+    await runWithGenerationSignal(leaseAbort.signal, () =>
+      dispatchJob(fencedPrisma, job),
+    );
   } catch (error: unknown) {
     if (!(error instanceof LeaseLostError) && !leaseLost) throw error;
   } finally {
@@ -152,4 +140,25 @@ export async function processNextJob(
     await releaseJobLease(prisma, lease);
   }
   return true;
+}
+
+async function dispatchJob(fencedPrisma: PrismaClient, job: LeaseRow) {
+  if (job.module === "COPY") {
+    const request = job.request as { kind?: string };
+    if (request.kind?.startsWith("COPY_"))
+      await handleCopyJob(fencedPrisma, job);
+    else await handleContentItemJob(fencedPrisma, job);
+  } else if (job.module === "WEBSITE") {
+    await handleWebsiteJob(fencedPrisma, job);
+  } else if (job.module === "SOCIAL") {
+    await handleSocialJob(fencedPrisma, job);
+  } else if (job.module === "ADS") {
+    await handleAdsJob(fencedPrisma, job);
+  } else if (job.module === "VIDEO") {
+    await handleVideoJob(fencedPrisma, job);
+  } else if (job.module === "CALENDAR") {
+    await handleCalendarJob(fencedPrisma, job);
+  } else {
+    await handleBrandProfileJob(fencedPrisma, job);
+  }
 }

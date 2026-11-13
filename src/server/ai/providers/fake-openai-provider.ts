@@ -18,6 +18,8 @@ export class FakeOpenAIProvider implements AiProvider {
     request: StructuredGenerationRequest<TInput>,
     schema: z.ZodType<TOutput>,
   ): Promise<AiGenerationResult<TOutput>> {
+    if (request.signal?.aborted)
+      throw new ProviderError("CANCELLED", false, "Generation was cancelled.");
     if (request.scenario === "timeout")
       throw new ProviderError("TIMEOUT", true, "Synthetic timeout.");
     if (request.scenario === "rate-limit")

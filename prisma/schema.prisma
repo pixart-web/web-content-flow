@@ -369,6 +369,13 @@ model GenerationJob {
   providerAttemptCount  Int                 @default(0)
   normalizedProviderError String?
   repairAttempted       Boolean             @default(false)
+  runtimeKey            String?
+  modelRef              String?
+  providerKind          String?
+  policyKey             String?
+  policyVersion         String?
+  fallbackUsed          Boolean?
+  structuredMode        String?
   idempotencyKey        String
   attempt               Int                 @default(0)
   maxAttempts           Int                 @default(3)
@@ -481,6 +488,14 @@ model GenerationUsage {
   currency                String?
   usageSource             GenerationUsageSource
   providerRequestIdHash   String?
+  runtimeKey              String?
+  modelRef                String?
+  providerKind            String?
+  policyKey               String?
+  policyVersion           String?
+  fallbackUsed            Boolean?
+  structuredMode          String?
+  latencyMs               Int?
   createdAt               DateTime              @default(now())
   project                 Project               @relation(fields: [projectId], references: [id], onDelete: Cascade)
   user                    User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -491,6 +506,7 @@ model GenerationUsage {
   @@index([projectId, createdAt])
   @@index([userId, createdAt])
   @@index([generationJobId])
+  @@index([runtimeKey, createdAt])
 }
 
 model UsageReservation {

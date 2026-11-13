@@ -18,6 +18,7 @@ export const structuredModes = [
   "json_mode",
   "prompted",
 ] as const;
+export type StructuredMode = (typeof structuredModes)[number];
 
 export const RegisteredModelSchema = z
   .object({

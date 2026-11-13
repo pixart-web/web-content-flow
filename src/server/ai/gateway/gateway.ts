@@ -14,6 +14,7 @@ import {
   buildModelRegistry,
   type ProviderKind,
   type RegisteredModel,
+  type StructuredMode,
 } from "./model-registry";
 import { routeTask, type RuntimeAvailability } from "./router";
 import type { PrivacyLevel, TaskPolicy } from "./task-policy";
@@ -33,7 +34,23 @@ export type GatewayRoute = Readonly<{
   policyKey: string;
   policyVersion: string;
   fallbackUsed: boolean;
+  structuredMode: StructuredMode;
 }>;
+
+// Columns persisted on GenerationJob / GenerationUsage (B-05, B-06).
+export function routeColumns(route: GatewayRoute) {
+  return {
+    runtimeKey: route.runtimeKey,
+    modelRef: route.modelRef,
+    providerKind: route.providerKind,
+    policyKey: route.policyKey,
+    policyVersion: route.policyVersion,
+    fallbackUsed: route.fallbackUsed,
+    structuredMode: route.structuredMode,
+  };
+}
+
+export type RouteColumns = ReturnType<typeof routeColumns>;
 
 export interface AiGateway {
   selectRoute(input: {
@@ -95,6 +112,7 @@ export function createAiGateway(
         policyKey: policy.policyKey,
         policyVersion: policy.policyVersion,
         fallbackUsed: fallback,
+        structuredMode: model.capabilities.structured,
       };
     },
     runtimeFor(route) {

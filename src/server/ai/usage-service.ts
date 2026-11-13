@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 
 import type { PrismaClient } from "@/generated/prisma/client";
 import { getServerEnv } from "@/lib/env/server";
+import type { RouteColumns } from "@/server/ai/gateway/gateway";
 import { calculateTrackedUsageCost } from "@/server/ai/pricing";
 import type {
   GenerationModelTier,
@@ -128,6 +129,8 @@ export async function recordGenerationUsage(
     repair: boolean;
     usage: NormalizedUsage;
     providerRequestId?: string;
+    route?: RouteColumns;
+    latencyMs?: number;
   },
 ) {
   const job = await prisma.generationJob.findUniqueOrThrow({
@@ -172,6 +175,9 @@ export async function recordGenerationUsage(
       estimatedCostMinorUnits: cost?.amountMinorUnits ?? null,
       currency: cost?.currency ?? null,
       usageSource: input.usage.usageSource,
+      ...(input.route ?? {}),
+      latencyMs:
+        input.latencyMs === undefined ? null : Math.round(input.latencyMs),
       providerRequestIdHash: input.providerRequestId
         ? createHash("sha256")
             .update(input.providerRequestId)

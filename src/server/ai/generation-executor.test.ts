@@ -7,6 +7,9 @@ vi.mock("server-only", () => ({}));
 
 const generateStructured = vi.fn();
 const reserveUsage = vi.fn();
+const recordGenerationUsage = vi.fn<
+  (prisma: unknown, input: unknown) => Promise<{ id: string }>
+>(async () => ({ id: "usage_1" }));
 
 const env = {
   NODE_ENV: "test",
@@ -32,7 +35,8 @@ vi.mock("@/server/ai/providers/openai-provider", () => ({
 }));
 vi.mock("@/server/ai/usage-service", () => ({
   reserveUsage: (...args: unknown[]) => reserveUsage(...args),
-  recordGenerationUsage: vi.fn(async () => ({ id: "usage_1" })),
+  recordGenerationUsage: (prisma: unknown, input: unknown) =>
+    recordGenerationUsage(prisma, input),
   reconcileUsageReservation: vi.fn(async () => undefined),
 }));
 vi.mock("@/ai/prompts/registry", () => ({
@@ -135,8 +139,25 @@ describe("generateProductionSnapshot cancellation", () => {
       modelTier: "STANDARD",
     });
     expect(update.mock.calls[0]?.[0]).toMatchObject({
-      data: { provider: "OPENAI", modelId: "gpt-test", modelTier: "STANDARD" },
+      data: {
+        provider: "OPENAI",
+        modelId: "gpt-test",
+        modelTier: "STANDARD",
+        runtimeKey: "openai",
+        modelRef: "openai/gpt-test",
+        providerKind: "cloud",
+        policyKey: "default",
+        policyVersion: "1.0.0",
+        fallbackUsed: false,
+        structuredMode: "native_schema",
+      },
     });
+    const usageCall = recordGenerationUsage.mock.calls.at(-1)?.[1] as {
+      route: { modelRef: string };
+      latencyMs: number;
+    };
+    expect(usageCall.route.modelRef).toBe("openai/gpt-test");
+    expect(usageCall.latencyMs).toBeGreaterThanOrEqual(0);
     expect(result.provenance).toMatchObject({
       generationMode: "REAL",
       providerName: "OPENAI",

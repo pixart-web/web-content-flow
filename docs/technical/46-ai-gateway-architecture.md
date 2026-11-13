@@ -156,7 +156,7 @@ O zod **é sempre a validação autoritativa**. O modo `prompted` junta o schema
 | Uso | `GenerationUsage` ganha colunas aditivas: `runtimeKey`, `providerKind`, `modelRef`, `policyKey@version`, `latencyMs`, `fallbackUsed`, `structuredMode`, `outcome` |
 | Custo | Preços no Model Registry. O modelo local tem custo monetário 0, mas regista tokens e tempo. É o fim do custo sempre `null` (BL-11). |
 | Quotas | A reserva de tokens atual mantém-se e passa a aplicar-se também a modelos locais, para proteger a capacidade da máquina |
-| Concorrência | `AI_MAX_CONCURRENT_REQUESTS` passa a ser aplicada **por runtime** (semáforo no worker), porque um Mac local aguenta 1–2 pedidos em simultâneo |
+| Concorrência | **Implementado (B-07):** `AI_MAX_CONCURRENT_REQUESTS` limita, no lease do worker, os jobs REAL em curso em todos os projetos. Com um só runtime real equivale ao limite por runtime. Quando houver um segundo runtime real (por exemplo, um Mac local que aguenta 1–2 pedidos), o limite por runtime exige escolher a rota quando o job é criado. |
 | Logs | Eventos JSON `ai.route.selected`, `ai.request.completed` e `ai.request.failed`, com `requestId` e sem prompt nem resposta. `AI_PROMPT_DEBUG_ENABLED` passa a ter efeito real, mas só em local e test. |
 | Health | `/health/ready` inclui o estado dos runtimes configurados. A falta de um runtime opcional dá *degraded*, não falha. |
 | Versionamento | Prompt, política, schema e `modelRef` ficam todos na provenance, o que permite reproduzir uma geração |

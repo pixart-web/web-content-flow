@@ -16,6 +16,7 @@ import {
   type RegisteredModel,
   type StructuredMode,
 } from "./model-registry";
+import { logAiEvent } from "./ai-events";
 import { routeTask, type RuntimeAvailability } from "./router";
 import type { PrivacyLevel, TaskPolicy } from "./task-policy";
 
@@ -58,6 +59,8 @@ export interface AiGateway {
     tier: GenerationModelTier;
     privacy?: PrivacyLevel;
     externalFallbackConsent?: boolean;
+    // When set, the routing decision is logged against this job (B-08).
+    jobId?: string;
   }): GatewayRoute;
   runtimeFor(route: GatewayRoute): AiProvider;
 }
@@ -91,7 +94,7 @@ export function createAiGateway(
 ): AiGateway {
   const availability = runtimeAvailability(env);
   return {
-    selectRoute({ policy, tier, privacy, externalFallbackConsent }) {
+    selectRoute({ policy, tier, privacy, externalFallbackConsent, jobId }) {
       const decision = routeTask({
         policy,
         tier,
@@ -100,8 +103,28 @@ export function createAiGateway(
         privacy: privacy ?? policy.privacy,
         externalFallbackConsent: externalFallbackConsent ?? false,
       });
-      if (!decision.ok) throw decision.error;
+      const facts = jobId ? { jobId, taskKey: policy.taskKey, tier } : null;
+      if (!decision.ok) {
+        if (facts)
+          logAiEvent({
+            ...facts,
+            event: "ai.route.unavailable",
+            errorCode: decision.error.code,
+            exclusions: decision.exclusions,
+          });
+        throw decision.error;
+      }
       const { model, fallback } = decision.candidates[0]!;
+      if (facts)
+        logAiEvent({
+          ...facts,
+          event: "ai.route.selected",
+          runtimeKey: model.runtimeKey,
+          modelRef: model.ref,
+          policy: `${policy.policyKey}@${policy.policyVersion}`,
+          fallbackUsed: fallback,
+          exclusions: decision.exclusions,
+        });
       return {
         runtimeKey: model.runtimeKey,
         modelId: model.modelId,

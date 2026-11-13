@@ -502,3 +502,76 @@ Each row must become a separate ADR file or expanded section before acceptance. 
 
 - **Decision:** Maintain factual inventories and `[LEGAL REVIEW REQUIRED]` decisions internally while public pages remain restrained.
 - **Consequence:** External counsel receives an implementation-based package without presenting engineering drafts as legal advice.
+
+## AI Gateway proposed decisions (2026-11-13)
+
+Contexto comum: [Estado real do projeto](../audits/current-project-status.md) e [arquitetura do AI Gateway](46-ai-gateway-architecture.md). Todas estão **Proposed** e só passam a **Accepted** depois de aprovadas pelo responsável do produto.
+
+### ADR-069 — AI Gateway como porta interna, com o Nodera como backend opcional
+
+**Status:** Proposed.
+
+- **Context:** O executor fixa o OpenAI no código. O Nodera já implementa um AI Gateway (registry, router determinístico, privacidade, Ollama/Anthropic/OpenAI) e prevê o Web Content Flow como consumidor, mas só oferece chat em texto livre e não está validado em staging.
+- **Decision:** Criar no Web Content Flow uma porta `AiGateway` com router e políticas próprias e adapters `mock`, `openai-compatible`, `ollama` e `nodera`. Não criar um serviço separado. O modo Nodera delega routing e fallback no profile do Nodera; o Web Content Flow mantém sempre a validação zod e a provenance.
+- **Alternatives:** (a) serviço gateway novo e separado: duplica o Nodera e acrescenta outro processo para operar; (b) depender só do Nodera: deixa de funcionar local-first e fica bloqueado pela falta de output estruturado no Nodera; (c) manter o OpenAI fixo: não cumpre os requisitos.
+- **Consequences:** Funciona sem o Nodera e converge com ele. Os contratos (`modelRef` `"<runtime>/<model>"`, níveis de privacidade) seguem o formato do Nodera para reduzir o custo de migração.
+- **Migration considerations:** Refatoração sem mudança de comportamento (Fase B). Migrations só aditivas.
+- **Solo-developer impact:** Baixo. O código continua no mesmo processo Node e não há serviço novo.
+- **Review trigger:** O Nodera suportar output estruturado e embeddings, ou houver mais de dois consumidores a precisar de routing partilhado.
+
+### ADR-070 — Identidade do provider em texto, com o enum mantido por compatibilidade
+
+**Status:** Proposed.
+
+- **Decision:** Acrescentar as colunas `runtimeKey`, `modelRef` e `providerKind` (texto ou enum novo) a `GenerationJob` e `GenerationUsage`. O enum `GenerationProvider` (`MOCK | OPENAI`) mantém-se para os registos que já existem e passa a ter o valor `GATEWAY` para os novos.
+- **Alternatives:** Acrescentar um valor ao enum por cada runtime: obriga a uma migration por runtime e dificulta o rollback.
+- **Consequences:** Novos runtimes deixam de precisar de migrations. Os dados existentes continuam válidos.
+- **Migration considerations:** `ALTER TYPE … ADD VALUE` não se desfaz facilmente. Por isso é feito uma única vez, depois de aprovação, e as colunas novas são anuláveis.
+
+### ADR-071 — Model Registry e políticas por tarefa como configuração versionada no repositório
+
+**Status:** Proposed.
+
+- **Decision:** O Model Registry e as `TaskPolicy` são módulos TypeScript validados com zod, versionados e revistos em PR. Cada tarefa do registo de prompts tem uma política. A política "default" reproduz o comportamento atual.
+- **Alternatives:** Tabelas na base de dados com UI de administração. Ficam para quando houver necessidade operacional de mudar sem deploy.
+- **Consequences:** Cada mudança de modelo fica revista, testada e rastreável na provenance (`policyKey@version`).
+
+### ADR-072 — Output estruturado em vários runtimes, com o zod como autoridade
+
+**Status:** Proposed.
+
+- **Decision:** Cada modelo declara um `structuredMode` (`native_schema`, `json_mode` ou `prompted`). O adapter usa o mecanismo nativo quando o runtime o tem (OpenAI json_schema, `format` do Ollama, `response_format` do llama.cpp ou vLLM). O zod valida sempre, e a reparação `STRUCTURE_ONCE` mantém-se.
+- **Consequences:** Modelos locais pequenos podem falhar mais vezes. A suite de avaliação (ADR-077) decide se um modelo pode ser usado numa tarefa.
+
+### ADR-073 — Fallback externo opcional e privacidade aplicada pelo router
+
+**Status:** Proposed.
+
+- **Decision:** `externalFallback.allowed` é `false` por omissão. Usar um modelo cloud como fallback exige uma política que o permita **e** consentimento explícito ao nível do projeto ou conta. A privacidade `restricted` nunca chega a um runtime cloud, e isso é imposto no router, não por quem chama. Cada fallback fica na provenance (`fallbackUsed`).
+- **Consequences:** Uma instalação 100 % local funciona sem chaves de cloud. Quando não há modelo disponível, a falha é explícita e pode ser repetida.
+
+### ADR-074 — RAG em PostgreSQL com pgvector e âmbito obrigatório por cliente
+
+**Status:** Proposed — só depois de os requisitos serem validados (Fase E).
+
+- **Decision:** `KnowledgeSource`, `KnowledgeChunk` e `KnowledgeEmbedding` (com `modelRef` e dimensão) na mesma base. A pesquisa existe só através de um repositório que exige `userId` e `projectId`. O RLS fica como segunda camada. A ingestão é feita como job no worker que já existe.
+- **Alternatives:** Base vetorial dedicada (Qdrant, Weaviate): mais um serviço para operar, sem necessidade comprovada.
+- **Consequences:** A extensão `pgvector` tem de estar disponível no PostgreSQL gerido escolhido (D-1).
+
+### ADR-075 — Observabilidade de IA sem conteúdo
+
+**Status:** Proposed.
+
+- **Decision:** Colunas aditivas em `GenerationUsage` (runtime, tipo de provider, modelRef, política, latência, fallback, outcome) e eventos JSON estruturados sem prompt nem resposta. Preços no registry. `AI_MAX_CONCURRENT_REQUESTS` passa a ser aplicada por runtime. As variáveis de ambiente que hoje não são lidas passam a ter efeito, ou são removidas.
+
+### ADR-076 — API versionada para consumidores do ecossistema (Kiko)
+
+**Status:** Proposed — adiado até à decisão D-6.
+
+- **Decision:** `/api/v1/` contract-first (OpenAPI no repositório), com tokens de serviço com âmbito por conta, a reutilizar os serviços e jobs que já existem. Alterações incompatíveis só numa versão `v2`.
+
+### ADR-077 — Validação de hardware e avaliação antes de qualquer modelo local
+
+**Status:** Proposed.
+
+- **Decision:** Nenhum modelo local fica `active` sem passar a suite de avaliação da tarefa no hardware alvo, com resultados no registry (`evaluation`). Não há treino nem fine-tuning nesta fase, e nenhum runtime é instalado sem a decisão D-5.

@@ -1,4 +1,4 @@
-import "dotenv/config";
+import "./local-node-env";
 
 import { createPrismaClient } from "../src/server/db/create-prisma-client";
 import { runMaintenanceBatch } from "../src/server/maintenance/maintenance-service";

@@ -1,4 +1,4 @@
-import "dotenv/config";
+import "./local-node-env";
 import { randomUUID } from "node:crypto";
 
 import { createPrismaClient } from "../src/server/db/create-prisma-client";

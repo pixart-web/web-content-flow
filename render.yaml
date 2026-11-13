@@ -85,6 +85,12 @@ services:
         value: 24.14.0
       - key: APP_ENV
         value: staging
+      - key: NODE_ENV
+        value: production
+      - key: PUBLIC_REGISTRATION_ENABLED
+        value: "false"
+      - key: MARKETING_INDEXING_ENABLED
+        value: "false"
       - key: APP_RELEASE
         sync: false
       - key: MARKETING_CAPTURE_MODE
@@ -130,6 +136,12 @@ services:
         value: 24.14.0
       - key: APP_ENV
         value: staging
+      - key: NODE_ENV
+        value: production
+      - key: PUBLIC_REGISTRATION_ENABLED
+        value: "false"
+      - key: MARKETING_INDEXING_ENABLED
+        value: "false"
       - key: APP_RELEASE
         sync: false
       - key: MARKETING_CAPTURE_MODE

@@ -35,7 +35,9 @@ export async function GET() {
     const ready =
       migrationReady &&
       (!env.AI_REAL_GENERATION_ENABLED || Boolean(env.OPENAI_API_KEY)) &&
-      (env.EMAIL_PROVIDER !== "RESEND" || Boolean(env.RESEND_API_KEY));
+      (env.EMAIL_PROVIDER !== "RESEND" || Boolean(env.RESEND_API_KEY)) &&
+      (env.EMAIL_PROVIDER !== "SMTP" ||
+        Boolean(env.SMTP_HOST && env.SMTP_USER && env.SMTP_PASSWORD));
     return NextResponse.json(
       {
         status: ready ? "ready" : "not_ready",

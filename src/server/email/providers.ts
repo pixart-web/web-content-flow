@@ -9,6 +9,7 @@ import type {
   EmailProvider,
   TransactionalEmail,
 } from "./email-provider";
+import { createSmtpSendMail, SmtpEmailProvider } from "./smtp-provider";
 
 class MockEmailProvider implements EmailProvider {
   readonly name = "MOCK" as const;
@@ -130,6 +131,19 @@ class ResendEmailProvider implements EmailProvider {
 export function getEmailProvider(): EmailProvider {
   const env = getServerEnv();
   if (env.EMAIL_PROVIDER === "MOCK") return new MockEmailProvider();
+  if (env.EMAIL_PROVIDER === "SMTP") {
+    if (!env.SMTP_HOST || !env.SMTP_USER || !env.SMTP_PASSWORD)
+      throw new Error("Transactional email is not configured.");
+    return new SmtpEmailProvider(
+      createSmtpSendMail({
+        host: env.SMTP_HOST,
+        port: env.SMTP_PORT,
+        secure: env.SMTP_SECURE,
+        user: env.SMTP_USER,
+        password: env.SMTP_PASSWORD,
+      }),
+    );
+  }
   if (!env.RESEND_API_KEY)
     throw new Error("Transactional email is not configured.");
   return new ResendEmailProvider(env.RESEND_API_KEY);

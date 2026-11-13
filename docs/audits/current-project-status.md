@@ -189,9 +189,9 @@ AUD-008 (resposta neutra no registo), AUD-010 (CSP), AUD-011 (noindex), AUD-012 
 
 | ID | Decisão | Porque bloqueia |
 |---|---|---|
-| D-1 | Plataforma de deploy: Render (ADR-058) **ou** Hetzner/Nodera (para onde o DNS já aponta) | BL-01, BL-02, BL-04, BL-07 |
-| D-2 | Quem gere o servidor e o DNS de `webcontentflow.com` | BL-07 |
-| D-3 | Provider de email (Resend ou outro) e configuração de SPF/DKIM | BL-03 |
+| D-1 | ✅ **Decidido (2026-11-13): Render** para staging e beta privado (ADR-058 aceite); Hetzner/Nodera mais tarde | BL-01, BL-02, BL-04, BL-07 |
+| D-2 | ✅ **Decidido:** o responsável do produto gere o DNS (`wtservers.com`) e o servidor Hetzner | BL-07 |
+| D-3 | ✅ **Decidido: SMTP do alojamento** (`mail.webcontentflow.com`, ADR-078); SPF e DKIM já existem, falta DMARC | BL-03 |
 | D-4 | Em produção, a IA passa pelo Nodera ou o Web Content Flow mantém um gateway próprio? | Arquitetura (ADR-069) |
 | D-5 | Hardware alvo para modelos locais (Mac do cliente, servidor Hetzner com GPU, ou ambos) | ADR-077 |
 | D-6 | O que é o Kiko e quais as operações de que precisa | ADR-076 |

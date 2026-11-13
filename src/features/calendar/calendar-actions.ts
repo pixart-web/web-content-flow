@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import type { CalendarRegenerationTarget } from "@/domain/calendar/calendar-schemas";
 import { requireUser } from "@/server/auth/require-user";
+import { checkGenerationRateLimit } from "@/server/security/generation-rate-limit";
 import {
   configureCalendarModule,
   queueCalendarGeneration,
@@ -30,6 +31,8 @@ export async function configureCalendarAction(
 }
 export async function generateCalendarAction(projectId: string) {
   const user = await requireUser(path(projectId));
+  const limited = await checkGenerationRateLimit(user.id);
+  if (limited) return limited;
   const result = await queueCalendarGeneration({
     userId: user.id,
     projectId,
@@ -47,6 +50,8 @@ export async function regenerateCalendarAction(input: {
   target?: CalendarRegenerationTarget;
 }) {
   const user = await requireUser(`${path(input.projectId)}/${input.itemId}`);
+  const limited = await checkGenerationRateLimit(user.id);
+  if (limited) return limited;
   const result = await queueCalendarRegeneration({
     userId: user.id,
     itemId: input.itemId,
@@ -61,6 +66,8 @@ export async function retryCalendarScopeAction(
   jobId: string,
 ) {
   const user = await requireUser(path(projectId));
+  const limited = await checkGenerationRateLimit(user.id);
+  if (limited) return limited;
   const result = await retryCalendarScope({ userId: user.id, jobId });
   if (result.ok) revalidatePath(path(projectId));
   return result;

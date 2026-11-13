@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import type { AdsRegenerationTarget } from "@/domain/ads/ads-schemas";
 import { requireUser } from "@/server/auth/require-user";
+import { checkGenerationRateLimit } from "@/server/security/generation-rate-limit";
 import {
   configureAdsModule,
   queueAdsGeneration,
@@ -24,6 +25,8 @@ export async function configureAdsAction(projectId: string, request: unknown) {
 
 export async function generateAdsAction(projectId: string) {
   const user = await requireUser(`/app/projects/${projectId}/content/ads`);
+  const limited = await checkGenerationRateLimit(user.id);
+  if (limited) return limited;
   const result = await queueAdsGeneration({ userId: user.id, projectId });
   if (result.ok) {
     revalidatePath(`/app/projects/${projectId}/content/ads`);
@@ -41,6 +44,8 @@ export async function regenerateAdsAction(input: {
   const user = await requireUser(
     `/app/projects/${input.projectId}/content/ads/${input.itemId}`,
   );
+  const limited = await checkGenerationRateLimit(user.id);
+  if (limited) return limited;
   const result = await queueAdsRegeneration({
     userId: user.id,
     itemId: input.itemId,
@@ -56,6 +61,8 @@ export async function regenerateAdsAction(input: {
 
 export async function retryAdsAssetAction(projectId: string, jobId: string) {
   const user = await requireUser(`/app/projects/${projectId}/content/ads`);
+  const limited = await checkGenerationRateLimit(user.id);
+  if (limited) return limited;
   const result = await retryFailedAdsAsset({ userId: user.id, jobId });
   if (result.ok) revalidatePath(`/app/projects/${projectId}/content/ads`);
   return result;

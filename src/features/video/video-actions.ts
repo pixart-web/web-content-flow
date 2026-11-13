@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import type { VideoRegenerationTarget } from "@/domain/video/video-schemas";
 import { requireUser } from "@/server/auth/require-user";
+import { checkGenerationRateLimit } from "@/server/security/generation-rate-limit";
 import {
   configureVideoModule,
   queueVideoGeneration,
@@ -27,6 +28,8 @@ export async function configureVideoAction(
 
 export async function generateVideoAction(projectId: string) {
   const user = await requireUser(`/app/projects/${projectId}/content/video`);
+  const limited = await checkGenerationRateLimit(user.id);
+  if (limited) return limited;
   const result = await queueVideoGeneration({ userId: user.id, projectId });
   if (result.ok) {
     revalidatePath(`/app/projects/${projectId}/content/video`);
@@ -44,6 +47,8 @@ export async function regenerateVideoAction(input: {
   const user = await requireUser(
     `/app/projects/${input.projectId}/content/video/${input.itemId}`,
   );
+  const limited = await checkGenerationRateLimit(user.id);
+  if (limited) return limited;
   const result = await queueVideoRegeneration({
     userId: user.id,
     itemId: input.itemId,
@@ -59,6 +64,8 @@ export async function regenerateVideoAction(input: {
 
 export async function retryVideoAssetAction(projectId: string, jobId: string) {
   const user = await requireUser(`/app/projects/${projectId}/content/video`);
+  const limited = await checkGenerationRateLimit(user.id);
+  if (limited) return limited;
   const result = await retryFailedVideoAsset({ userId: user.id, jobId });
   if (result.ok) revalidatePath(`/app/projects/${projectId}/content/video`);
   return result;

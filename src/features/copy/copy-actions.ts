@@ -7,6 +7,7 @@ import type {
   GeneralCopyType,
 } from "@/domain/copy/copy-schemas";
 import { requireUser } from "@/server/auth/require-user";
+import { checkGenerationRateLimit } from "@/server/security/generation-rate-limit";
 import {
   configureCopyModule,
   queueCopyGeneration,
@@ -31,6 +32,8 @@ export async function configureCopyAction(projectId: string, request: unknown) {
 
 export async function generateCopyAction(projectId: string) {
   const user = await requireUser(copyPath(projectId));
+  const limited = await checkGenerationRateLimit(user.id);
+  if (limited) return limited;
   const result = await queueCopyGeneration({ userId: user.id, projectId });
   if (result.ok) {
     revalidatePath(copyPath(projectId));
@@ -44,6 +47,8 @@ export async function addCopyAssetAction(
   type: GeneralCopyType,
 ) {
   const user = await requireUser(copyPath(projectId));
+  const limited = await checkGenerationRateLimit(user.id);
+  if (limited) return limited;
   const result = await queueSingleCopyAsset({
     userId: user.id,
     projectId,
@@ -62,6 +67,8 @@ export async function regenerateCopyAction(input: {
   const user = await requireUser(
     `${copyPath(input.projectId)}/${input.itemId}`,
   );
+  const limited = await checkGenerationRateLimit(user.id);
+  if (limited) return limited;
   const result = await queueCopyRegeneration({
     userId: user.id,
     itemId: input.itemId,
@@ -74,6 +81,8 @@ export async function regenerateCopyAction(input: {
 
 export async function retryCopyAssetAction(projectId: string, jobId: string) {
   const user = await requireUser(copyPath(projectId));
+  const limited = await checkGenerationRateLimit(user.id);
+  if (limited) return limited;
   const result = await retryFailedCopyAsset({ userId: user.id, jobId });
   if (result.ok) revalidatePath(copyPath(projectId));
   return result;

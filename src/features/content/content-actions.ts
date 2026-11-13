@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { requireUser } from "@/server/auth/require-user";
+import { checkGenerationRateLimit } from "@/server/security/generation-rate-limit";
 import {
   queueContentRegeneration,
   queueFoundationCopyGeneration,
@@ -14,6 +15,8 @@ import {
 
 export async function generateFoundationCopyAction(projectId: string) {
   const user = await requireUser(`/app/projects/${projectId}`);
+  const limited = await checkGenerationRateLimit(user.id);
+  if (limited) return limited;
   const result = await queueFoundationCopyGeneration({
     userId: user.id,
     projectId,
@@ -57,6 +60,8 @@ export async function regenerateContentAction(input: {
   const user = await requireUser(
     `/app/projects/${input.projectId}/content/copy/${input.itemId}`,
   );
+  const limited = await checkGenerationRateLimit(user.id);
+  if (limited) return limited;
   const result = await queueContentRegeneration({
     userId: user.id,
     itemId: input.itemId,

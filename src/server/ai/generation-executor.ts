@@ -9,6 +9,7 @@ import {
   type GenerationModelTier,
   type GenerationPurpose,
 } from "@/server/ai/ai-provider";
+import { currentGenerationSignal } from "@/server/ai/generation-signal";
 import { getGenerationProvider } from "@/server/ai/provider-registry";
 import {
   recordGenerationUsage,
@@ -16,6 +17,11 @@ import {
   reserveUsage,
 } from "@/server/ai/usage-service";
 import { getPrompt, loadPromptCatalog } from "@/ai/prompts/registry";
+
+function throwIfCancelled(signal: AbortSignal | undefined) {
+  if (signal?.aborted)
+    throw new ProviderError("CANCELLED", false, "Generation was cancelled.");
+}
 
 export async function generateProductionSnapshot<TOutput>(
   prisma: PrismaClient,
@@ -85,6 +91,8 @@ export async function generateProductionSnapshot<TOutput>(
         usageRecordIds: [],
       },
     };
+  const signal = currentGenerationSignal();
+  throwIfCancelled(signal);
   const env = getServerEnv();
   const { provider, modelId } = getGenerationProvider({
     provider: "OPENAI",
@@ -140,6 +148,7 @@ export async function generateProductionSnapshot<TOutput>(
         maximumOutputTokens,
         timeoutMs: env.AI_REQUEST_TIMEOUT_MS,
         ...(input.scenario ? { scenario: input.scenario } : {}),
+        ...(signal ? { signal } : {}),
       },
       input.schema,
     );
@@ -242,6 +251,7 @@ export async function generateProductionSnapshot<TOutput>(
         },
       });
       try {
+        throwIfCancelled(signal);
         const repaired = await repairSelection.provider.generateStructured(
           {
             input: env.AI_FAKE_OPENAI_ENABLED
@@ -268,6 +278,7 @@ export async function generateProductionSnapshot<TOutput>(
             }),
             maximumOutputTokens,
             timeoutMs: env.AI_REQUEST_TIMEOUT_MS,
+            ...(signal ? { signal } : {}),
           },
           input.schema,
         );

@@ -118,7 +118,11 @@ export class OpenAIProvider implements AiProvider {
     const controller = new AbortController();
     const abort = () => controller.abort();
     request.signal?.addEventListener("abort", abort, { once: true });
-    const timer = setTimeout(abort, request.timeoutMs);
+    let timedOut = false;
+    const timer = setTimeout(() => {
+      timedOut = true;
+      controller.abort();
+    }, request.timeoutMs);
     try {
       const response = await this.client.responses.parse(
         {
@@ -185,6 +189,20 @@ export class OpenAIProvider implements AiProvider {
         },
       };
     } catch (error: unknown) {
+      // The SDK reports both cases as APIUserAbortError (an APIError without a
+      // status), so classify aborts by who triggered them.
+      if (timedOut)
+        throw new ProviderError(
+          "TIMEOUT",
+          true,
+          "The generation provider timed out.",
+        );
+      if (request.signal?.aborted)
+        throw new ProviderError(
+          "CANCELLED",
+          false,
+          "Generation was cancelled.",
+        );
       throw normalizeError(error);
     } finally {
       clearTimeout(timer);

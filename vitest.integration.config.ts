@@ -13,5 +13,6 @@ export default defineConfig({
     globals: true,
     include: ["tests/integration/**/*.integration.test.ts"],
     fileParallelism: false,
+    setupFiles: ["./tests/support/destructive-database-guard.ts"],
   },
 });

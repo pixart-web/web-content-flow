@@ -63,6 +63,16 @@ The seed creates:
 - Development password: `UrbanStride-demo-2026!`
 - Fictional project: UrbanStride
 
+`pnpm test:integration`, `pnpm test:worker` and `pnpm test:quota` truncate and rewrite tables. They run against `TEST_DATABASE_URL` when it is set and refuse any database whose name does not contain `test` (override only with `ALLOW_DESTRUCTIVE_TEST_DATABASE=true`):
+
+```bash
+createdb web_content_flow_test
+DATABASE_URL=postgresql://…/web_content_flow_test pnpm prisma:migrate
+TEST_DATABASE_URL=postgresql://…/web_content_flow_test pnpm test:integration
+```
+
+`src/generated/` (Prisma client) and `next-env.d.ts` are generated and not committed: run `pnpm prisma:generate` after install; `pnpm typecheck` runs `next typegen` itself.
+
 The seed refuses to run in production. These credentials are synthetic development fixtures, not secrets or production accounts.
 
 ## Commands

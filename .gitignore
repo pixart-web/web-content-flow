@@ -26,3 +26,7 @@ pnpm-debug.log*
 dist/
 output/
 tmp/
+
+# Generated code (recreated by `pnpm prisma:generate` and `next typegen`)
+src/generated/
+next-env.d.ts

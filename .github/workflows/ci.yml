@@ -66,6 +66,7 @@ jobs:
       - run: pnpm test:quota
       - run: pnpm test:integration
       - run: pnpm test:worker
+      - run: pnpm test:desktop
       - run: pnpm test:email
       - run: pnpm test:export
       - run: pnpm test:security

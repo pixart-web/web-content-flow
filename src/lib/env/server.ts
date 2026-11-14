@@ -47,6 +47,10 @@ export const serverEnvSchema = z
     APP_MODE: z.enum(["server", "local"]).default("server"),
     // Per-launch secret the desktop shell sends on every request (LF-03).
     DESKTOP_TOKEN: optionalSecretFromEnv(32),
+    // Held only by the desktop shell's main process, never by the window:
+    // authorizes local administration such as the owner password reset after
+    // macOS authentication (decision 2026-11-14).
+    DESKTOP_ADMIN_TOKEN: optionalSecretFromEnv(32),
     ROLLOUT_STATE: z
       .enum(["INTERNAL", "INVITE_ONLY", "PUBLIC", "MAINTENANCE"])
       .default("INTERNAL"),
@@ -149,6 +153,15 @@ export const serverEnvSchema = z
           code: "custom",
           path: ["MARKETING_INDEXING_ENABLED"],
           message: "Local mode is never indexed.",
+        });
+      if (
+        value.DESKTOP_ADMIN_TOKEN &&
+        value.DESKTOP_ADMIN_TOKEN === value.DESKTOP_TOKEN
+      )
+        context.addIssue({
+          code: "custom",
+          path: ["DESKTOP_ADMIN_TOKEN"],
+          message: "The admin token must differ from the window token.",
         });
       // The token is generated per launch, so it does not exist at build
       // time; at runtime the proxy also fails closed without it.
@@ -337,6 +350,7 @@ export function getServerEnv(): ServerEnv {
     APP_ENV: process.env.APP_ENV,
     APP_MODE: process.env.APP_MODE,
     DESKTOP_TOKEN: process.env.DESKTOP_TOKEN,
+    DESKTOP_ADMIN_TOKEN: process.env.DESKTOP_ADMIN_TOKEN,
     ROLLOUT_STATE: process.env.ROLLOUT_STATE,
     PUBLIC_REGISTRATION_ENABLED: process.env.PUBLIC_REGISTRATION_ENABLED,
     EMAIL_VERIFICATION_REQUIRED: process.env.EMAIL_VERIFICATION_REQUIRED,

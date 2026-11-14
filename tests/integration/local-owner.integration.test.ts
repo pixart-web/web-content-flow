@@ -8,6 +8,7 @@ vi.mock("server-only", () => ({}));
 import {
   createLocalOwner,
   localOwnerExists,
+  resetLocalOwnerPassword,
 } from "../../src/server/auth/local-owner";
 
 const databaseUrl = process.env.DATABASE_URL;
@@ -73,5 +74,29 @@ describe("local owner (LF-06)", () => {
     } finally {
       await Promise.all(clients.map((client) => client.$disconnect()));
     }
+  });
+
+  it("resets the owner's password and ends every session", async () => {
+    expect(await resetLocalOwnerPassword(prisma, "new-hash")).toBe(false);
+    const owner = await createLocalOwner(prisma, {
+      email: "owner@test.invalid",
+      name: "Owner",
+      passwordHash: "old-hash",
+    });
+    await prisma.session.create({
+      data: {
+        sessionToken: "local-session-token",
+        userId: owner!.id,
+        expires: new Date(Date.now() + 60_000),
+      },
+    });
+    expect(await resetLocalOwnerPassword(prisma, "new-hash")).toBe(true);
+    const updated = await prisma.user.findUniqueOrThrow({
+      where: { id: owner!.id },
+    });
+    expect(updated.passwordHash).toBe("new-hash");
+    expect(await prisma.session.count({ where: { userId: owner!.id } })).toBe(
+      0,
+    );
   });
 });

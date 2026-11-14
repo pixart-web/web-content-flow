@@ -26,3 +26,20 @@ export async function createLocalOwner(
     });
   });
 }
+
+// Owner password reset for the desktop edition. Only the desktop shell calls
+// it, after macOS authentication (Touch ID or the account password); there is
+// no email in local mode. All sessions end, so other windows must sign in.
+export async function resetLocalOwnerPassword(
+  prisma: PrismaClient,
+  passwordHash: string,
+) {
+  return prisma.$transaction(async (tx) => {
+    const owners = await tx.user.findMany({ select: { id: true }, take: 2 });
+    if (owners.length !== 1) return false;
+    const ownerId = owners[0]!.id;
+    await tx.user.update({ where: { id: ownerId }, data: { passwordHash } });
+    await tx.session.deleteMany({ where: { userId: ownerId } });
+    return true;
+  });
+}

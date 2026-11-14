@@ -77,37 +77,38 @@ The seed refuses to run in production. These credentials are synthetic developme
 
 ## Commands
 
-| Command                               | Purpose                                        |
-| ------------------------------------- | ---------------------------------------------- |
-| `pnpm dev`                            | Start development server                       |
-| `pnpm build` / `pnpm start`           | Build and run production output                |
-| `pnpm lint`                           | ESLint with zero warnings                      |
-| `pnpm typecheck`                      | Strict TypeScript check                        |
-| `pnpm format` / `pnpm format:check`   | Apply/check Prettier                           |
-| `pnpm test` / `pnpm test:watch`       | Unit/component tests                           |
-| `pnpm test:provider`                  | Provider contracts and normalized errors       |
-| `pnpm test:prompts`                   | Prompt registry and context budgets            |
-| `pnpm test:usage` / `pnpm test:quota` | Usage pricing and durable reservations         |
-| `pnpm test:integration`               | PostgreSQL repository/authorization tests      |
-| `pnpm test:worker`                    | PostgreSQL generation-worker tests             |
-| `pnpm test:coverage`                  | V8 coverage report                             |
-| `pnpm test:e2e`                       | Playwright Chromium desktop/mobile smoke tests |
-| `pnpm test:a11y`                      | Axe smoke on desktop and mobile projects       |
-| `pnpm tokens:check`                   | Verify canonical token integration             |
-| `pnpm prisma:generate`                | Generate the Prisma client                     |
-| `pnpm prisma:migrate`                 | Apply committed migrations                     |
-| `pnpm prisma:seed`                    | Run the guarded synthetic seed                 |
-| `pnpm capture:seed`                   | Prepare isolated Northstar capture data        |
-| `pnpm capture:stills`                 | Capture authenticated desktop/mobile stills    |
-| `pnpm worker` / `pnpm worker:once`    | Run the durable generation worker              |
-| `pnpm maintenance`                    | Run bounded retention and cleanup tasks        |
-| `pnpm restore:verify`                 | Read-only restored-database integrity checks   |
-| `pnpm licenses:check`                 | Production dependency licence inventory        |
-| `pnpm secrets:scan`                   | Current tracked-source secret scan             |
-| `pnpm test:email`                     | Password-recovery and email contract tests     |
-| `pnpm test:export`                    | Export rendering and safety tests              |
-| `pnpm test:security`                  | Rate-limit and health/security tests           |
-| `pnpm check`                          | Non-browser validation suite                   |
+| Command                                                      | Purpose                                                                                                                |
+| ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| `pnpm dev`                                                   | Start development server                                                                                               |
+| `pnpm build` / `pnpm start`                                  | Build and run production output                                                                                        |
+| `pnpm lint`                                                  | ESLint with zero warnings                                                                                              |
+| `pnpm typecheck`                                             | Strict TypeScript check                                                                                                |
+| `pnpm format` / `pnpm format:check`                          | Apply/check Prettier                                                                                                   |
+| `pnpm test` / `pnpm test:watch`                              | Unit/component tests                                                                                                   |
+| `pnpm test:provider`                                         | Provider contracts and normalized errors                                                                               |
+| `pnpm test:prompts`                                          | Prompt registry and context budgets                                                                                    |
+| `pnpm test:usage` / `pnpm test:quota`                        | Usage pricing and durable reservations                                                                                 |
+| `pnpm test:integration`                                      | PostgreSQL repository/authorization tests                                                                              |
+| `pnpm test:worker`                                           | PostgreSQL generation-worker tests                                                                                     |
+| `pnpm test:coverage`                                         | V8 coverage report                                                                                                     |
+| `pnpm test:e2e`                                              | Playwright Chromium desktop/mobile smoke tests                                                                         |
+| `pnpm test:a11y`                                             | Axe smoke on desktop and mobile projects                                                                               |
+| `pnpm tokens:check`                                          | Verify canonical token integration                                                                                     |
+| `pnpm prisma:generate`                                       | Generate the Prisma client                                                                                             |
+| `pnpm prisma:migrate`                                        | Apply committed migrations                                                                                             |
+| `pnpm prisma:seed`                                           | Run the guarded synthetic seed                                                                                         |
+| `pnpm capture:seed`                                          | Prepare isolated Northstar capture data                                                                                |
+| `pnpm capture:stills`                                        | Capture authenticated desktop/mobile stills                                                                            |
+| `pnpm worker` / `pnpm worker:once`                           | Run the durable generation worker                                                                                      |
+| `pnpm eval:ai --runtime <ollama\|openai-compatible\|openai>` | Evaluate a model on fixed cases; report in `eval-reports/` (exit 1 = below thresholds; `openai` needs `--allow-cloud`) |
+| `pnpm maintenance`                                           | Run bounded retention and cleanup tasks                                                                                |
+| `pnpm restore:verify`                                        | Read-only restored-database integrity checks                                                                           |
+| `pnpm licenses:check`                                        | Production dependency licence inventory                                                                                |
+| `pnpm secrets:scan`                                          | Current tracked-source secret scan                                                                                     |
+| `pnpm test:email`                                            | Password-recovery and email contract tests                                                                             |
+| `pnpm test:export`                                           | Export rendering and safety tests                                                                                      |
+| `pnpm test:security`                                         | Rate-limit and health/security tests                                                                                   |
+| `pnpm check`                                                 | Non-browser validation suite                                                                                           |
 
 ## Structure
 

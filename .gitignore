@@ -30,3 +30,6 @@ tmp/
 # Generated code (recreated by `pnpm prisma:generate` and `next typegen`)
 src/generated/
 next-env.d.ts
+
+# AI evaluation reports (pnpm eval:ai); publish summaries in docs instead
+eval-reports/

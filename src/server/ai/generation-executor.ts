@@ -24,6 +24,10 @@ import {
   reserveUsage,
 } from "@/server/ai/usage-service";
 import { getPrompt, loadPromptCatalog } from "@/ai/prompts/registry";
+import {
+  buildStructuralRepairMessage,
+  STRUCTURAL_REPAIR_INSTRUCTIONS,
+} from "@/ai/prompts/structural-repair";
 
 function logRequestFailure(
   error: unknown,
@@ -361,10 +365,8 @@ export async function generateProductionSnapshot<TOutput>(
             promptVersion: input.promptVersion,
             schemaVersion: "1.0",
             schemaName: `${input.promptKey.replaceAll(".", "_")}_repair`,
-            systemInstructions:
-              "Repair structure only so it matches the supplied schema. Preserve business meaning, do not add claims or facts, and return no HTML.",
-            userMessage: JSON.stringify({
-              task: "Repair the prior generation structure without adding facts.",
+            systemInstructions: STRUCTURAL_REPAIR_INSTRUCTIONS,
+            userMessage: buildStructuralRepairMessage({
               rejectedOutput: error.rejectedOutput ?? null,
               validationIssues: error.validationIssues ?? [],
               trustedConstraints: prompt.safetyNotes,

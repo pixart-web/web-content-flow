@@ -47,7 +47,7 @@ Then create a `web_content_flow` role/database matching `DATABASE_URL` in `.env`
 - `pnpm worker` / `pnpm maintenance` default `NODE_ENV=development` only for local runs.
 - To exercise the real-generation path locally without spending credit: `AI_PROVIDER_DEFAULT=OPENAI`, `AI_REAL_GENERATION_ENABLED=true`, `AI_FAKE_OPENAI_ENABLED=true`, restart dev, run `pnpm worker:once`; General Copy regeneration goes through the executor.
 - `pnpm build` overwrites `.next`; restart the dev server (and clear `.next`) afterwards.
-- `next dev` writes an untracked `AGENTS.md` (framework agent rules); whether to commit it is still the product owner's call.
+- `AGENTS.md` (Next.js agent rules) is written by `next dev` and is committed; if `next dev` changes it, commit the update with your work.
 
 ## Still open for the product owner
 

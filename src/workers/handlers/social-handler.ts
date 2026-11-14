@@ -550,3 +550,7 @@ export async function handleSocialJob(prisma: PrismaClient, job: Job) {
     );
   }
 }
+
+// Used by the evaluation suite (C-04) to build a schema-valid reference output.
+export { generateSocialSnapshot as createDeterministicSocialSnapshot };
+export type { ItemRequest as SocialItemRequest };

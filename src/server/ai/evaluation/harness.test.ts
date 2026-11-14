@@ -7,9 +7,25 @@ vi.mock("server-only", () => ({}));
 import { BrandProfileSchema } from "@/domain/brand-profile/brand-profile-schema";
 import { OllamaProvider } from "@/server/ai/providers/ollama-provider";
 import {
+  createDeterministicAdsSnapshot,
+  type AdsItemRequest,
+} from "@/workers/handlers/ads-handler";
+import {
   createDeterministicCopySnapshot,
   type CopyItemRequest,
 } from "@/workers/handlers/copy-handler";
+import {
+  createDeterministicSocialSnapshot,
+  type SocialItemRequest,
+} from "@/workers/handlers/social-handler";
+import {
+  createDeterministicVideoSnapshot,
+  type VideoItemRequest,
+} from "@/workers/handlers/video-handler";
+import {
+  createDeterministicWebsitePage,
+  type WebsitePageRequest,
+} from "@/workers/handlers/website-handler";
 
 import { buildEvaluationCases, type EvaluationCase } from "./cases";
 import { renderEvaluationMarkdown, runEvaluation } from "./harness";
@@ -30,7 +46,7 @@ function validOutputs(cases: readonly EvaluationCase[]) {
   const outputs = new Map<string, unknown>();
   for (const testCase of cases) {
     const context = testCase.context as {
-      request?: CopyItemRequest;
+      request?: unknown;
       brandProfile?: unknown;
     };
     if (testCase.id === "brand_profile") {
@@ -40,15 +56,42 @@ function validOutputs(cases: readonly EvaluationCase[]) {
         }
       ).brandProfile;
       outputs.set(testCase.promptKey, BrandProfileSchema.parse(brand));
-    } else
-      outputs.set(
-        testCase.promptKey,
-        createDeterministicCopySnapshot(
-          context.request!,
-          BrandProfileSchema.parse(context.brandProfile),
-          `evaluation-${testCase.id}`,
-        ),
-      );
+      continue;
+    }
+    const brand = BrandProfileSchema.parse(context.brandProfile);
+    const jobId = `evaluation-${testCase.id}`;
+    const moduleKey = testCase.id.split(".")[0];
+    const output =
+      moduleKey === "copy"
+        ? createDeterministicCopySnapshot(
+            context.request as CopyItemRequest,
+            brand,
+            jobId,
+          )
+        : moduleKey === "website"
+          ? createDeterministicWebsitePage(
+              context.request as WebsitePageRequest,
+              brand,
+              jobId,
+            )
+          : moduleKey === "social"
+            ? createDeterministicSocialSnapshot(
+                context.request as SocialItemRequest,
+                brand,
+                jobId,
+              )
+            : moduleKey === "ads"
+              ? createDeterministicAdsSnapshot(
+                  context.request as AdsItemRequest,
+                  brand,
+                  jobId,
+                )
+              : createDeterministicVideoSnapshot(
+                  context.request as VideoItemRequest,
+                  brand,
+                  jobId,
+                );
+    outputs.set(testCase.promptKey, testCase.schema.parse(output));
   }
   return outputs;
 }
@@ -94,6 +137,10 @@ describe("evaluation suite (C-04)", () => {
       "copy.marketing_email",
       "copy.product_description",
       "copy.faq_document",
+      "website.home",
+      "social.instagram_post",
+      "ads.meta_ad",
+      "video.reel_script",
     ]);
     const outputs = validOutputs(cases);
     const adapter = await fakeOllama((task) =>

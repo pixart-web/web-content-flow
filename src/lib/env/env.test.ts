@@ -138,4 +138,24 @@ describe("environment validation", () => {
       parseServerEnv({ ...configured, SMTP_PORT: "465", SMTP_SECURE: "true" }),
     ).toMatchObject({ SMTP_PORT: 465, SMTP_SECURE: true });
   });
+
+  it("requires a local runtime URL and model together", () => {
+    const base = {
+      NODE_ENV: "development",
+      NEXT_PUBLIC_APP_URL: "http://localhost:3000",
+      DATABASE_URL: "postgresql://test:test@localhost:5432/test",
+      AUTH_SECRET: "test-secret-that-is-at-least-32-characters",
+      AUTH_URL: "http://localhost:3000",
+    };
+    expect(() =>
+      parseServerEnv({ ...base, AI_OLLAMA_BASE_URL: "http://127.0.0.1:11434" }),
+    ).toThrow(/AI_OLLAMA_BASE_URL and AI_OLLAMA_MODEL/);
+    expect(
+      parseServerEnv({
+        ...base,
+        AI_OPENAI_COMPATIBLE_BASE_URL: "http://127.0.0.1:8080",
+        AI_OPENAI_COMPATIBLE_MODEL: "mlx-test",
+      }),
+    ).toMatchObject({ AI_OPENAI_COMPATIBLE_STRUCTURED_MODE: "json_mode" });
+  });
 });

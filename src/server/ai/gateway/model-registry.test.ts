@@ -41,4 +41,29 @@ describe("model registry", () => {
       findModelForTier(buildModelRegistry(env), "ollama", "STANDARD"),
     ).toBe(null);
   });
+
+  it("registers configured local runtimes for evaluation only", () => {
+    const registry = buildModelRegistry({
+      ...env,
+      AI_OLLAMA_BASE_URL: "http://127.0.0.1:11434",
+      AI_OLLAMA_MODEL: "qwen-test:14b",
+      AI_OPENAI_COMPATIBLE_BASE_URL: "http://inference.internal:8080",
+      AI_OPENAI_COMPATIBLE_MODEL: "mlx-test",
+      AI_OPENAI_COMPATIBLE_STRUCTURED_MODE: "prompted",
+    });
+    expect(registry.find((m) => m.runtimeKey === "ollama")).toMatchObject({
+      ref: "ollama/qwen-test:14b",
+      providerKind: "local",
+      status: "evaluation",
+      persistedProvider: null,
+      capabilities: { structured: "native_schema" },
+    });
+    expect(
+      registry.find((m) => m.runtimeKey === "openai-compatible"),
+    ).toMatchObject({
+      providerKind: "self_hosted",
+      status: "evaluation",
+      capabilities: { structured: "prompted" },
+    });
+  });
 });

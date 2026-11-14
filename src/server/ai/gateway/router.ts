@@ -30,6 +30,8 @@ export type RouteExclusion = Readonly<{
   reason:
     | "not_registered"
     | "disabled"
+    | "evaluation_only"
+    | "not_persistable"
     | "missing_capability"
     | "privacy"
     | "runtime_not_configured"
@@ -67,6 +69,10 @@ export function routeTask(input: {
     const exclude = (reason: RouteExclusion["reason"]) =>
       exclusions.push({ runtimeKey, modelRef: model.ref, reason });
     if (model.status === "disabled") return exclude("disabled");
+    // ADR-077: models under evaluation are exercised by the evaluation suite,
+    // never by production jobs.
+    if (model.status === "evaluation") return exclude("evaluation_only");
+    if (model.persistedProvider === null) return exclude("not_persistable");
     // Every registered model returns structured output (natively or via
     // prompting plus zod validation); embeddings must be declared.
     if (

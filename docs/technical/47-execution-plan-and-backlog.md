@@ -70,8 +70,8 @@ Tamanhos: XS < 0,5 dia · S ≈ 1 dia · M ≈ 2–3 dias · L ≈ 1 semana. **D
 | ID | Tarefa | Tam. | Dep. | Aceitação |
 |---|---|---|---|---|
 | C-01 | Decisão de hardware alvo (D-5) e orçamento de memória e disco | XS | D-5 | Documento curto com limites |
-| C-02 | Adapter `openai-compatible` (base URL e chave opcional), com deteção do `structuredMode` | M | B-01 | Testes de contrato contra um servidor HTTP falso (sucesso, schema inválido, timeout, 429, abort) |
-| C-03 | Adapter `ollama` nativo (`/api/chat` com `format` JSON Schema) e `health` com modelos disponíveis | M | B-01 | Mesmos testes de contrato; o `health` reflete modelos ausentes |
+| C-02 | ✅ **Implementado (2026-11-14):** adapter `openai-compatible` (base URL, chave opcional; `structuredMode` configurável em vez de detetado) | M | B-01 | Testes de contrato contra um servidor HTTP falso (sucesso, schema inválido, timeout, 429, abort) |
+| C-03 | ✅ **Implementado (2026-11-14):** adapter `ollama` nativo (`/api/chat` com `format` JSON Schema). Falta o `health` com modelos disponíveis | M | B-01 | Mesmos testes de contrato; o `health` reflete modelos ausentes |
 | C-04 | Suite de avaliação por tarefa (fixtures UrbanStride e sintéticas) e relatório | M | B-02 | `pnpm eval:ai --model <ref>` produz um relatório reproduzível |
 | C-05 | Avaliação real no hardware alvo, com 2–3 modelos candidatos | M | C-01..C-04 | Relatório em `docs/technical/` com métricas; modelos aprovados passam a `active` |
 | C-06 | Modo local-first documentado (`.env` de exemplo e runbook macOS) | S | C-05 | Instalação limpa num Mac gera os sete módulos sem chave de cloud |

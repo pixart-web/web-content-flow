@@ -1,5 +1,7 @@
 # Plano de execução, backlog e plano de testes
 
+> **2026-11-14 — mudança de direção:** o produto passa a local-first. O staging no Render fica suspenso e a proposta de arquitetura e migração está em [49-local-first-architecture-proposal.md](49-local-first-architecture-proposal.md) (por aprovar). Este backlog mantém-se válido para o modo `server`.
+
 **Estado:** Proposta para aprovação
 **Data:** 2026-11-13
 **Entradas:** [Estado real do projeto](../audits/current-project-status.md) · [Arquitetura do AI Gateway](46-ai-gateway-architecture.md) · ADR-069–077

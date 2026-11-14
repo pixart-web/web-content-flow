@@ -27,14 +27,18 @@ export function percentile(values: readonly number[], p: number) {
 }
 
 // Scored text excludes application-owned provenance, the brand's own word
-// lists (a Brand Profile legitimately lists its words to avoid) and editorial
-// `notes`, where models restate the rules ("avoid terms like 'magic'") rather
-// than use the words in deliverable copy. Applies at any depth.
+// lists (a Brand Profile legitimately lists its words to avoid), editorial
+// `notes` and internal production notes / visual `avoid` lists (Video), where
+// models restate the rules ("avoid terms like 'magic'") rather than use the
+// words in deliverable copy. Applies at any depth.
 const unscoredKeys = new Set([
   "provenance",
   "wordsToAvoid",
   "wordsToUse",
   "notes",
+  "productionNotes",
+  "editingNotes",
+  "avoid",
 ]);
 
 function generatedText(output: unknown) {

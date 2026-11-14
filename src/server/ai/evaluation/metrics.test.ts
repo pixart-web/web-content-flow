@@ -33,6 +33,8 @@ describe("evaluation metrics", () => {
       wordsToAvoid: ["gimmick"],
       nested: { provenance: { note: "neon" } },
       notes: "Avoid words like 'gimmick' or 'neon'.",
+      productionNotes: "Never say gimmick on screen.",
+      visualDirection: { avoid: ["neon lighting"] },
     };
     expect(prohibitedWordHits(output, ["cheap", "gimmick", "neon"])).toEqual([
       "cheap",

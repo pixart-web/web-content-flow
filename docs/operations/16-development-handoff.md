@@ -17,7 +17,8 @@ Authoritative context, in this order:
 1. [Real project status](../audits/current-project-status.md) — blockers, decisions D-1…D-7.
 2. [Execution plan and backlog](../technical/47-execution-plan-and-backlog.md) — phases A–F, test plan.
 3. [AI Gateway architecture](../technical/46-ai-gateway-architecture.md) and ADR-069…079 in [27-architecture-decision-records.md](../technical/27-architecture-decision-records.md).
-4. [Staging deployment checklist](13-staging-deployment-checklist.md) — the product owner is provisioning Render staging; verify it when they say it exists.
+4. [Local mode on macOS](17-local-mode-macos.md) — Ollama, `pnpm ai:health`, `pnpm eval:ai`.
+5. [Staging deployment checklist](13-staging-deployment-checklist.md) — the product owner is provisioning Render staging; verify it when they say it exists.
 
 ## Decisions to respect
 

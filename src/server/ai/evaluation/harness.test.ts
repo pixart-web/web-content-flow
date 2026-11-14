@@ -11,6 +11,10 @@ import {
   type AdsItemRequest,
 } from "@/workers/handlers/ads-handler";
 import {
+  createDeterministicCalendarWeek,
+  type CalendarCapturedSource,
+} from "@/workers/handlers/calendar-handler";
+import {
   createDeterministicCopySnapshot,
   type CopyItemRequest,
 } from "@/workers/handlers/copy-handler";
@@ -49,9 +53,30 @@ function validOutputs(cases: readonly EvaluationCase[]) {
       request?: unknown;
       brandProfile?: unknown;
     };
+    if (testCase.id === "calendar.editorial_week") {
+      const calendar = testCase.context as {
+        planningPeriod: { startDate: string; endDate: string };
+        settings: Parameters<
+          typeof createDeterministicCalendarWeek
+        >[0]["settings"];
+        sourceVersions: CalendarCapturedSource[];
+      };
+      outputs.set(
+        testCase.promptKey,
+        testCase.schema.parse(
+          createDeterministicCalendarWeek({
+            weekIndex: 0,
+            ...calendar.planningPeriod,
+            settings: calendar.settings,
+            sources: calendar.sourceVersions,
+          }),
+        ),
+      );
+      continue;
+    }
     if (testCase.id === "brand_profile") {
       const brand = (
-        cases.find((c) => c.id !== "brand_profile")!.context as {
+        cases.find((c) => c.id.startsWith("copy."))!.context as {
           brandProfile: unknown;
         }
       ).brandProfile;
@@ -141,6 +166,7 @@ describe("evaluation suite (C-04)", () => {
       "social.instagram_post",
       "ads.meta_ad",
       "video.reel_script",
+      "calendar.editorial_week",
     ]);
     const outputs = validOutputs(cases);
     const adapter = await fakeOllama((task) =>

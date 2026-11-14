@@ -787,3 +787,7 @@ export async function handleCalendarJob(prisma: PrismaClient, job: Job) {
   }
   await regenerate(prisma, job);
 }
+
+// Used by the evaluation suite (C-04) to build a schema-valid reference output.
+export { planWeek as createDeterministicCalendarWeek };
+export type { CapturedSource as CalendarCapturedSource };

@@ -14,6 +14,10 @@ import {
   type GeneralCopyType,
 } from "@/domain/copy/copy-schemas";
 import { AdsSnapshotSchema } from "@/domain/ads/ads-schemas";
+import {
+  CalendarGenerationRequestSchema,
+  EditorialCalendarSnapshotSchema,
+} from "@/domain/calendar/calendar-schemas";
 import { SocialSnapshotSchema } from "@/domain/social/social-schemas";
 import { VideoSnapshotSchema } from "@/domain/video/video-schemas";
 import { WebsitePageSnapshotSchema } from "@/domain/website/website-schemas";
@@ -21,7 +25,7 @@ import { MockProvider } from "@/server/ai/providers/mock-provider";
 
 // Fixed, synthetic evaluation inputs (fictional UrbanStride brand). The suite
 // version changes whenever cases or scoring change, so reports stay comparable.
-export const EVALUATION_SUITE_VERSION = "1.3.0";
+export const EVALUATION_SUITE_VERSION = "1.4.0";
 
 const brief = {
   schemaVersion: "1.0",
@@ -116,6 +120,47 @@ export async function buildEvaluationCases(): Promise<EvaluationCase[]> {
     outputLanguage: "English",
   });
 
+  const calendarSettings = CalendarGenerationRequestSchema.parse({
+    schemaVersion: "1.0",
+    calendarType: "EDITORIAL_CALENDAR",
+    planningPeriod: {
+      startDate: "2026-12-07",
+      endDate: "2027-01-03",
+      timezone: "Europe/Lisbon",
+    },
+    modules: ["WEBSITE", "SOCIAL", "ADS", "VIDEO"],
+    channels: ["WEBSITE", "INSTAGRAM", "META_ADS"],
+    cadence: {
+      weeklyTarget: 4,
+      preferredWeekdays: ["MONDAY", "WEDNESDAY", "FRIDAY", "SATURDAY"],
+      preferredTimeSlots: ["MORNING", "EVENING"],
+    },
+    objectives: ["PRODUCT_LAUNCH", "AWARENESS"],
+    sourceSelection: {
+      strategy: "MIX_EXISTING_AND_NEW",
+      includeUnscheduledExistingContent: true,
+      allowPlannedPlaceholders: true,
+    },
+    outputLanguage: "English",
+  });
+  const calendarWeek = { startDate: "2026-12-07", endDate: "2026-12-13" };
+  const calendarSources = (
+    [
+      ["website-home", "Home", "HOME", "WEBSITE"],
+      ["social-post", "Launch post", "SOCIAL_POST", "SOCIAL"],
+      ["meta-ad", "City collection ad", "META_AD", "ADS"],
+      ["reel-script", "Launch reel", "VIDEO_SCRIPT", "VIDEO"],
+    ] as const
+  ).map(([key, title, type, module]) => ({
+    contentItemId: `evaluation-item-${key}`,
+    contentItemVersionId: `evaluation-version-${key}`,
+    sourceTitleSnapshot: title,
+    sourceType: type,
+    sourceModule: module,
+    sourceMock: true,
+    sourceBrandProfileVersionId: "evaluation-brand-profile-v1",
+  }));
+
   const definitions: {
     id: string;
     promptKey: string;
@@ -145,8 +190,7 @@ export async function buildEvaluationCases(): Promise<EvaluationCase[]> {
       },
     })),
     // One representative item per remaining module, with the same
-    // { request, brandProfile } context the worker handlers send. Calendar is
-    // left out: it plans from items other modules already generated.
+    // { request, brandProfile } context the worker handlers send.
     {
       id: "website.home",
       promptKey: "website.home.generation",
@@ -229,6 +273,20 @@ export async function buildEvaluationCases(): Promise<EvaluationCase[]> {
           brandProfileVersionId: "evaluation-brand-profile-v1",
         },
         brandProfile,
+      },
+    },
+    // Calendar plans one week at a time from items other modules generated;
+    // the context mirrors calendar-handler (planningPeriod, settings,
+    // sourceVersions) with four fixed source items.
+    {
+      id: "calendar.editorial_week",
+      promptKey: "calendar.editorial_calendar.generation",
+      schema: EditorialCalendarSnapshotSchema.shape
+        .entries as z.ZodType<unknown>,
+      context: {
+        planningPeriod: calendarWeek,
+        settings: calendarSettings,
+        sourceVersions: calendarSources,
       },
     },
   ];

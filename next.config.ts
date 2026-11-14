@@ -5,6 +5,10 @@ const nextConfig: NextConfig = {
   ...(process.env.MARKETING_CAPTURE_MODE === "true"
     ? { devIndicators: false }
     : {}),
+  // Desktop edition (pnpm build:desktop): self-contained server.js.
+  ...(process.env.NEXT_OUTPUT === "standalone"
+    ? { output: "standalone" as const }
+    : {}),
   poweredByHeader: false,
   reactStrictMode: true,
   async headers() {

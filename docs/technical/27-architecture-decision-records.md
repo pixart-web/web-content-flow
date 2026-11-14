@@ -585,3 +585,13 @@ Contexto comum: [Estado real do projeto](../audits/current-project-status.md) e 
 - **Alternatives:** Resend (new vendor account and DNS records), Postmark, Amazon SES, Brevo.
 - **Consequences:** No extra vendor or data processor. Deliverability depends on the hosting provider's reputation and limits; bounces are not reported back to the app. A DMARC record should be added before the beta.
 - **Review trigger:** delivery failures, sending-volume limits, or the need for bounce/complaint webhooks.
+
+### ADR-079 — Three editions; this Mac tests the macOS edition
+
+**Status:** Accepted on 2026-11-14 by the product owner (D-5).
+
+- **Context:** Phase C needed a target hardware decision before evaluating local models.
+- **Decision:** The product will ship as a **web edition** and as **desktop software for Windows and for macOS**. The product owner's Apple M4 Mac (32 GB unified memory) is the **test machine for the macOS edition**: local runtimes (Ollama, MLX) and model evaluations for that edition run there. It is not production hardware.
+- **Consequences:** Evaluation reports from this Mac are evidence for the macOS edition only. Customer Macs may have less memory, so evaluations include a smaller model to set the minimum supported specification. The Windows edition needs its own test machine before Windows evaluations. The web edition's model hardware (cloud, Hetzner/Nodera) remains open; a model becomes `active` for an edition only after passing evaluation on that edition's hardware (ADR-077).
+- **Out of scope here:** the desktop packaging technology (e.g. Tauri/Electron) is a separate, later decision.
+

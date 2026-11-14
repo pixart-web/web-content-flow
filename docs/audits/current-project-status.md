@@ -193,7 +193,7 @@ AUD-008 (resposta neutra no registo), AUD-010 (CSP), AUD-011 (noindex), AUD-012 
 | D-2 | ✅ **Decidido:** o responsável do produto gere o DNS (`wtservers.com`) e o servidor Hetzner | BL-07 |
 | D-3 | ✅ **Decidido: SMTP do alojamento** (`mail.webcontentflow.com`, ADR-078); SPF e DKIM já existem, falta DMARC | BL-03 |
 | D-4 | Em produção, a IA passa pelo Nodera ou o Web Content Flow mantém um gateway próprio? | Arquitetura (ADR-069) |
-| D-5 | Hardware alvo para modelos locais (Mac do cliente, servidor Hetzner com GPU, ou ambos) | ADR-077 |
+| D-5 | ✅ **Decidido (2026-11-14):** três edições (web, software Windows, software macOS); o Mac M4 32 GB do responsável é a máquina de teste da edição macOS (ADR-079). Hardware da edição web e máquina de teste Windows por decidir | ADR-077, ADR-079 |
 | D-6 | O que é o Kiko e quais as operações de que precisa | ADR-076 |
 | D-7 | O repositório deve ser público? | Exposição de documentação interna |
 

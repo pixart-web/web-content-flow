@@ -50,11 +50,19 @@ services:
       - key: MARKETING_CAPTURE_MODE
         value: "false"
       - key: EMAIL_PROVIDER
-        value: RESEND
-      - key: RESEND_API_KEY
+        value: SMTP
+      - key: SMTP_HOST
+        value: mail.webcontentflow.com
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_SECURE
+        value: "false"
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASSWORD
         sync: false
       - key: EMAIL_FROM
-        value: staging@updates.webcontentflow.com
+        value: noreply@webcontentflow.com
       - key: SUPPORT_EMAIL
         value: support@webcontentflow.com
       - key: AI_PROVIDER_DEFAULT
@@ -104,11 +112,19 @@ services:
       - key: RATE_LIMIT_SECRET
         sync: false
       - key: EMAIL_PROVIDER
-        value: RESEND
-      - key: RESEND_API_KEY
+        value: SMTP
+      - key: SMTP_HOST
+        value: mail.webcontentflow.com
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_SECURE
+        value: "false"
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASSWORD
         sync: false
       - key: EMAIL_FROM
-        value: staging@updates.webcontentflow.com
+        value: noreply@webcontentflow.com
       - key: AI_PROVIDER_DEFAULT
         value: MOCK
       - key: AI_REAL_GENERATION_ENABLED
@@ -155,8 +171,16 @@ services:
       - key: RATE_LIMIT_SECRET
         sync: false
       - key: EMAIL_PROVIDER
-        value: RESEND
-      - key: RESEND_API_KEY
+        value: SMTP
+      - key: SMTP_HOST
+        value: mail.webcontentflow.com
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_SECURE
+        value: "false"
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASSWORD
         sync: false
       - key: EMAIL_FROM
-        value: staging@updates.webcontentflow.com
+        value: noreply@webcontentflow.com

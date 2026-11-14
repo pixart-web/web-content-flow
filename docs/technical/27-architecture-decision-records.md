@@ -14,7 +14,7 @@
 
 ## ADR-058 — Render staging topology
 
-**Status:** Proposed, selected but not provisioned.
+**Status:** Accepted on 2026-11-13 by the product owner (D-1) for staging and the private beta, with two changes: transactional email uses the domain's own SMTP host (ADR-078) instead of Resend, and DNS stays with the current provider (`wtservers.com` nameservers, managed by the product owner) instead of Cloudflare. Monitoring vendor remains open. Not yet provisioned. Migration to Hetzner/Nodera is expected once Nodera is staging-validated.
 
 - **Decision:** Use Render Frankfurt for the Next.js web service, independent background worker, hourly cron maintenance and paid managed PostgreSQL. Use Resend for transactional email, Better Stack for uptime/logs/alerts and Cloudflare for DNS.
 - **Reason:** One provider covers the required long-running worker, cron, pre-deploy migration, health check and isolated PostgreSQL PITR recovery with low solo-operator complexity.
@@ -575,3 +575,13 @@ Contexto comum: [Estado real do projeto](../audits/current-project-status.md) e 
 **Status:** Proposed.
 
 - **Decision:** Nenhum modelo local fica `active` sem passar a suite de avaliação da tarefa no hardware alvo, com resultados no registry (`evaluation`). Não há treino nem fine-tuning nesta fase, e nenhum runtime é instalado sem a decisão D-5.
+
+### ADR-078 — Transactional email through the domain's SMTP host
+
+**Status:** Accepted on 2026-11-13 by the product owner (D-3).
+
+- **Context:** The codebase only supported Resend (never configured). The domain already has a mail host (`mail.webcontentflow.com`) that is listed in SPF and publishes a DKIM key (selector `default`); it accepts submission on 587 (STARTTLS) and 465 with a valid certificate for `*.webcontentflow.com`. No DMARC record exists yet.
+- **Decision:** Add `EMAIL_PROVIDER=SMTP` (nodemailer). Port 587 with mandatory STARTTLS (`requireTLS`) and TLS ≥ 1.2; credentials only in the deployment secret store. Deterministic `Message-ID` per correlation id so a retried send is recognisable as one message. Errors are classified (auth/TLS/config → not retryable; 4xx and connection failures → retryable; 5xx → rejected). Resend stays supported.
+- **Alternatives:** Resend (new vendor account and DNS records), Postmark, Amazon SES, Brevo.
+- **Consequences:** No extra vendor or data processor. Deliverability depends on the hosting provider's reputation and limits; bounces are not reported back to the app. A DMARC record should be added before the beta.
+- **Review trigger:** delivery failures, sending-volume limits, or the need for bounce/complaint webhooks.

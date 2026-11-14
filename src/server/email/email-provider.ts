@@ -11,15 +11,15 @@ export type TransactionalEmail = Readonly<{
 }>;
 
 export type EmailDeliveryResult =
-  | { ok: true; provider: "MOCK" | "RESEND"; messageId: string }
+  | { ok: true; provider: "MOCK" | "RESEND" | "SMTP"; messageId: string }
   | {
       ok: false;
-      provider: "MOCK" | "RESEND";
+      provider: "MOCK" | "RESEND" | "SMTP";
       code: "CONFIGURATION" | "RATE_LIMITED" | "UNAVAILABLE" | "REJECTED";
       retryable: boolean;
     };
 
 export interface EmailProvider {
-  readonly name: "MOCK" | "RESEND";
+  readonly name: "MOCK" | "RESEND" | "SMTP";
   send(message: TransactionalEmail): Promise<EmailDeliveryResult>;
 }

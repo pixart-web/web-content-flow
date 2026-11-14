@@ -43,8 +43,19 @@ export const serverEnvSchema = z
     PUBLIC_PRICING_ENABLED: enabledFromEnv,
     MARKETING_INDEXING_ENABLED: booleanFromEnv,
     MARKETING_CAPTURE_MODE: booleanFromEnv,
-    EMAIL_PROVIDER: z.enum(["MOCK", "RESEND"]).default("MOCK"),
+    EMAIL_PROVIDER: z.enum(["MOCK", "RESEND", "SMTP"]).default("MOCK"),
     RESEND_API_KEY: optionalSecretFromEnv(20),
+    SMTP_HOST: z.preprocess(
+      (value) => (value === "" ? undefined : value),
+      z.string().min(3).max(253).optional(),
+    ),
+    SMTP_PORT: integerFromEnv(1, 65_535, 587),
+    SMTP_SECURE: booleanFromEnv,
+    SMTP_USER: z.preprocess(
+      (value) => (value === "" ? undefined : value),
+      z.string().min(1).max(320).optional(),
+    ),
+    SMTP_PASSWORD: optionalSecretFromEnv(8),
     EMAIL_FROM: z.string().email().default("noreply@webcontentflow.local"),
     SUPPORT_EMAIL: z.string().email().default("support@webcontentflow.local"),
     LEGAL_TERMS_VERSION: z.string().min(1).max(40).default("draft-2026-07"),
@@ -123,6 +134,26 @@ export const serverEnvSchema = z
         code: "custom",
         path: ["RESEND_API_KEY"],
         message: "RESEND_API_KEY is required for real transactional email.",
+      });
+    if (
+      value.EMAIL_PROVIDER === "SMTP" &&
+      (!value.SMTP_HOST || !value.SMTP_USER || !value.SMTP_PASSWORD)
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["SMTP_HOST"],
+        message:
+          "SMTP_HOST, SMTP_USER and SMTP_PASSWORD are required for SMTP email.",
+      });
+    if (
+      value.EMAIL_PROVIDER === "SMTP" &&
+      value.SMTP_SECURE !== (value.SMTP_PORT === 465)
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["SMTP_SECURE"],
+        message:
+          "Use SMTP_SECURE=true with port 465 (implicit TLS) and false with STARTTLS ports such as 587.",
       });
     if (value.NODE_ENV === "production" && value.EMAIL_PROVIDER === "MOCK")
       context.addIssue({
@@ -220,6 +251,11 @@ export function getServerEnv(): ServerEnv {
     MARKETING_CAPTURE_MODE: process.env.MARKETING_CAPTURE_MODE,
     EMAIL_PROVIDER: process.env.EMAIL_PROVIDER,
     RESEND_API_KEY: process.env.RESEND_API_KEY,
+    SMTP_HOST: process.env.SMTP_HOST,
+    SMTP_PORT: process.env.SMTP_PORT,
+    SMTP_SECURE: process.env.SMTP_SECURE,
+    SMTP_USER: process.env.SMTP_USER,
+    SMTP_PASSWORD: process.env.SMTP_PASSWORD,
     EMAIL_FROM: process.env.EMAIL_FROM,
     SUPPORT_EMAIL: process.env.SUPPORT_EMAIL,
     LEGAL_TERMS_VERSION: process.env.LEGAL_TERMS_VERSION,

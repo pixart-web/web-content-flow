@@ -110,4 +110,32 @@ describe("environment validation", () => {
       }),
     ).toThrow(/database environment marker/i);
   });
+
+  it("requires SMTP credentials and a TLS mode that matches the port", () => {
+    const base = {
+      NODE_ENV: "development",
+      NEXT_PUBLIC_APP_URL: "http://localhost:3000",
+      DATABASE_URL: "postgresql://test:test@localhost:5432/test",
+      AUTH_SECRET: "test-secret-that-is-at-least-32-characters",
+      AUTH_URL: "http://localhost:3000",
+      EMAIL_PROVIDER: "SMTP",
+    };
+    expect(() => parseServerEnv(base)).toThrow(/SMTP_HOST, SMTP_USER/);
+    const configured = {
+      ...base,
+      SMTP_HOST: "mail.example.test",
+      SMTP_USER: "noreply@example.test",
+      SMTP_PASSWORD: "test-password-not-real",
+    };
+    expect(parseServerEnv(configured)).toMatchObject({
+      SMTP_PORT: 587,
+      SMTP_SECURE: false,
+    });
+    expect(() => parseServerEnv({ ...configured, SMTP_PORT: "465" })).toThrow(
+      /SMTP_SECURE=true with port 465/,
+    );
+    expect(
+      parseServerEnv({ ...configured, SMTP_PORT: "465", SMTP_SECURE: "true" }),
+    ).toMatchObject({ SMTP_PORT: 465, SMTP_SECURE: true });
+  });
 });

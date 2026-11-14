@@ -54,6 +54,7 @@ type RegistryEnv = Pick<
       ServerEnv,
       | "AI_OLLAMA_BASE_URL"
       | "AI_OLLAMA_MODEL"
+      | "AI_OLLAMA_STRUCTURED_MODE"
       | "AI_OPENAI_COMPATIBLE_BASE_URL"
       | "AI_OPENAI_COMPATIBLE_MODEL"
       | "AI_OPENAI_COMPATIBLE_STRUCTURED_MODE"
@@ -78,7 +79,10 @@ function localRuntimeModels(env: RegistryEnv): RegisteredModel[] {
       providerKind: providerKindForUrl(env.AI_OLLAMA_BASE_URL),
       persistedProvider: null,
       tiers: [...generationModelTiers],
-      capabilities: { structured: "native_schema", embeddings: false },
+      capabilities: {
+        structured: env.AI_OLLAMA_STRUCTURED_MODE ?? "native_schema",
+        embeddings: false,
+      },
       status: "evaluation",
     });
   if (env.AI_OPENAI_COMPATIBLE_BASE_URL && env.AI_OPENAI_COMPATIBLE_MODEL)

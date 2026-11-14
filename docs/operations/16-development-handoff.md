@@ -1,6 +1,6 @@
 # Development Handoff — continue on another machine
 
-**Updated:** 2026-11-14. Read this first when continuing the project on a new computer (for example the iMac that already has the local evaluation models in Ollama).
+**Updated:** 2026-11-14. Read this first when continuing the project on a new computer or in a new session.
 
 ## Where the work is
 
@@ -27,7 +27,7 @@ Authoritative context, in this order:
 - Out of scope this phase: Experience Studio, premium templates, motion builder, HorizonX-inspired features.
 - No destructive changes, irreversible migrations or production deploys without explicit approval. Merges to `main` only with the product owner's authorization and green CI.
 
-## Next step: C-05 on the Mac that has the models
+## Next step: C-05 on the macOS test Mac (Apple M4, 32 GB)
 
 ```bash
 ollama list   # confirm the models, e.g. qwen3.5:9b, gemma4:12b-it-qat, qwen3.5:4b
@@ -35,7 +35,7 @@ AI_OLLAMA_BASE_URL=http://127.0.0.1:11434 AI_OLLAMA_MODEL=qwen3.5:9b pnpm eval:a
 ```
 
 - Pass arguments directly (no `--`; pnpm forwards them and a literal `--` reaches the script). Don't use `pnpm -s`.
-- Qwen 3.5 has a thinking mode; if outputs contain reasoning text or fail JSON parsing, add `think: false` to the Ollama request in `src/server/ai/providers/ollama-provider.ts` (with a contract test) and re-run.
+- Verified 2026-11-14 on Ollama 0.40.16: `qwen3.5` rejects Ollama's `format` ("structured output is unavailable") — run it with `AI_OLLAMA_STRUCTURED_MODE=prompted`. Thinking is on by default for thinking models and exhausts the output budget; the adapter sends `think: false` unless `AI_OLLAMA_THINK=true`.
 - Publish a short summary of each report (model, hardware, pass/fail per case, p95) in `docs/technical/`; raw reports stay in `eval-reports/` (git-ignored).
 
 ## Local setup (macOS)

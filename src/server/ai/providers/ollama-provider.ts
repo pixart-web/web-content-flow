@@ -7,6 +7,7 @@ import type {
   AiProvider,
   StructuredGenerationRequest,
 } from "@/server/ai/ai-provider";
+import type { StructuredMode } from "@/server/ai/gateway/model-registry";
 
 import {
   jsonSchemaFor,
@@ -15,9 +16,11 @@ import {
   schemaInstructions,
 } from "./http-structured";
 
-// C-03: Ollama's native /api/chat with `format` set to the JSON Schema
-// (constrained decoding). The schema is also stated in the system prompt,
-// which helps smaller models; zod validates the result either way.
+// C-03: Ollama's native /api/chat. native_schema sends the JSON Schema as
+// `format` (constrained decoding); json_mode sends "json"; prompted sends no
+// format. The schema is always stated in the system prompt and zod validates
+// the result. `think` is false unless configured (thinking models otherwise
+// spend the output budget reasoning before the JSON).
 
 type OllamaChat = {
   message?: { content?: string };
@@ -29,7 +32,13 @@ type OllamaChat = {
 export class OllamaProvider implements AiProvider {
   readonly name = "ollama";
 
-  constructor(private readonly options: Readonly<{ baseUrl: string }>) {}
+  constructor(
+    private readonly options: Readonly<{
+      baseUrl: string;
+      structuredMode?: StructuredMode;
+      think?: boolean;
+    }>,
+  ) {}
 
   async generateStructured<TInput, TOutput>(
     request: StructuredGenerationRequest<TInput>,
@@ -38,12 +47,18 @@ export class OllamaProvider implements AiProvider {
     const baseUrl = this.options.baseUrl.endsWith("/")
       ? this.options.baseUrl
       : `${this.options.baseUrl}/`;
+    const mode = this.options.structuredMode ?? "native_schema";
     const response = (await postJson({
       url: new URL("api/chat", baseUrl).href,
       body: {
         model: request.model,
         stream: false,
-        format: jsonSchemaFor(schema),
+        think: this.options.think ?? false,
+        ...(mode === "native_schema"
+          ? { format: jsonSchemaFor(schema) }
+          : mode === "json_mode"
+            ? { format: "json" }
+            : {}),
         messages: [
           {
             role: "system",

@@ -78,7 +78,11 @@ const runtimeFactories: Readonly<Record<string, RuntimeFactory>> = {
   },
   ollama: (env) => {
     if (!env.AI_OLLAMA_BASE_URL) throw new Error("OLLAMA_NOT_CONFIGURED");
-    return new OllamaProvider({ baseUrl: env.AI_OLLAMA_BASE_URL });
+    return new OllamaProvider({
+      baseUrl: env.AI_OLLAMA_BASE_URL,
+      structuredMode: env.AI_OLLAMA_STRUCTURED_MODE,
+      think: env.AI_OLLAMA_THINK,
+    });
   },
   "openai-compatible": (env) => {
     if (!env.AI_OPENAI_COMPATIBLE_BASE_URL)

@@ -1,6 +1,6 @@
 # Local model evaluation — macOS edition (C-05)
 
-**Date:** 2026-11-14 · **Suite:** `pnpm eval:ai` 1.1.0 (round 1), 1.2.0 (round 2), 1.3.0 (round 3) · **Hardware:** Apple M4, 32 GB unified memory (macOS edition test machine, ADR-079) · **Runtime:** Ollama 0.40.16 on `localhost` · **Samples:** 5 per case.
+**Date:** 2026-11-14 · **Suite:** `pnpm eval:ai` 1.1.0 (round 1), 1.2.0 (round 2), 1.3.0 (round 3), 1.4.0 (Calendar) · **Hardware:** Apple M4, 32 GB unified memory (macOS edition test machine, ADR-079) · **Runtime:** Ollama 0.40.16 on `localhost` · **Samples:** 5 per case.
 
 Raw reports stay in `eval-reports/` (git-ignored). This page is the reviewed summary.
 
@@ -46,7 +46,7 @@ Before/after on the side-by-side samples (one email + one product description pe
 - **Video prohibited words were a scoring false positive.** A re-generated sample shows *magic* and *revolutionary* inside `productionNotes`, where the model restates the brand rule ("avoid words like …"). Internal production notes (`productionNotes`, `editingNotes`) and visual `avoid` lists are no longer scored, like `notes` since suite 1.1.0.
 - **The *durable* claim in Video is real** — the same invented attribute seen in product descriptions.
 - **Video is the slowest task** (p50 ≈ 1 min 50 s, ≈ 8k tokens): acceptable as a background job, but it sets the bar for the "interactive" expectation on the macOS edition.
-- Calendar has no case yet: it plans from items other modules already generated, so it needs a fixture of source items.
+- **Calendar (suite 1.4.0):** `calendar.editorial_week` plans one week from four fixed source items (one per module), as `calendar-handler` does. `gemma4:12b-it-qat`, 3 samples: ✅ 100% first-pass valid, 0 prohibited words, 0 flags, p50 120 s / p95 133 s, ≈ 3,000 tokens. Slow for its output size; the large entries schema dominates.
 
 ## Findings
 
@@ -68,7 +68,7 @@ All three stay `status: "evaluation"` (ADR-077). Before any becomes `active` for
 - [ ] Human review of generated text quality side by side (the suite checks rules, not writing quality).
 - [ ] Larger runs (≥ 20 samples per case) for the chosen models.
 - [x] Evaluation cases for Website, Social, Ads and Video (suite 1.3.0).
-- [ ] Evaluation case for Calendar (needs a fixture of source items).
+- [x] Evaluation case for Calendar (suite 1.4.0) — all seven modules covered.
 - [ ] Peak memory measurement while the app, PostgreSQL and the model run together.
 - [ ] ADR-070 enum step so jobs can persist a local provider (requires approval for an irreversible `ALTER TYPE`).
 

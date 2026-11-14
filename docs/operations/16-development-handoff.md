@@ -1,16 +1,10 @@
 # Development Handoff — continue on another machine
 
-**Updated:** 2026-11-14. Read this first when continuing the project on a new computer or in a new session.
+**Updated:** 2026-11-14 (after PR #24). Read this first when continuing the project on a new computer or in a new session.
 
 ## Where the work is
 
-| Branch / PR | Content | State |
-|---|---|---|
-| `main` | Everything through PR #20 (audit, AI Gateway phase B, SMTP email, deploy decisions) | merged |
-| `feat/local-runtime-adapters` — PR #21 | Ollama + OpenAI-compatible adapters (C-02, C-03) | open, CI green |
-| `feat/ai-evaluation-suite` — PR #22 (stacked on #21) | `pnpm eval:ai` evaluation suite (C-04) + ADR-079 (three editions) | open — **latest work; check this branch out** |
-
-Merge order when ready: #21, then retarget #22 to `main` and merge it.
+Everything is on `main` (through PR #24): audit, AI Gateway phases B and C (local runtime adapters, `pnpm ai:health`, the `pnpm eval:ai` suite covering all seven modules), SMTP email, deploy decisions and the macOS local-mode runbook. Start from `main`; the only open PR is #14 (`openai` 7), left open on purpose.
 
 Authoritative context, in this order:
 
@@ -28,23 +22,17 @@ Authoritative context, in this order:
 - Out of scope this phase: Experience Studio, premium templates, motion builder, HorizonX-inspired features.
 - No destructive changes, irreversible migrations or production deploys without explicit approval. Merges to `main` only with the product owner's authorization and green CI.
 
-## Next step: C-05 on the macOS test Mac (Apple M4, 32 GB)
+## Next step
 
-```bash
-ollama list   # confirm the models, e.g. qwen3.5:9b, gemma4:12b-it-qat, qwen3.5:4b
-AI_OLLAMA_BASE_URL=http://127.0.0.1:11434 AI_OLLAMA_MODEL=qwen3.5:9b pnpm eval:ai --runtime ollama --samples 5
-```
-
-- Pass arguments directly (no `--`; pnpm forwards them and a literal `--` reaches the script). Don't use `pnpm -s`.
-- Verified 2026-11-14 on Ollama 0.40.16: `qwen3.5` rejects Ollama's `format` ("structured output is unavailable") — run it with `AI_OLLAMA_STRUCTURED_MODE=prompted`. Thinking is on by default for thinking models and exhausts the output budget; the adapter sends `think: false` unless `AI_OLLAMA_THINK=true`.
-- Publish a short summary of each report (model, hardware, pass/fail per case, p95) in `docs/technical/`; raw reports stay in `eval-reports/` (git-ignored).
+- **Staging (A-05…A-09):** the product owner is provisioning Render staging; when they confirm, verify it with the [staging deployment checklist](13-staging-deployment-checklist.md).
+- **Local models (C-05):** rounds 1–3 and Calendar are summarised in [48-local-model-evaluation-macos.md](../technical/48-local-model-evaluation-macos.md); `gemma4:12b-it-qat` is the primary candidate. Remaining: human review of generated text, ≥ 20 samples per case, peak memory measurement, and the ADR-070 enum step (irreversible, needs approval). Setup and commands: [17-local-mode-macos.md](17-local-mode-macos.md).
+- Pass `pnpm` script arguments directly (no `--`), and don't use `pnpm -s`.
 
 ## Local setup (macOS)
 
 ```bash
 brew install git gh node@24 postgresql@16 && npm install -g pnpm@11.9.0 && gh auth login
 git clone https://github.com/pixart-web/web-content-flow.git && cd web-content-flow
-git checkout feat/ai-evaluation-suite
 pnpm install && pnpm prisma:generate
 cp .env.example .env   # then set AUTH_SECRET (openssl rand -base64 32); the file parses as-is otherwise
 brew services start postgresql@16

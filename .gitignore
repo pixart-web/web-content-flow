@@ -33,3 +33,7 @@ next-env.d.ts
 
 # AI evaluation reports (pnpm eval:ai); publish summaries in docs instead
 eval-reports/
+
+# L0 spikes
+spikes/*/node_modules/
+spikes/*/dist/

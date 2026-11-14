@@ -19,6 +19,16 @@ const optionalSecretFromEnv = (minimum: number) =>
     z.string().min(minimum).optional(),
   );
 
+const optionalUrlFromEnv = z.preprocess(
+  (value) => (value === "" ? undefined : value),
+  z.url().optional(),
+);
+const optionalTextFromEnv = (maximum: number) =>
+  z.preprocess(
+    (value) => (value === "" ? undefined : value),
+    z.string().min(1).max(maximum).optional(),
+  );
+
 export const serverEnvSchema = z
   .object({
     NODE_ENV: z.enum(["development", "test", "production"]),
@@ -70,6 +80,16 @@ export const serverEnvSchema = z
     OPENAI_MODEL_STANDARD: z.string().min(2).max(100).default("gpt-5.6-terra"),
     OPENAI_MODEL_PREMIUM: z.string().min(2).max(100).default("gpt-5.6-sol"),
     OPENAI_MODEL_REPAIR: z.string().min(2).max(100).default("gpt-5.6-luna"),
+    // Phase C: optional local/self-hosted runtimes. Registered for evaluation
+    // only (ADR-077); default policies never route to them.
+    AI_OLLAMA_BASE_URL: optionalUrlFromEnv,
+    AI_OLLAMA_MODEL: optionalTextFromEnv(200),
+    AI_OPENAI_COMPATIBLE_BASE_URL: optionalUrlFromEnv,
+    AI_OPENAI_COMPATIBLE_MODEL: optionalTextFromEnv(200),
+    AI_OPENAI_COMPATIBLE_API_KEY: optionalSecretFromEnv(8),
+    AI_OPENAI_COMPATIBLE_STRUCTURED_MODE: z
+      .enum(["native_schema", "json_mode", "prompted"])
+      .default("json_mode"),
     AI_REQUEST_TIMEOUT_MS: integerFromEnv(10_000, 180_000, 60_000),
     AI_MAX_RETRIES: integerFromEnv(0, 3, 2),
     AI_MAX_CONCURRENT_REQUESTS: integerFromEnv(1, 16, 4),
@@ -135,6 +155,20 @@ export const serverEnvSchema = z
         path: ["RESEND_API_KEY"],
         message: "RESEND_API_KEY is required for real transactional email.",
       });
+    for (const [url, model, prefix] of [
+      [value.AI_OLLAMA_BASE_URL, value.AI_OLLAMA_MODEL, "AI_OLLAMA"],
+      [
+        value.AI_OPENAI_COMPATIBLE_BASE_URL,
+        value.AI_OPENAI_COMPATIBLE_MODEL,
+        "AI_OPENAI_COMPATIBLE",
+      ],
+    ] as const)
+      if (Boolean(url) !== Boolean(model))
+        context.addIssue({
+          code: "custom",
+          path: [`${prefix}_BASE_URL`],
+          message: `${prefix}_BASE_URL and ${prefix}_MODEL must be set together.`,
+        });
     if (
       value.EMAIL_PROVIDER === "SMTP" &&
       (!value.SMTP_HOST || !value.SMTP_USER || !value.SMTP_PASSWORD)
@@ -270,6 +304,13 @@ export function getServerEnv(): ServerEnv {
     OPENAI_MODEL_STANDARD: process.env.OPENAI_MODEL_STANDARD,
     OPENAI_MODEL_PREMIUM: process.env.OPENAI_MODEL_PREMIUM,
     OPENAI_MODEL_REPAIR: process.env.OPENAI_MODEL_REPAIR,
+    AI_OLLAMA_BASE_URL: process.env.AI_OLLAMA_BASE_URL,
+    AI_OLLAMA_MODEL: process.env.AI_OLLAMA_MODEL,
+    AI_OPENAI_COMPATIBLE_BASE_URL: process.env.AI_OPENAI_COMPATIBLE_BASE_URL,
+    AI_OPENAI_COMPATIBLE_MODEL: process.env.AI_OPENAI_COMPATIBLE_MODEL,
+    AI_OPENAI_COMPATIBLE_API_KEY: process.env.AI_OPENAI_COMPATIBLE_API_KEY,
+    AI_OPENAI_COMPATIBLE_STRUCTURED_MODE:
+      process.env.AI_OPENAI_COMPATIBLE_STRUCTURED_MODE,
     AI_REQUEST_TIMEOUT_MS: process.env.AI_REQUEST_TIMEOUT_MS,
     AI_MAX_RETRIES: process.env.AI_MAX_RETRIES,
     AI_MAX_CONCURRENT_REQUESTS: process.env.AI_MAX_CONCURRENT_REQUESTS,

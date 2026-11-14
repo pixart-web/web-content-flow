@@ -94,7 +94,9 @@ export type StructuredGenerationRequest<TInput> = Readonly<{
 
 export type AiGenerationResult<TOutput> = Readonly<{
   data: TOutput;
-  provider: GenerationProvider;
+  // Adapter identity for diagnostics. What is persisted comes from the
+  // gateway route, so runtimes beyond the DB enum can report themselves.
+  provider: string;
   model: string;
   modelTier: GenerationModelTier;
   mock: boolean;
@@ -104,7 +106,7 @@ export type AiGenerationResult<TOutput> = Readonly<{
 }>;
 
 export interface AiProvider {
-  readonly name: GenerationProvider;
+  readonly name: string;
   generateStructured<TInput, TOutput>(
     request: StructuredGenerationRequest<TInput>,
     schema: z.ZodType<TOutput>,

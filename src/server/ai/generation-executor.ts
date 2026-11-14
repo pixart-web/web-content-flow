@@ -253,7 +253,7 @@ export async function generateProductionSnapshot<TOutput>(
     );
     const usage = await recordGenerationUsage(prisma, {
       jobId: job.id,
-      provider: result.provider,
+      provider: route.persistedProvider,
       modelId: result.model,
       modelTier: result.modelTier,
       promptKey: input.promptKey,
@@ -377,7 +377,7 @@ export async function generateProductionSnapshot<TOutput>(
         );
         const repairUsage = await recordGenerationUsage(prisma, {
           jobId: job.id,
-          provider: repaired.provider,
+          provider: repairRoute.persistedProvider,
           modelId: repaired.model,
           modelTier: repairTier,
           promptKey: `${input.promptKey}.repair`,

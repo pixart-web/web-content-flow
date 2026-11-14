@@ -154,4 +154,25 @@ describe("routeTask", () => {
       ),
     ).toBe("PROVIDER_UNAVAILABLE");
   });
+
+  it("never routes jobs to evaluation or non-persistable models", () => {
+    const evaluationLocal = { ...localModel, status: "evaluation" as const };
+    const decision = route({
+      policy: { preferredRuntimes: ["ollama-local"] },
+      registry: [...registry, evaluationLocal],
+    });
+    expect(decision.ok).toBe(false);
+    expect(decision.exclusions).toContainEqual({
+      runtimeKey: "ollama-local",
+      modelRef: "ollama-local/qwen-test",
+      reason: "evaluation_only",
+    });
+    const unpersistable = { ...localModel, persistedProvider: null };
+    expect(
+      route({
+        policy: { preferredRuntimes: ["ollama-local"] },
+        registry: [...registry, unpersistable],
+      }).exclusions,
+    ).toContainEqual(expect.objectContaining({ reason: "not_persistable" }));
+  });
 });

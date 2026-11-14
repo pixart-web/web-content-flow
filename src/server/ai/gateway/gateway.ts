@@ -8,6 +8,8 @@ import type {
 } from "@/server/ai/ai-provider";
 import { FakeOpenAIProvider } from "@/server/ai/providers/fake-openai-provider";
 import { MockProvider } from "@/server/ai/providers/mock-provider";
+import { OllamaProvider } from "@/server/ai/providers/ollama-provider";
+import { OpenAICompatibleProvider } from "@/server/ai/providers/openai-compatible-provider";
 import { OpenAIProvider } from "@/server/ai/providers/openai-provider";
 
 import {
@@ -74,6 +76,21 @@ const runtimeFactories: Readonly<Record<string, RuntimeFactory>> = {
     if (!env.OPENAI_API_KEY) throw new Error("OPENAI_NOT_CONFIGURED");
     return new OpenAIProvider({ apiKey: env.OPENAI_API_KEY });
   },
+  ollama: (env) => {
+    if (!env.AI_OLLAMA_BASE_URL) throw new Error("OLLAMA_NOT_CONFIGURED");
+    return new OllamaProvider({ baseUrl: env.AI_OLLAMA_BASE_URL });
+  },
+  "openai-compatible": (env) => {
+    if (!env.AI_OPENAI_COMPATIBLE_BASE_URL)
+      throw new Error("OPENAI_COMPATIBLE_NOT_CONFIGURED");
+    return new OpenAICompatibleProvider({
+      baseUrl: env.AI_OPENAI_COMPATIBLE_BASE_URL,
+      ...(env.AI_OPENAI_COMPATIBLE_API_KEY
+        ? { apiKey: env.AI_OPENAI_COMPATIBLE_API_KEY }
+        : {}),
+      structuredMode: env.AI_OPENAI_COMPATIBLE_STRUCTURED_MODE,
+    });
+  },
 };
 
 export function runtimeAvailability(env: ServerEnv): RuntimeAvailability {
@@ -85,6 +102,16 @@ export function runtimeAvailability(env: ServerEnv): RuntimeAvailability {
     openai: openAiReady
       ? { available: true }
       : { available: false, reason: "not_configured" },
+    // Configured is not the same as reachable; reachability is checked by the
+    // evaluation suite and, later, by a runtime health probe.
+    ollama:
+      env.AI_OLLAMA_BASE_URL && env.AI_OLLAMA_MODEL
+        ? { available: true }
+        : { available: false, reason: "not_configured" },
+    "openai-compatible":
+      env.AI_OPENAI_COMPATIBLE_BASE_URL && env.AI_OPENAI_COMPATIBLE_MODEL
+        ? { available: true }
+        : { available: false, reason: "not_configured" },
   };
 }
 
@@ -115,6 +142,10 @@ export function createAiGateway(
         throw decision.error;
       }
       const { model, fallback } = decision.candidates[0]!;
+      // The router excludes non-persistable models; this narrows the type.
+      if (model.persistedProvider === null)
+        throw new Error(`Model ${model.ref} cannot be persisted.`);
+      const persistedProvider = model.persistedProvider;
       if (facts)
         logAiEvent({
           ...facts,
@@ -130,7 +161,7 @@ export function createAiGateway(
         modelId: model.modelId,
         modelRef: model.ref,
         providerKind: model.providerKind,
-        persistedProvider: model.persistedProvider,
+        persistedProvider,
         tier,
         policyKey: policy.policyKey,
         policyVersion: policy.policyVersion,

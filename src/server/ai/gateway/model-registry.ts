@@ -27,8 +27,9 @@ export const RegisteredModelSchema = z
     runtimeKey: z.string().regex(/^[a-z0-9-]+$/),
     modelId: z.string().min(1).max(200),
     providerKind: z.enum(providerKinds),
-    // Value persisted in the GenerationProvider DB enum until ADR-070 lands.
-    persistedProvider: z.enum(["MOCK", "OPENAI"]),
+    // Value persisted in the GenerationProvider DB enum. null = this runtime
+    // cannot be recorded until ADR-070's enum step, so jobs never route to it.
+    persistedProvider: z.enum(["MOCK", "OPENAI"]).nullable(),
     tiers: z.array(z.enum(generationModelTiers)).min(1),
     capabilities: z
       .object({
@@ -47,7 +48,55 @@ export const MOCK_MODEL_ID = "deterministic-mock-v1";
 type RegistryEnv = Pick<
   ServerEnv,
   "OPENAI_MODEL_STANDARD" | "OPENAI_MODEL_PREMIUM" | "OPENAI_MODEL_REPAIR"
->;
+> &
+  Partial<
+    Pick<
+      ServerEnv,
+      | "AI_OLLAMA_BASE_URL"
+      | "AI_OLLAMA_MODEL"
+      | "AI_OPENAI_COMPATIBLE_BASE_URL"
+      | "AI_OPENAI_COMPATIBLE_MODEL"
+      | "AI_OPENAI_COMPATIBLE_STRUCTURED_MODE"
+    >
+  >;
+
+const loopbackHosts = new Set(["localhost", "127.0.0.1", "[::1]", "::1"]);
+
+export function providerKindForUrl(url: string): ProviderKind {
+  return loopbackHosts.has(new URL(url).hostname) ? "local" : "self_hosted";
+}
+
+// ADR-077: local and self-hosted models enter as "evaluation" and stay out of
+// routing until they pass the task evaluation suite on the target hardware.
+function localRuntimeModels(env: RegistryEnv): RegisteredModel[] {
+  const models: RegisteredModel[] = [];
+  if (env.AI_OLLAMA_BASE_URL && env.AI_OLLAMA_MODEL)
+    models.push({
+      ref: `ollama/${env.AI_OLLAMA_MODEL}`,
+      runtimeKey: "ollama",
+      modelId: env.AI_OLLAMA_MODEL,
+      providerKind: providerKindForUrl(env.AI_OLLAMA_BASE_URL),
+      persistedProvider: null,
+      tiers: [...generationModelTiers],
+      capabilities: { structured: "native_schema", embeddings: false },
+      status: "evaluation",
+    });
+  if (env.AI_OPENAI_COMPATIBLE_BASE_URL && env.AI_OPENAI_COMPATIBLE_MODEL)
+    models.push({
+      ref: `openai-compatible/${env.AI_OPENAI_COMPATIBLE_MODEL}`,
+      runtimeKey: "openai-compatible",
+      modelId: env.AI_OPENAI_COMPATIBLE_MODEL,
+      providerKind: providerKindForUrl(env.AI_OPENAI_COMPATIBLE_BASE_URL),
+      persistedProvider: null,
+      tiers: [...generationModelTiers],
+      capabilities: {
+        structured: env.AI_OPENAI_COMPATIBLE_STRUCTURED_MODE ?? "json_mode",
+        embeddings: false,
+      },
+      status: "evaluation",
+    });
+  return models;
+}
 
 export function buildModelRegistry(
   env: RegistryEnv,
@@ -81,6 +130,7 @@ export function buildModelRegistry(
       capabilities: { structured: "native_schema", embeddings: false },
       status: "active",
     })),
+    ...localRuntimeModels(env),
   ];
   const refs = new Set<string>();
   return models.map((model) => {

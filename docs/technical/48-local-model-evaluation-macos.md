@@ -59,6 +59,7 @@ All three stay `status: "evaluation"` (ADR-077). Before any becomes `active` for
 ```bash
 brew install ollama && brew services start ollama
 ollama pull gemma4:12b-it-qat && ollama pull qwen3.5:4b && ollama pull qwen3.5:9b
+AI_OLLAMA_BASE_URL=http://127.0.0.1:11434 AI_OLLAMA_MODEL=gemma4:12b-it-qat pnpm ai:health   # server up and model pulled?
 AI_OLLAMA_BASE_URL=http://127.0.0.1:11434 AI_OLLAMA_MODEL=gemma4:12b-it-qat AI_OLLAMA_STRUCTURED_MODE=native_schema pnpm eval:ai --runtime ollama --samples 5
 AI_OLLAMA_BASE_URL=http://127.0.0.1:11434 AI_OLLAMA_MODEL=qwen3.5:4b AI_OLLAMA_STRUCTURED_MODE=prompted pnpm eval:ai --runtime ollama --samples 5
 ```

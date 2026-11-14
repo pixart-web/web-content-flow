@@ -1,4 +1,5 @@
 import {
+  chmodSync,
   cpSync,
   existsSync,
   mkdirSync,
@@ -145,5 +146,7 @@ export function restoreSnapshot(input: {
     : null;
   if (previous) renameSync(input.dataDir, previous);
   cpSync(source, input.dataDir, { recursive: true });
+  // PostgreSQL refuses a data directory others can read.
+  if (process.platform !== "win32") chmodSync(input.dataDir, 0o700);
   return { previousDataDir: previous, manifest };
 }

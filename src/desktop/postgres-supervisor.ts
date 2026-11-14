@@ -137,6 +137,13 @@ export async function startPostgres(
   if (!fresh) await clearPreviousPostmaster(options.dataDir, log);
   const port = await findFreePort(options.preferredPort ?? 54_330);
 
+  // embedded-postgres rejects with `undefined` when PostgreSQL exits during
+  // start; keep its recent output so the error says why.
+  const recent: string[] = [];
+  const remember = (message: unknown) => {
+    recent.push(String(message).trim());
+    if (recent.length > 20) recent.shift();
+  };
   const postgres = new EmbeddedPostgres({
     databaseDir: options.dataDir,
     user: options.user,
@@ -145,14 +152,23 @@ export async function startPostgres(
     persistent: true,
     // Listen on loopback only; never on the network.
     postgresFlags: ["-c", "listen_addresses=127.0.0.1"],
-    onLog: () => {},
-    onError: (message: unknown) => log(String(message)),
+    onLog: remember,
+    onError: (message: unknown) => {
+      remember(message);
+      log(String(message));
+    },
   });
   if (fresh) {
     log("Initialising the local database.");
     await postgres.initialise();
   }
-  await postgres.start();
+  try {
+    await postgres.start();
+  } catch (error: unknown) {
+    throw new Error(
+      `PostgreSQL did not start: ${error instanceof Error ? error.message : String(error)}\n${recent.join("\n")}`,
+    );
+  }
 
   const admin = new Client({
     host: "127.0.0.1",

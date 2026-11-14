@@ -1,7 +1,11 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 import { AuthForm } from "@/features/auth/auth-form";
 import { signInAction } from "@/features/auth/auth-actions";
+import { getServerEnv } from "@/lib/env/server";
+import { localOwnerExists } from "@/server/auth/local-owner";
+import { getPrisma } from "@/server/db/prisma";
 
 export default async function SignInPage({
   searchParams,
@@ -9,6 +13,12 @@ export default async function SignInPage({
   searchParams: Promise<{ returnTo?: string; signedOut?: string }>;
 }) {
   const params = await searchParams;
+  // Desktop first run: no owner yet, so set one up.
+  if (
+    getServerEnv().APP_MODE === "local" &&
+    !(await localOwnerExists(getPrisma()))
+  )
+    redirect("/sign-up");
 
   return (
     <>

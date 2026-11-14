@@ -5,7 +5,9 @@ import type { Options } from "@node-rs/argon2";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
+import { getServerEnv } from "@/lib/env/server";
 import { getPrisma } from "@/server/db/prisma";
+import { createLocalOwner } from "@/server/auth/local-owner";
 import {
   createDatabaseSession,
   deleteCurrentSession,
@@ -71,7 +73,8 @@ export async function signUpAction(
   if (!parsed.success) {
     return { fieldErrors: parsed.error.flatten().fieldErrors };
   }
-  if (!getRolloutPolicy().registrationAvailable)
+  const localMode = getServerEnv().APP_MODE === "local";
+  if (!localMode && !getRolloutPolicy().registrationAvailable)
     return {
       message: "Account creation is not available in the current launch mode.",
     };
@@ -86,6 +89,30 @@ export async function signUpAction(
     if (error instanceof RateLimitError)
       return { message: "Please wait before trying to create an account." };
     return { message: "Your account could not be created right now." };
+  }
+
+  if (localMode) {
+    // Desktop edition: the first account becomes the owner; no other
+    // account can be created afterwards (LF-06).
+    try {
+      const passwordHash = await hash(parsed.data.password, passwordOptions);
+      const owner = await createLocalOwner(getPrisma(), {
+        email: parsed.data.email,
+        name: parsed.data.name,
+        passwordHash,
+      });
+      if (!owner)
+        return {
+          message: "This computer already has an owner profile. Sign in.",
+        };
+      await createDatabaseSession(owner.id);
+    } catch {
+      return {
+        message:
+          "Your profile could not be created right now. Please try again.",
+      };
+    }
+    redirect("/app/onboarding");
   }
 
   const users = createUserRepository(getPrisma());

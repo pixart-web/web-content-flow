@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
+import { getServerEnv } from "@/lib/env/server";
 import {
   requestPasswordReset,
   resetPassword,
@@ -36,6 +37,12 @@ export async function forgotPasswordAction(
   const parsed = emailSchema.safeParse(formData.get("email"));
   if (!parsed.success)
     return { fieldErrors: { email: [parsed.error.issues[0]!.message] } };
+  // Desktop edition: no email, so no reset tokens are issued (LF-06).
+  if (getServerEnv().APP_MODE === "local")
+    return {
+      message:
+        "The desktop edition does not send email. Recover access from the desktop app.",
+    };
   try {
     await enforceRateLimit({
       action: "forgot-password",

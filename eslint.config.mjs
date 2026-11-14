@@ -15,6 +15,7 @@ export default defineConfig([
     },
   },
   globalIgnores([
+    "spikes/**",
     ".next/**",
     "coverage/**",
     "playwright-report/**",

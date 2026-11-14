@@ -119,7 +119,17 @@ export const serverEnvSchema = z
     const localOrigin =
       applicationUrl.hostname === "localhost" ||
       applicationUrl.hostname === "127.0.0.1";
-    if (value.NODE_ENV === "production" && applicationUrl.protocol !== "https:")
+    // LF-03 spike only: the desktop shell serves the app on loopback HTTP.
+    // The real APP_MODE design is L1 (LF-05/LF-07).
+    const desktopLocal =
+      process.env.APP_MODE === "local" &&
+      applicationUrl.hostname === "127.0.0.1" &&
+      applicationUrl.protocol === "http:";
+    if (
+      value.NODE_ENV === "production" &&
+      applicationUrl.protocol !== "https:" &&
+      !desktopLocal
+    )
       context.addIssue({
         code: "custom",
         path: ["NEXT_PUBLIC_APP_URL"],
@@ -197,7 +207,11 @@ export const serverEnvSchema = z
         message:
           "Use SMTP_SECURE=true with port 465 (implicit TLS) and false with STARTTLS ports such as 587.",
       });
-    if (value.NODE_ENV === "production" && value.EMAIL_PROVIDER === "MOCK")
+    if (
+      value.NODE_ENV === "production" &&
+      value.EMAIL_PROVIDER === "MOCK" &&
+      !desktopLocal
+    )
       context.addIssue({
         code: "custom",
         path: ["EMAIL_PROVIDER"],

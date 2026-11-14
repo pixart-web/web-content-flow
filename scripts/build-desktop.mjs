@@ -76,6 +76,8 @@ await build({
   entryPoints: {
     worker: join(root, "scripts", "run-worker.ts"),
     maintenance: join(root, "scripts", "run-maintenance.ts"),
+    // L3: on-device evaluation before a local model is activated.
+    evaluate: join(root, "scripts", "run-ai-eval.ts"),
   },
   bundle: true,
   platform: "node",
@@ -114,6 +116,7 @@ writeFileSync(
         web: "web/server.js",
         worker: "worker.mjs",
         maintenance: "maintenance.mjs",
+        evaluate: "evaluate.mjs",
       },
       runtimeEnv: [
         `NEXT_PUBLIC_APP_URL=${origin}`,

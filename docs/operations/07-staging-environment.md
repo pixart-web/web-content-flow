@@ -15,10 +15,13 @@ must never be seeded into external staging automatically.
 
 ## Provisioning checklist
 
+Procedure: [18-render-staging-setup.md](18-render-staging-setup.md).
+
+
 | Gate | Owner | Date | Evidence | Status / blocker | Rollback |
 |---|---|---|---|---|---|
-| Private Git remote connected | Project owner | | | BLOCKED: no remote | disconnect Blueprint |
-| Render Blueprint applied | Release manager | | | BLOCKED: no account | delete staging services |
+| Git remote connected | Project owner | | | Ready: `pixart-web/web-content-flow` on GitHub (visibility D-7 open) | disconnect Blueprint |
+| Render Blueprint applied | Release manager | | | Pending owner: workspace exists, Blueprint ready for review ([18](18-render-staging-setup.md)) | delete staging services |
 | DNS/TLS valid | Domain owner | | | BLOCKED: domain unverified | remove DNS record |
 | Separate database migrated | Database owner | | | BLOCKED | destroy staging DB |
 | Web ready | Release manager | | | BLOCKED | rollback release |

@@ -11,20 +11,18 @@ All evidence fields remain incomplete until an operator with provider access exe
 
 ## 2. Render (owner)
 
-- [ ] Create the Render workspace and add a payment method.
-- [ ] **New → Blueprint**, select `pixart-web/web-content-flow`, branch `main`. Render reads `render.yaml` and proposes: PostgreSQL `web-content-flow-staging-db` (Frankfurt), web `web-content-flow-staging-web`, worker `web-content-flow-staging-worker`, cron `web-content-flow-staging-maintenance`.
-- [ ] Confirm in the database settings that the chosen plan provides backups and point-in-time recovery; upgrade the plan if it does not.
-- [ ] Fill the secret values Render asks for (`sync: false`):
+Full procedure, environment inventory, costs, smoke checks and rollback: [18-render-staging-setup.md](18-render-staging-setup.md).
+
+- [ ] **New → Blueprint**, select `pixart-web/web-content-flow`, branch `main`. Render reads `render.yaml` and proposes: PostgreSQL 16 `web-content-flow-staging-db` (`0.1c-256mb`, Frankfurt, no external access), web `web-content-flow-staging-web`, worker `web-content-flow-staging-worker`, cron `web-content-flow-staging-maintenance` (all `0.5c-512mb`), and the environment group `web-content-flow-staging-config`. Estimated ≈ $20.55/month on the Hobby workspace.
+- [ ] Fill the values Render asks for (`sync: false`):
 
 | Key | Services | Value |
 |---|---|---|
-| `AUTH_SECRET` | web (generated), worker, cron | Worker and cron must use **the same value as web** |
-| `RATE_LIMIT_SECRET` | web (generated), worker, cron | Same value as web |
-| `APP_RELEASE` | web, worker, cron | Same immutable value on all three (commit SHA) |
 | `SMTP_USER` | web, worker, cron | Mailbox login on the mail host, e.g. `noreply@webcontentflow.com` |
 | `SMTP_PASSWORD` | web, worker, cron | That mailbox's password |
+| `APP_RELEASE` | web, worker | Release label, e.g. the commit SHA (optional) |
 
-Already set by `render.yaml`: `EMAIL_PROVIDER=SMTP`, `SMTP_HOST=mail.webcontentflow.com`, `SMTP_PORT=587`, `SMTP_SECURE=false` (STARTTLS required), `EMAIL_FROM=noreply@webcontentflow.com`, `NODE_ENV=production` on worker/cron, staging guards (`APP_ENV=staging`, registration and indexing off, capture mode off, mock AI). All three services pass the server env schema with these values (verified locally on 2026-11-13).
+`AUTH_SECRET` and `RATE_LIMIT_SECRET` are generated on the web service and copied to worker and cron by the Blueprint (`fromService`); nothing to paste. Auto-deploy is off: deploys are manual (web first, then worker and cron). All three services pass the server env schema with the Blueprint's values (verified locally on 2026-11-14).
 
 ## 3. Mail host (owner)
 

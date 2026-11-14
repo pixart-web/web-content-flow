@@ -181,6 +181,16 @@ describe("environment validation", () => {
       });
     });
 
+    it("requires the admin token to differ from the window token", () => {
+      expect(() =>
+        parseServerEnv({ ...local, DESKTOP_ADMIN_TOKEN: local.DESKTOP_TOKEN }),
+      ).toThrow(/must differ/);
+      expect(
+        parseServerEnv({ ...local, DESKTOP_ADMIN_TOKEN: "e".repeat(64) })
+          .DESKTOP_ADMIN_TOKEN,
+      ).toBe("e".repeat(64));
+    });
+
     it("does not require the per-launch token during next build", () => {
       vi.stubEnv("NEXT_PHASE", "phase-production-build");
       expect(

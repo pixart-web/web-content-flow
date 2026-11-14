@@ -13,7 +13,7 @@ import { MockProvider } from "@/server/ai/providers/mock-provider";
 
 // Fixed, synthetic evaluation inputs (fictional UrbanStride brand). The suite
 // version changes whenever cases or scoring change, so reports stay comparable.
-export const EVALUATION_SUITE_VERSION = "1.0.0";
+export const EVALUATION_SUITE_VERSION = "1.1.0";
 
 const brief = {
   schemaVersion: "1.0",

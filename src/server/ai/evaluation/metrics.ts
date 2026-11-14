@@ -26,10 +26,16 @@ export function percentile(values: readonly number[], p: number) {
   return sorted[Math.min(Math.max(rank, 0), sorted.length - 1)]!;
 }
 
-// Scored text excludes application-owned provenance and the brand's own
-// word lists (a Brand Profile legitimately lists its words to avoid), at any
-// depth of the output.
-const unscoredKeys = new Set(["provenance", "wordsToAvoid", "wordsToUse"]);
+// Scored text excludes application-owned provenance, the brand's own word
+// lists (a Brand Profile legitimately lists its words to avoid) and editorial
+// `notes`, where models restate the rules ("avoid terms like 'magic'") rather
+// than use the words in deliverable copy. Applies at any depth.
+const unscoredKeys = new Set([
+  "provenance",
+  "wordsToAvoid",
+  "wordsToUse",
+  "notes",
+]);
 
 function generatedText(output: unknown) {
   return (
@@ -89,6 +95,8 @@ export type CaseSummary = Readonly<{
   latencyP50Ms: number | null;
   latencyP95Ms: number | null;
   averageTotalTokens: number | null;
+  // Distinct prohibited words and claim phrases found, for manual review.
+  flaggedTerms: readonly string[];
   failures: readonly string[];
   passed: boolean;
 }>;
@@ -127,6 +135,14 @@ export function summarizeCase(
     errors,
     latencyP50Ms: percentile(latencies, 50),
     latencyP95Ms: percentile(latencies, 95),
+    flaggedTerms: [
+      ...new Set(
+        outcomes.flatMap((outcome) => [
+          ...outcome.prohibitedWordHits,
+          ...outcome.unsupportedClaimHits,
+        ]),
+      ),
+    ].sort(),
     averageTotalTokens:
       tokens.length === 0
         ? null
@@ -143,9 +159,13 @@ export function summarizeCase(
       `valid after repair ${(summary.afterRepairValidRate * 100).toFixed(0)}% < ${EVALUATION_THRESHOLDS.afterRepairValidRate * 100}%`,
     );
   if (summary.prohibitedWordViolations > 0)
-    failures.push(`${summary.prohibitedWordViolations} prohibited-word hits`);
+    failures.push(
+      `${summary.prohibitedWordViolations} prohibited-word hits (${[...new Set(outcomes.flatMap((outcome) => outcome.prohibitedWordHits))].join(", ")})`,
+    );
   if (summary.unsupportedClaimFlags > 0)
-    failures.push(`${summary.unsupportedClaimFlags} unsupported-claim flags`);
+    failures.push(
+      `${summary.unsupportedClaimFlags} unsupported-claim flags (${[...new Set(outcomes.flatMap((outcome) => outcome.unsupportedClaimHits))].join(", ")})`,
+    );
   if (
     options.maxP95LatencyMs !== undefined &&
     summary.latencyP95Ms !== null &&

@@ -32,6 +32,7 @@ describe("evaluation metrics", () => {
       provenance: { note: "cheap" },
       wordsToAvoid: ["gimmick"],
       nested: { provenance: { note: "neon" } },
+      notes: "Avoid words like 'gimmick' or 'neon'.",
     };
     expect(prohibitedWordHits(output, ["cheap", "gimmick", "neon"])).toEqual([
       "cheap",
@@ -82,7 +83,7 @@ describe("evaluation metrics", () => {
     expect(summary.failures).toEqual([
       "first-pass valid 80% < 90%",
       "valid after repair 90% < 99%",
-      "1 prohibited-word hits",
+      "1 prohibited-word hits (cheap)",
       "p95 latency 9000 ms > 5000 ms",
     ]);
   });

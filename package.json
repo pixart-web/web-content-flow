@@ -10,6 +10,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:desktop": "node scripts/build-desktop.mjs",
     "start": "next start",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "next typegen && tsc --noEmit",
@@ -82,6 +83,7 @@
     "@types/react-dom": "19.3.0",
     "@vitest/coverage-v8": "4.1.10",
     "dotenv": "18.0.10",
+    "esbuild": "0.28.1",
     "eslint": "9.39.5",
     "eslint-config-next": "16.4.6",
     "eslint-config-prettier": "10.1.8",

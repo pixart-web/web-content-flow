@@ -30,6 +30,18 @@ for (const signal of ["SIGTERM", "SIGINT"] as const)
     shuttingDown = true;
   });
 
+// Desktop supervisor (Electron utilityProcess): it asks for a drain with a
+// message, because utilityProcess.kill() would end the worker mid-job.
+type ParentPort = {
+  on(event: "message", listener: (message: { data: unknown }) => void): void;
+};
+const parentPort = (process as typeof process & { parentPort?: ParentPort })
+  .parentPort;
+parentPort?.on("message", ({ data }) => {
+  if ((data as { type?: unknown } | null)?.type === "shutdown")
+    shuttingDown = true;
+});
+
 async function run() {
   try {
     await recordHeartbeat("running");
@@ -60,8 +72,13 @@ async function run() {
   }
 }
 
-run().catch((error: unknown) => {
-  const message = error instanceof Error ? error.message : "Worker failed.";
-  console.error(message);
-  process.exitCode = 1;
-});
+run()
+  .catch((error: unknown) => {
+    const message = error instanceof Error ? error.message : "Worker failed.";
+    console.error(message);
+    process.exitCode = 1;
+  })
+  .finally(() => {
+    // An open parentPort keeps the process alive after the drain.
+    if (parentPort) process.exit();
+  });

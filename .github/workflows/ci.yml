@@ -58,6 +58,7 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm tokens:check
       - run: pnpm test
+      - run: pnpm build:desktop
       - run: pnpm test:provider
       - run: pnpm test:prompts
       - run: pnpm test:usage

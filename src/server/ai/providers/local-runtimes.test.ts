@@ -244,6 +244,35 @@ describe("OllamaProvider (C-03)", () => {
     });
   });
 
+  it("disables thinking by default and supports json and prompted modes", async () => {
+    const reply = {
+      body: { message: { content: JSON.stringify(valid) }, eval_count: 5 },
+    };
+    let baseUrl = await runtime(reply);
+    await new OllamaProvider({ baseUrl }).generateStructured(request(), Output);
+    expect(lastRequest?.body.think).toBe(false);
+    server!.closeAllConnections();
+    await new Promise((resolve) => server!.close(resolve));
+    baseUrl = await runtime(reply);
+    await new OllamaProvider({
+      baseUrl,
+      structuredMode: "json_mode",
+    }).generateStructured(request(), Output);
+    expect(lastRequest?.body.format).toBe("json");
+    server!.closeAllConnections();
+    await new Promise((resolve) => server!.close(resolve));
+    baseUrl = await runtime(reply);
+    await new OllamaProvider({
+      baseUrl,
+      structuredMode: "prompted",
+      think: true,
+    }).generateStructured(request(), Output);
+    expect(lastRequest?.body.format).toBeUndefined();
+    expect(lastRequest?.body.think).toBe(true);
+    const messages = lastRequest?.body.messages as { content: string }[];
+    expect(messages[0]!.content).toContain("JSON Schema");
+  });
+
   it("maps a missing model to UNSUPPORTED_MODEL", async () => {
     const baseUrl = await runtime({
       status: 404,

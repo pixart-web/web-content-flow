@@ -1,3 +1,4 @@
+import { CURRENT_PROMPT_VERSION } from "@/ai/prompts/registry";
 import type { PrismaClient } from "@/generated/prisma/client";
 import { BrandProfileSchema } from "@/domain/brand-profile/brand-profile-schema";
 import { ProjectBriefSchema } from "@/domain/brief/brief-schema";
@@ -79,7 +80,7 @@ export async function handleBrandProfileJob(
         schema: BrandProfileSchema,
         context: { briefRevision: request.briefRevision, brief },
         promptKey: "brand_profile.brand_profile.generation",
-        promptVersion: "1.0.0",
+        promptVersion: CURRENT_PROMPT_VERSION,
         purpose: "ITEM_GENERATION",
       })
     ).snapshot;

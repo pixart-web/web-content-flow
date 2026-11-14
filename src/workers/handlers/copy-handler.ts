@@ -1,3 +1,4 @@
+import { CURRENT_PROMPT_VERSION } from "@/ai/prompts/registry";
 import type { Prisma, PrismaClient } from "@/generated/prisma/client";
 import { BrandProfileSchema } from "@/domain/brand-profile/brand-profile-schema";
 import { generateProductionSnapshot } from "@/server/ai/generation-executor";
@@ -983,7 +984,7 @@ export async function handleCopyJob(prisma: PrismaClient, job: Job) {
               provider: stored?.mode === "REAL" ? "OPENAI" : "MOCK",
               briefRevision: stored?.briefRevision ?? null,
               promptKey: `copy.${plan.contentType.toLocaleLowerCase()}.generation`,
-              promptVersion: "1.0.0",
+              promptVersion: CURRENT_PROMPT_VERSION,
               generationPurpose: "ITEM_GENERATION",
               idempotencyKey,
               request: {
@@ -1070,7 +1071,7 @@ export async function handleCopyJob(prisma: PrismaClient, job: Job) {
           schema: getGeneralCopySchema(request.contentType),
           context: { request, brandProfile: brand },
           promptKey: `copy.${request.contentType.toLocaleLowerCase()}.generation`,
-          promptVersion: "1.0.0",
+          promptVersion: CURRENT_PROMPT_VERSION,
           purpose: "ITEM_GENERATION",
         })
       ).snapshot;
@@ -1156,7 +1157,7 @@ export async function handleCopyJob(prisma: PrismaClient, job: Job) {
           schema: getGeneralCopySchema(request.contentType),
           context: { request, brandProfile: brand, currentSnapshot: current },
           promptKey: `copy.${request.contentType.toLocaleLowerCase()}.generation`,
-          promptVersion: "1.0.0",
+          promptVersion: CURRENT_PROMPT_VERSION,
           purpose:
             request.target?.kind === "SECTION"
               ? "SECTION_REGENERATION"

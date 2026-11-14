@@ -1,3 +1,4 @@
+import { CURRENT_PROMPT_VERSION } from "@/ai/prompts/registry";
 import type { Prisma, PrismaClient } from "@/generated/prisma/client";
 
 import {
@@ -674,7 +675,7 @@ export async function handleCalendarJob(prisma: PrismaClient, job: Job) {
             provider: stored.mode === "REAL" ? "OPENAI" : "MOCK",
             briefRevision: stored.briefRevision,
             promptKey: "calendar.editorial_calendar.generation",
-            promptVersion: "1.0.0",
+            promptVersion: CURRENT_PROMPT_VERSION,
             generationPurpose: "CALENDAR_PERIOD_REGENERATION",
             status: "QUEUED",
             idempotencyKey: `${job.id}:week:${startDate}`,
@@ -754,7 +755,7 @@ export async function handleCalendarJob(prisma: PrismaClient, job: Job) {
           sourceVersions: request.sources,
         },
         promptKey: "calendar.editorial_calendar.generation",
-        promptVersion: "1.0.0",
+        promptVersion: CURRENT_PROMPT_VERSION,
         purpose: "CALENDAR_PERIOD_REGENERATION",
       })
     ).snapshot;

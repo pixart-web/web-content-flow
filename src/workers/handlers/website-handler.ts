@@ -1,3 +1,4 @@
+import { CURRENT_PROMPT_VERSION } from "@/ai/prompts/registry";
 import type { Prisma, PrismaClient } from "@/generated/prisma/client";
 import { BrandProfileSchema } from "@/domain/brand-profile/brand-profile-schema";
 import { ContentProvenanceSchema } from "@/domain/content/content-schemas";
@@ -236,7 +237,7 @@ export async function handleWebsiteJob(prisma: PrismaClient, job: Job) {
               provider: stored?.mode === "REAL" ? "OPENAI" : "MOCK",
               briefRevision: stored?.briefRevision ?? null,
               promptKey: `website.${page.pageType.toLocaleLowerCase()}.generation`,
-              promptVersion: "1.0.0",
+              promptVersion: CURRENT_PROMPT_VERSION,
               generationPurpose: "ITEM_GENERATION",
               idempotencyKey,
               request: {
@@ -324,7 +325,7 @@ export async function handleWebsiteJob(prisma: PrismaClient, job: Job) {
           schema: WebsitePageSnapshotSchema,
           context: { request, brandProfile: brand },
           promptKey: `website.${(request.pageType ?? "custom").toLocaleLowerCase()}.generation`,
-          promptVersion: "1.0.0",
+          promptVersion: CURRENT_PROMPT_VERSION,
           purpose: "ITEM_GENERATION",
         })
       ).snapshot;
@@ -416,7 +417,7 @@ export async function handleWebsiteJob(prisma: PrismaClient, job: Job) {
           schema: WebsitePageSnapshotSchema,
           context: { request, brandProfile: brand, currentSnapshot: current },
           promptKey: `website.${current.pageType.toLocaleLowerCase()}.generation`,
-          promptVersion: "1.0.0",
+          promptVersion: CURRENT_PROMPT_VERSION,
           purpose:
             request.kind === "WEBSITE_SECTION_REGENERATE"
               ? "SECTION_REGENERATION"

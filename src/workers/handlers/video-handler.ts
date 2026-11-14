@@ -1,3 +1,4 @@
+import { CURRENT_PROMPT_VERSION } from "@/ai/prompts/registry";
 import type { Prisma, PrismaClient } from "@/generated/prisma/client";
 import { BrandProfileSchema } from "@/domain/brand-profile/brand-profile-schema";
 import { ContentProvenanceSchema } from "@/domain/content/content-schemas";
@@ -595,7 +596,7 @@ export async function handleVideoJob(prisma: PrismaClient, job: Job) {
                 provider: stored?.mode === "REAL" ? "OPENAI" : "MOCK",
                 briefRevision: stored?.briefRevision ?? null,
                 promptKey: `video.${contentType.toLocaleLowerCase()}.generation`,
-                promptVersion: "1.0.0",
+                promptVersion: CURRENT_PROMPT_VERSION,
                 generationPurpose: "ITEM_GENERATION",
                 idempotencyKey,
                 request: {
@@ -691,7 +692,7 @@ export async function handleVideoJob(prisma: PrismaClient, job: Job) {
           schema: VideoSnapshotSchema,
           context: { request, brandProfile: brand },
           promptKey: `video.${request.contentType.toLocaleLowerCase()}.generation`,
-          promptVersion: "1.0.0",
+          promptVersion: CURRENT_PROMPT_VERSION,
           purpose: "ITEM_GENERATION",
         })
       ).snapshot;
@@ -773,7 +774,7 @@ export async function handleVideoJob(prisma: PrismaClient, job: Job) {
           schema: VideoSnapshotSchema,
           context: { request, brandProfile: brand, currentSnapshot: current },
           promptKey: `video.${current.contentType.toLocaleLowerCase()}.generation`,
-          promptVersion: "1.0.0",
+          promptVersion: CURRENT_PROMPT_VERSION,
           purpose:
             request.target?.kind === "SCENE"
               ? "SECTION_REGENERATION"

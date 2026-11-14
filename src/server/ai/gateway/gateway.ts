@@ -78,7 +78,11 @@ const runtimeFactories: Readonly<Record<string, RuntimeFactory>> = {
   },
   ollama: (env) => {
     if (!env.AI_OLLAMA_BASE_URL) throw new Error("OLLAMA_NOT_CONFIGURED");
-    return new OllamaProvider({ baseUrl: env.AI_OLLAMA_BASE_URL });
+    return new OllamaProvider({
+      baseUrl: env.AI_OLLAMA_BASE_URL,
+      structuredMode: env.AI_OLLAMA_STRUCTURED_MODE,
+      think: env.AI_OLLAMA_THINK,
+    });
   },
   "openai-compatible": (env) => {
     if (!env.AI_OPENAI_COMPATIBLE_BASE_URL)
@@ -92,6 +96,18 @@ const runtimeFactories: Readonly<Record<string, RuntimeFactory>> = {
     });
   },
 };
+
+// Builds a runtime adapter by key. Jobs reach adapters only through
+// selectRoute/runtimeFor; the evaluation suite calls this directly because it
+// exercises models the router deliberately refuses (status "evaluation").
+export function createRuntimeAdapter(
+  runtimeKey: string,
+  env: ServerEnv = getServerEnv(),
+): AiProvider {
+  const factory = runtimeFactories[runtimeKey];
+  if (!factory) throw new Error(`No runtime adapter for ${runtimeKey}.`);
+  return factory(env);
+}
 
 export function runtimeAvailability(env: ServerEnv): RuntimeAvailability {
   const openAiReady =
@@ -170,10 +186,7 @@ export function createAiGateway(
       };
     },
     runtimeFor(route) {
-      const factory = runtimeFactories[route.runtimeKey];
-      if (!factory)
-        throw new Error(`No runtime adapter for ${route.runtimeKey}.`);
-      return factory(env);
+      return createRuntimeAdapter(route.runtimeKey, env);
     },
   };
 }

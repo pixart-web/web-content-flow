@@ -84,6 +84,14 @@ export const serverEnvSchema = z
     // only (ADR-077); default policies never route to them.
     AI_OLLAMA_BASE_URL: optionalUrlFromEnv,
     AI_OLLAMA_MODEL: optionalTextFromEnv(200),
+    // Some models/engines reject Ollama's `format` (e.g. qwen3.5 on Ollama
+    // 0.40: "structured output is unavailable"); use "prompted" for them.
+    AI_OLLAMA_STRUCTURED_MODE: z
+      .enum(["native_schema", "json_mode", "prompted"])
+      .default("native_schema"),
+    // Thinking models default to reasoning first, which spends the output
+    // budget before the JSON; generation disables it unless set to true.
+    AI_OLLAMA_THINK: booleanFromEnv,
     AI_OPENAI_COMPATIBLE_BASE_URL: optionalUrlFromEnv,
     AI_OPENAI_COMPATIBLE_MODEL: optionalTextFromEnv(200),
     AI_OPENAI_COMPATIBLE_API_KEY: optionalSecretFromEnv(8),
@@ -306,6 +314,8 @@ export function getServerEnv(): ServerEnv {
     OPENAI_MODEL_REPAIR: process.env.OPENAI_MODEL_REPAIR,
     AI_OLLAMA_BASE_URL: process.env.AI_OLLAMA_BASE_URL,
     AI_OLLAMA_MODEL: process.env.AI_OLLAMA_MODEL,
+    AI_OLLAMA_STRUCTURED_MODE: process.env.AI_OLLAMA_STRUCTURED_MODE,
+    AI_OLLAMA_THINK: process.env.AI_OLLAMA_THINK,
     AI_OPENAI_COMPATIBLE_BASE_URL: process.env.AI_OPENAI_COMPATIBLE_BASE_URL,
     AI_OPENAI_COMPATIBLE_MODEL: process.env.AI_OPENAI_COMPATIBLE_MODEL,
     AI_OPENAI_COMPATIBLE_API_KEY: process.env.AI_OPENAI_COMPATIBLE_API_KEY,

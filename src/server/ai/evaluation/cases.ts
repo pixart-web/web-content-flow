@@ -13,11 +13,15 @@ import {
   getGeneralCopySchema,
   type GeneralCopyType,
 } from "@/domain/copy/copy-schemas";
+import { AdsSnapshotSchema } from "@/domain/ads/ads-schemas";
+import { SocialSnapshotSchema } from "@/domain/social/social-schemas";
+import { VideoSnapshotSchema } from "@/domain/video/video-schemas";
+import { WebsitePageSnapshotSchema } from "@/domain/website/website-schemas";
 import { MockProvider } from "@/server/ai/providers/mock-provider";
 
 // Fixed, synthetic evaluation inputs (fictional UrbanStride brand). The suite
 // version changes whenever cases or scoring change, so reports stay comparable.
-export const EVALUATION_SUITE_VERSION = "1.2.0";
+export const EVALUATION_SUITE_VERSION = "1.3.0";
 
 const brief = {
   schemaVersion: "1.0",
@@ -140,6 +144,93 @@ export async function buildEvaluationCases(): Promise<EvaluationCase[]> {
         brandProfile,
       },
     })),
+    // One representative item per remaining module, with the same
+    // { request, brandProfile } context the worker handlers send. Calendar is
+    // left out: it plans from items other modules already generated.
+    {
+      id: "website.home",
+      promptKey: "website.home.generation",
+      schema: WebsitePageSnapshotSchema,
+      context: {
+        request: {
+          kind: "WEBSITE_PAGE_NEW",
+          pageKey: "home",
+          pageType: "HOME",
+          pageName: "Home",
+          purpose: "Introduce UrbanStride and lead visitors to the collection",
+          brandProfileVersionId: "evaluation-brand-profile-v1",
+        },
+        brandProfile,
+      },
+    },
+    {
+      id: "social.instagram_post",
+      promptKey: "social.social_post.generation",
+      schema: SocialSnapshotSchema,
+      context: {
+        request: {
+          kind: "SOCIAL_ITEM_NEW",
+          itemKey: "evaluation-social-post",
+          contentType: "SOCIAL_POST",
+          platform: "INSTAGRAM",
+          objective: "LAUNCH",
+          ordinal: 1,
+          campaignName: "UrbanStride fictional launch",
+          topic: "Comfort and considered design for every city journey",
+          includeHashtags: true,
+          primaryCallToAction: "Explore the collection",
+          brandProfileVersionId: "evaluation-brand-profile-v1",
+        },
+        brandProfile,
+      },
+    },
+    {
+      id: "ads.meta_ad",
+      promptKey: "ads.meta_ad.generation",
+      schema: AdsSnapshotSchema,
+      context: {
+        request: {
+          kind: "ADS_ITEM_NEW",
+          itemKey: "evaluation-meta-ad",
+          contentType: "META_AD",
+          channel: "META_INSTAGRAM",
+          campaignObjective: "PRODUCT_LAUNCH",
+          variantsPerAsset: 3,
+          campaignName: "UrbanStride fictional launch",
+          offerName: "City collection",
+          offerDescription: "Versatile city shoes with all-day comfort",
+          conversionAction: "Explore the collection",
+          keywordThemes: ["city walking shoes", "comfortable commuter shoes"],
+          brandProfileVersionId: "evaluation-brand-profile-v1",
+        },
+        brandProfile,
+      },
+    },
+    {
+      id: "video.reel_script",
+      promptKey: "video.video_script.generation",
+      schema: VideoSnapshotSchema,
+      context: {
+        request: {
+          kind: "VIDEO_ITEM_NEW",
+          itemKey: "evaluation-video-script",
+          contentType: "VIDEO_SCRIPT",
+          platform: "INSTAGRAM_REELS",
+          format: "REEL",
+          objective: "PRODUCT_LAUNCH",
+          targetDurationSeconds: 30,
+          conceptOrdinal: 1,
+          topic: "Comfort and considered design for every city journey",
+          campaignName: "UrbanStride fictional launch",
+          presenterStyle: "VOICE_OVER",
+          primaryCallToAction: "Explore the collection",
+          includeOnScreenText: true,
+          includeVoiceOver: true,
+          brandProfileVersionId: "evaluation-brand-profile-v1",
+        },
+        brandProfile,
+      },
+    },
   ];
 
   return definitions.map((definition) => {

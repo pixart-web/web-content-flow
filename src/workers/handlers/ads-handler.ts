@@ -782,3 +782,7 @@ export async function handleAdsJob(prisma: PrismaClient, job: Job) {
     );
   }
 }
+
+// Used by the evaluation suite (C-04) to build a schema-valid reference output.
+export { generateSnapshot as createDeterministicAdsSnapshot };
+export type { ItemRequest as AdsItemRequest };

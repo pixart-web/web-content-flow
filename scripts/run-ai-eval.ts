@@ -13,6 +13,7 @@ import {
 } from "../src/server/ai/evaluation/harness";
 import { createRuntimeAdapter } from "../src/server/ai/gateway/gateway";
 import { providerKindForUrl } from "../src/server/ai/gateway/model-registry";
+import { probeRuntime } from "../src/server/ai/gateway/runtime-health";
 
 // Usage:
 //   pnpm eval:ai --runtime ollama [--model qwen3:14b] [--samples 5]
@@ -79,6 +80,22 @@ async function main() {
     (testCase) => !selected || selected.includes(testCase.id),
   );
   if (cases.length === 0) throw new Error("No evaluation cases selected.");
+
+  // Fail in seconds, not after a timeout per sample, when the runtime is down
+  // or the model was never pulled.
+  if (selectedRuntime === "ollama" || selectedRuntime === "openai-compatible") {
+    const health = await probeRuntime({
+      runtimeKey: selectedRuntime,
+      baseUrl,
+      model: selectedModel,
+      apiKey: env.AI_OPENAI_COMPATIBLE_API_KEY,
+    });
+    if (health.status !== "ok")
+      throw new Error(
+        `${selectedRuntime} is ${health.status}${health.detail ? ` (${health.detail})` : ""}; ` +
+          `available models: ${health.availableModels.join(", ") || "none"}.`,
+      );
+  }
 
   const report = await runEvaluation({
     adapter: createRuntimeAdapter(selectedRuntime, env),

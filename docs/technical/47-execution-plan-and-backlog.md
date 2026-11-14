@@ -30,40 +30,40 @@ Tamanhos: XS < 0,5 dia · S ≈ 1 dia · M ≈ 2–3 dias · L ≈ 1 semana. **D
 
 | ID | Tarefa | Tam. | Dep. | Aceitação |
 |---|---|---|---|---|
-| A-01 | Integrar o PR #1 (chaves vazias e avisos de dependências) | XS | — | CI do `main` verde; `cp .env.example .env` arranca sem erro |
+| A-01 | ✅ Integrar o PR #1 (chaves vazias e avisos de dependências) | XS | — | CI do `main` verde; `cp .env.example .env` arranca sem erro |
 | A-02 | Proteção do `main`: CI obrigatório, alterações só por PR, sem force-push | XS | dono do repositório | Um push direto ao `main` é rejeitado |
-| A-03 | Atualizações automáticas de dependências (Dependabot ou Renovate) com agrupamento semanal | XS | A-02 | Um PR semanal; o audit deixa de surpreender o `main` |
-| A-04 | Decidir a plataforma de deploy (D-1) e atualizar ou substituir o ADR-058 | S | D-1 | ADR aceite; o `render.yaml` ou o manifesto Nodera reflete a decisão |
+| A-03 | ✅ Atualizações automáticas de dependências (Dependabot ou Renovate) com agrupamento semanal | XS | A-02 | Um PR semanal; o audit deixa de surpreender o `main` |
+| A-04 | ✅ Decidir a plataforma de deploy (D-1) e atualizar ou substituir o ADR-058 | S | D-1 | ADR aceite; o `render.yaml` ou o manifesto Nodera reflete a decisão |
 | A-05 | Provisionar o staging: web, worker, cron, PostgreSQL gerido com PITR | L | A-04 | `/health/ready` 200 no URL de staging; worker com heartbeat |
 | A-06 | Corrigir DNS e TLS de `webcontentflow.com` / `app-staging` | S | D-2, A-05 | Certificado válido; sem 404 do Traefik |
 | A-07 | Email transacional (D-3), com SPF, DKIM e DMARC; recuperação de password ponta a ponta no staging | M | A-05 | Email entregue numa caixa de teste; bounce monitorizado |
 | A-08 | Monitorização: uptime, worker parado, taxa de falha de jobs, alerta sintético | M | A-05 | Alerta de teste recebido; worker parado é detetado em ≤ 5 min |
 | A-09 | Backup e restauro isolado (`restore:verify`) com registo de evidência | M | A-05 | Registo em `docs/operations/09-restore-drill-record.md` preenchido |
-| A-10 | Abortar a chamada ao provider quando a lease se perde (passar o `signal` do worker ao executor) | S | — | Teste de worker: com a lease perdida, a chamada falsa é abortada e não fica uso registado |
+| A-10 | ✅ Abortar a chamada ao provider quando a lease se perde (passar o `signal` do worker ao executor) | S | — | Teste de worker: com a lease perdida, a chamada falsa é abortada e não fica uso registado |
 | A-11 | Completar a matriz de crash do worker (AUD-001) e a contabilização de tentativas falhadas (AUD-002) | M | — | Matriz de 15 pontos verde; sem versões nem uso duplicados |
 | A-12 | Jornadas E2E combinadas: recuperação com mail sink, exportação, interrupção do worker (AUD-005) | M | A-07 (sink local) | Três specs novos verdes no CI |
-| A-13 | Configuração de IA sem efeito: aplicar ou remover `AI_MAX_RETRIES`, `AI_COST_TRACKING_ENABLED`, `AI_PROMPT_DEBUG_ENABLED` (a concorrência fica na B-07) | S | — | Cada variável tem um teste que prova o seu efeito, ou deixa de existir |
-| A-14 | Limite de pedidos na criação de jobs de geração | S | — | Teste: a partir do limite, o enqueue devolve um erro tratável e não cria job |
-| A-15 | Tirar o cliente Prisma gerado do Git, ou formatá-lo depois do `generate` | XS | — | `prisma generate` deixa o `git status` limpo |
-| A-16 | Base de teste separada para os testes de integração e worker (`TEST_DATABASE_URL`) | S | — | Correr os testes não apaga os dados de desenvolvimento |
+| A-13 | ✅ Configuração de IA sem efeito: aplicar ou remover `AI_MAX_RETRIES`, `AI_COST_TRACKING_ENABLED`, `AI_PROMPT_DEBUG_ENABLED` (a concorrência fica na B-07) | S | — | Cada variável tem um teste que prova o seu efeito, ou deixa de existir |
+| A-14 | ✅ Limite de pedidos na criação de jobs de geração | S | — | Teste: a partir do limite, o enqueue devolve um erro tratável e não cria job |
+| A-15 | ✅ Tirar o cliente Prisma gerado do Git, ou formatá-lo depois do `generate` | XS | — | `prisma generate` deixa o `git status` limpo |
+| A-16 | ✅ Base de teste separada para os testes de integração e worker (`TEST_DATABASE_URL`) | S | — | Correr os testes não apaga os dados de desenvolvimento |
 | A-17 | Smoke da geração real (OpenAI) no staging, num projeto sintético, com limite de custo | S | A-05, B-03 | Um job por módulo completa; uso e custo registados |
 | A-18 | Ensaio de rollback e de incidente | S | A-05 | Registo em `docs/operations/11-rollback-rehearsal.md` |
-| A-19 | Regeneração de itens em Ads, Social, Video e Website cria jobs sem `getNewJobGenerationConfiguration`, por isso fica sempre em mock mesmo com IA real ligada (achado de 2026-11-13) | S | — | Teste por módulo: com geração real ativa, o job de regeneração nasce `REAL` com o modelo do tier |
-| A-20 | `content-item-handler` (Foundation Copy) marca o job como `REAL` mas nunca chama o executor de IA (achado de 2026-11-13) | S | — | Teste: um job REAL de Foundation Copy regista uma tentativa no provider e uso |
-| A-21 | `pnpm worker` falha localmente sem `NODE_ENV` (o Next define-o, o `tsx` não) | XS | — | `pnpm worker` arranca ao lado de `pnpm dev` só com o `.env` |
+| A-19 | ✅ Regeneração de itens em Ads, Social, Video e Website cria jobs sem `getNewJobGenerationConfiguration`, por isso fica sempre em mock mesmo com IA real ligada (achado de 2026-11-13) | S | — | Teste por módulo: com geração real ativa, o job de regeneração nasce `REAL` com o modelo do tier |
+| A-20 | ✅ `content-item-handler` (Foundation Copy) marca o job como `REAL` mas nunca chama o executor de IA (achado de 2026-11-13) | S | — | Teste: um job REAL de Foundation Copy regista uma tentativa no provider e uso |
+| A-21 | ✅ `pnpm worker` falha localmente sem `NODE_ENV` (o Next define-o, o `tsx` não) | XS | — | `pnpm worker` arranca ao lado de `pnpm dev` só com o `.env` |
 
 ### Fase B — Fundação do gateway (sem mudança de comportamento)
 
 | ID | Tarefa | Tam. | Dep. | Aceitação |
 |---|---|---|---|---|
-| B-01 | Introduzir a porta `AiGateway` e o adapter `MockRuntime` e `OpenAIRuntime` sobre os providers atuais | M | — | Todos os testes atuais passam sem alterações; o executor deixa de referir `"OPENAI"` diretamente |
-| B-02 | `ModelRegistry` e `TaskPolicy` em TypeScript com zod; política "default" equivalente à atual | S | B-01 | Teste: cada prompt registado tem uma política; a resolução é determinística |
+| B-01 | ✅ Introduzir a porta `AiGateway` e o adapter `MockRuntime` e `OpenAIRuntime` sobre os providers atuais | M | — | Todos os testes atuais passam sem alterações; o executor deixa de referir `"OPENAI"` diretamente |
+| B-02 | ✅ `ModelRegistry` e `TaskPolicy` em TypeScript com zod; política "default" equivalente à atual | S | B-01 | Teste: cada prompt registado tem uma política; a resolução é determinística |
 | B-03 | Registar preços dos modelos OpenAI configurados (custo deixa de ser `null`) | XS | B-02 | Teste de `calculateUsageCost` com o modelo configurado |
-| B-04 | `AiRouter` determinístico com regras de privacidade e fallback (ADR-073) | M | B-02 | Testes de tabela: restricted→cloud rejeitado; sem candidatos → `PROVIDER_UNAVAILABLE` retryable; fallback só com consentimento |
-| B-05 | Migration aditiva: `runtimeKey`, `modelRef`, `providerKind`, `policyKey`, `policyVersion`, `latencyMs`, `fallbackUsed`, `structuredMode` (anuláveis) | S | aprovação de migration | Drift limpo; `restore:verify` passa; registos antigos continuam legíveis |
-| B-06 | Provenance e usage gravam a `route` do gateway; remover a duplicação no executor | S | B-05 | Snapshot da provenance igual ao atual mais os campos novos |
-| B-07 | Semáforo de concorrência por runtime no worker (`AI_MAX_CONCURRENT_REQUESTS`) | S | B-01 | Teste com dois jobs simultâneos e limite 1: o segundo espera ou é reagendado |
-| B-08 | Eventos de log `ai.route.selected` e `ai.request.*` sem conteúdo | XS | B-04 | Teste garante que o prompt e a resposta não aparecem nos logs |
+| B-04 | ✅ `AiRouter` determinístico com regras de privacidade e fallback (ADR-073) | M | B-02 | Testes de tabela: restricted→cloud rejeitado; sem candidatos → `PROVIDER_UNAVAILABLE` retryable; fallback só com consentimento |
+| B-05 | ✅ Migration aditiva: `runtimeKey`, `modelRef`, `providerKind`, `policyKey`, `policyVersion`, `latencyMs`, `fallbackUsed`, `structuredMode` (anuláveis) | S | aprovação de migration | Drift limpo; `restore:verify` passa; registos antigos continuam legíveis |
+| B-06 | ✅ Provenance e usage gravam a `route` do gateway; remover a duplicação no executor | S | B-05 | Snapshot da provenance igual ao atual mais os campos novos |
+| B-07 | ✅ Semáforo de concorrência por runtime no worker (`AI_MAX_CONCURRENT_REQUESTS`) | S | B-01 | Teste com dois jobs simultâneos e limite 1: o segundo espera ou é reagendado |
+| B-08 | ✅ Eventos de log `ai.route.selected` e `ai.request.*` sem conteúdo | XS | B-04 | Teste garante que o prompt e a resposta não aparecem nos logs |
 
 ### Fase C — Runtimes locais e avaliação
 
@@ -71,9 +71,9 @@ Tamanhos: XS < 0,5 dia · S ≈ 1 dia · M ≈ 2–3 dias · L ≈ 1 semana. **D
 |---|---|---|---|---|
 | C-01 | ✅ **Decidido (2026-11-14, ADR-079):** edição macOS testada no Mac M4 32 GB; disco livre 35 GB → orçamento ≤ 17 GB de modelos (candidatos `qwen3.5:9b` 6,6 GB, `gemma4:12b-it-qat` 7,2 GB, `qwen3.5:4b` 3,3 GB para a especificação mínima) | XS | D-5 | Documento curto com limites |
 | C-02 | ✅ **Implementado (2026-11-14):** adapter `openai-compatible` (base URL, chave opcional; `structuredMode` configurável em vez de detetado) | M | B-01 | Testes de contrato contra um servidor HTTP falso (sucesso, schema inválido, timeout, 429, abort) |
-| C-03 | ✅ **Implementado (2026-11-14):** adapter `ollama` nativo (`/api/chat` com `format` JSON Schema). Falta o `health` com modelos disponíveis | M | B-01 | Mesmos testes de contrato; o `health` reflete modelos ausentes |
+| C-03 | ✅ **Implementado (2026-11-14):** adapter `ollama` nativo (`/api/chat` com `format` JSON Schema) e `pnpm ai:health` (servidor acessível e modelo instalado; o `eval:ai` verifica-o antes de começar) | M | B-01 | Mesmos testes de contrato; o `health` reflete modelos ausentes |
 | C-04 | ✅ **Implementado (2026-11-14):** `pnpm eval:ai` — 4 casos (Brand Profile; General Copy: email, descrição de produto, FAQ), JSON válido à primeira e após reparação, palavras proibidas, afirmações não suportadas (heurística), latência p50/p95, tokens, hardware; relatório JSON+Markdown. Outros módulos a acrescentar como casos | M | B-02 | `pnpm eval:ai --model <ref>` produz um relatório reproduzível |
-| C-05 | 🟡 **Primeira ronda (2026-11-14):** 3 modelos no Mac M4 — `gemma4:12b-it-qat` PASS sem reparações, `qwen3.5:4b` PASS, `qwen3.5:9b` FAIL; ver [48-local-model-evaluation-macos.md](48-local-model-evaluation-macos.md). Falta revisão humana, mais amostras e casos dos outros módulos | M | C-01..C-04 | Relatório em `docs/technical/` com métricas; modelos aprovados passam a `active` |
+| C-05 | 🟡 **Duas rondas (2026-11-14):** 3 modelos no Mac M4; com o prompt 1.1.0, `gemma4:12b-it-qat` 1 atributo inventado em 20 amostras, `qwen3.5:4b` inventa atributos com frequência, `qwen3.5:9b` falha o schema; ver [48-local-model-evaluation-macos.md](48-local-model-evaluation-macos.md). Falta revisão humana, mais amostras e casos dos outros módulos | M | C-01..C-04 | Relatório em `docs/technical/` com métricas; modelos aprovados passam a `active` |
 | C-06 | Modo local-first documentado (`.env` de exemplo e runbook macOS) | S | C-05 | Instalação limpa num Mac gera os sete módulos sem chave de cloud |
 
 ### Fase D — Nodera

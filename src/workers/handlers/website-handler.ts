@@ -459,3 +459,7 @@ export async function handleWebsiteJob(prisma: PrismaClient, job: Job) {
     );
   }
 }
+
+// Used by the evaluation suite (C-04) to build a schema-valid reference output.
+export { mockPage as createDeterministicWebsitePage };
+export type { PageRequest as WebsitePageRequest };

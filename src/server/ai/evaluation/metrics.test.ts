@@ -87,4 +87,24 @@ describe("evaluation metrics", () => {
       "p95 latency 9000 ms > 5000 ms",
     ]);
   });
+
+  it("flags invented URLs and product attributes absent from the context", () => {
+    const context = {
+      brief: "Leather city shoes; see https://example.invalid",
+    };
+    const output = {
+      callToAction: {
+        destinationDescription: "https://urbanstride.com/collections/city",
+      },
+      keyFeatures: ["Breathable materials", "Flexible soles", "Leather upper"],
+      cta: "Visit https://example.invalid for details",
+      shop: "Order at shop.urbanstride.store today",
+    };
+    expect(unsupportedClaimHits(output, context).sort()).toEqual([
+      "breathable",
+      "flexible soles",
+      "https://urbanstride.com/collections/city",
+      "urbanstride.store",
+    ]);
+  });
 });

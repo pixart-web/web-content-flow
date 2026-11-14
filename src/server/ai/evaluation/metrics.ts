@@ -62,10 +62,55 @@ export function prohibitedWordHits(
   );
 }
 
-// Heuristic for invented proof (Brand Authority instructions forbid made-up
-// statistics, awards, certifications and rankings). A match only counts when
-// the same phrase is absent from the supplied context.
+// Heuristic for invented facts (the Brand Authority instructions forbid made-up
+// statistics, awards, rankings, URLs and product attributes). A match only
+// counts when the same phrase is absent from the supplied context.
+// URLs and bare domains: the instructions forbid inventing destinations.
+const urlPattern =
+  /\bhttps?:\/\/[^\s"'<>)]+|\bwww\.[^\s"'<>)]+|\b[a-z0-9-]+\.(?:com|net|org|io|co|pt|eu|shop|store)(?:\/[^\s"'<>)]*)?/giu;
+
+// Product attributes a model tends to invent (materials, technologies, comfort
+// tech, sustainability, commercial promises). Tuned to the footwear fixtures;
+// extend it with each new evaluation domain.
+const productAttributeTerms = [
+  "breathable",
+  "waterproof",
+  "water-resistant",
+  "durable",
+  "ergonomic",
+  "memory foam",
+  "cushioned",
+  "cushioning",
+  "anti-slip",
+  "non-slip",
+  "slip-resistant",
+  "orthopedic",
+  "orthopaedic",
+  "arch support",
+  "shock absorption",
+  "shock-absorbing",
+  "flexible sole",
+  "flexible soles",
+  "lightweight",
+  "recycled",
+  "sustainable",
+  "eco-friendly",
+  "vegan",
+  "organic",
+  "handmade",
+  "hand-crafted",
+  "leather",
+  "suede",
+  "rubber sole",
+  "patented",
+  "warranty",
+  "free shipping",
+  "free returns",
+  "money-back",
+];
+
 const claimPatterns = [
+  urlPattern,
   /\b\d{1,3}(?:[.,]\d+)?\s?%/giu,
   /\b(?:award[- ]winning|award|certified|certification|accredited)\b/giu,
   /(?:#\s?1\b|\bnumber one\b|\bbest[- ]selling\b|\bmarket[- ]leading\b)/giu,
@@ -81,6 +126,15 @@ export function unsupportedClaimHits(output: unknown, context: unknown) {
       const phrase = match[0].trim();
       if (!contextText.includes(phrase.toLocaleLowerCase())) hits.add(phrase);
     }
+  const lowered = text.toLocaleLowerCase();
+  for (const term of productAttributeTerms)
+    if (
+      new RegExp(`(^|[^\\p{L}])${escapeRegExp(term)}($|[^\\p{L}])`, "u").test(
+        lowered,
+      ) &&
+      !contextText.includes(term)
+    )
+      hits.add(term);
   return [...hits];
 }
 

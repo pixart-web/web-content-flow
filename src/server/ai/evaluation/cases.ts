@@ -2,7 +2,11 @@ import "server-only";
 
 import type { z } from "zod";
 
-import { loadPromptCatalog, getPrompt } from "@/ai/prompts/registry";
+import {
+  loadPromptCatalog,
+  getPrompt,
+  CURRENT_PROMPT_VERSION,
+} from "@/ai/prompts/registry";
 import { BrandProfileSchema } from "@/domain/brand-profile/brand-profile-schema";
 import {
   CopyGenerationRequestSchema,
@@ -13,7 +17,7 @@ import { MockProvider } from "@/server/ai/providers/mock-provider";
 
 // Fixed, synthetic evaluation inputs (fictional UrbanStride brand). The suite
 // version changes whenever cases or scoring change, so reports stay comparable.
-export const EVALUATION_SUITE_VERSION = "1.1.0";
+export const EVALUATION_SUITE_VERSION = "1.2.0";
 
 const brief = {
   schemaVersion: "1.0",
@@ -81,7 +85,7 @@ export async function buildEvaluationCases(): Promise<EvaluationCase[]> {
         input: brief,
         requestId: "evaluation-brand-profile",
         model: "deterministic-mock-v1",
-        promptVersion: "1.0.0",
+        promptVersion: CURRENT_PROMPT_VERSION,
         schemaVersion: "1.0",
         timeoutMs: 10_000,
       },
@@ -139,7 +143,7 @@ export async function buildEvaluationCases(): Promise<EvaluationCase[]> {
   ];
 
   return definitions.map((definition) => {
-    const prompt = getPrompt(definition.promptKey, "1.0.0");
+    const prompt = getPrompt(definition.promptKey, CURRENT_PROMPT_VERSION);
     if (!prompt)
       throw new Error(
         `Evaluation case ${definition.id} has no registered prompt.`,

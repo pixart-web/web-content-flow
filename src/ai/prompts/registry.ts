@@ -6,9 +6,14 @@ import type {
   GenerationPurpose,
 } from "@/server/ai/ai-provider";
 
+// Bump whenever prompt text, budgets or repair behaviour change, so stored
+// provenance identifies the prompt that produced each version.
+// 1.1.0 (2026-11-14): forbid invented URLs/contacts and product attributes.
+export const CURRENT_PROMPT_VERSION = "1.1.0" as const;
+
 export type PromptDefinition<TInput, TOutput> = Readonly<{
   key: string;
-  version: "1.0.0";
+  version: typeof CURRENT_PROMPT_VERSION;
   module:
     | "BRAND_PROFILE"
     | "WEBSITE"
@@ -67,7 +72,7 @@ export function createModulePrompt<TInput, TOutput>(input: {
 }) {
   return registerPrompt({
     ...input,
-    version: "1.0.0",
+    version: CURRENT_PROMPT_VERSION,
     systemInstructions: BRAND_AUTHORITY_INSTRUCTIONS,
     buildUserMessage: (context) =>
       JSON.stringify({

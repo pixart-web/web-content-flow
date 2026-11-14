@@ -1,3 +1,4 @@
+import { CURRENT_PROMPT_VERSION } from "@/ai/prompts/registry";
 import "server-only";
 
 import { getServerEnv } from "@/lib/env/server";
@@ -30,7 +31,7 @@ export function getNewJobGenerationConfiguration(input: {
     modelTier: "STANDARD" as const,
     modelId: real ? env.OPENAI_MODEL_STANDARD : "deterministic-mock-v1",
     promptKey: input.promptKey,
-    promptVersion: input.promptVersion ?? "1.0.0",
+    promptVersion: input.promptVersion ?? CURRENT_PROMPT_VERSION,
     generationPurpose: input.purpose ?? ("MODULE_GENERATION" as const),
     ...(input.briefRevision ? { briefRevision: input.briefRevision } : {}),
   };

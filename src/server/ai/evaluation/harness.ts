@@ -1,3 +1,4 @@
+import { CURRENT_PROMPT_VERSION } from "@/ai/prompts/registry";
 import "server-only";
 
 import {
@@ -48,7 +49,7 @@ async function runSample(
     model: options.model,
     modelTier: "STANDARD" as const,
     promptKey: testCase.promptKey,
-    promptVersion: "1.0.0",
+    promptVersion: CURRENT_PROMPT_VERSION,
     schemaVersion: "1.0",
     schemaName: testCase.promptKey.replaceAll(".", "_"),
     maximumOutputTokens: testCase.maximumOutputTokens,
@@ -194,7 +195,7 @@ export function renderEvaluationMarkdown(report: EvaluationReport) {
     `- Suite ${report.suiteVersion}, ${report.samplesPerCase} samples per case, ${report.generatedAt}`,
     `- Hardware: ${report.hardware ?? "not recorded"}`,
     `- Thresholds: first-pass valid ≥ ${percent(report.thresholds.firstPassValidRate)}, valid after repair ≥ ${percent(report.thresholds.afterRepairValidRate)}, 0 prohibited words, 0 unsupported-claim flags${report.thresholds.maxP95LatencyMs === null ? "" : `, p95 ≤ ${report.thresholds.maxP95LatencyMs} ms`}`,
-    "- Unsupported-claim flags are a heuristic (numbers, awards, rankings absent from the context); review flagged outputs manually.",
+    "- Unsupported-claim flags are a heuristic (numbers, awards, rankings, URLs and product attributes absent from the context); review flagged outputs manually.",
     "",
     "| Case | Result | First-pass valid | Valid after repair | Prohibited words | Claim flags | p50 ms | p95 ms | Avg tokens | Failures |",
     "|---|---|---|---|---|---|---|---|---|---|",

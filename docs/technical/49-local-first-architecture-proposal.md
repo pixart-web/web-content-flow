@@ -1,6 +1,6 @@
 # Arquitetura local-first — auditoria, arquitetura-alvo e plano de migração
 
-**Data:** 2026-11-14 · **Base:** `main` em `7f6713f` · **Estado:** PROPOSTA para revisão. Nada implementado.
+**Data:** 2026-11-14 · **Base:** `main` em `7f6713f` · **Estado:** APROVADA pelo product owner em 2026-11-14 (L0 e L1 aprovadas).
 
 **Decisão do product owner (2026-11-14):** o Web Content Flow passa a ser uma aplicação **local-first**, com IA própria executada localmente e servidor privado opcional. Não haverá dependência obrigatória de Render, de APIs de IA comerciais nem de subscrições externas. O staging no Render fica suspenso (PR #27 em rascunho). O Experience Studio fica preparado na arquitetura, mas não é implementado.
 
@@ -406,3 +406,13 @@ Antes de qualquer alteração estrutural, são precisas estas decisões:
 4. Ordem das edições: macOS primeiro, depois Windows e Linux.
 5. Custos de assinatura de código (§4.4), a decidir até L4.
 6. O que fazer ao PR #27: manter em rascunho como alvo opcional (recomendado), ou fechar.
+
+---
+
+## 11. Decisões tomadas
+
+| Data | Decisão | Origem |
+|---|---|---|
+| 2026-11-14 | Arquitetura e ADRs L-1…L-7 aprovadas; arranque da L0 | Product owner |
+| 2026-11-14 | **L-2 Electron** e **L-3 PostgreSQL embutido** confirmados; PGlite rejeitado para a v1 | Resultados da L0 ([51](51-l0-spike-results.md)) |
+| 2026-11-14 | **L-8 Recuperação de acesso no modo local:** pela app desktop, depois da autenticação do macOS (Touch ID ou password da conta). Sem email nem código de recuperação. O invólucro usa um `DESKTOP_ADMIN_TOKEN` próprio, que nunca chega à janela | Product owner |

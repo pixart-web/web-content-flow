@@ -42,6 +42,11 @@ export const serverEnvSchema = z
     APP_ENV: z
       .enum(["local", "test", "staging", "production"])
       .default("local"),
+    // L1 (ADR L-1): "server" is the hosted/private-server app; "local" is the
+    // desktop edition on the user's computer (loopback only, no email needed).
+    APP_MODE: z.enum(["server", "local"]).default("server"),
+    // Per-launch secret the desktop shell sends on every request (LF-03).
+    DESKTOP_TOKEN: optionalSecretFromEnv(32),
     ROLLOUT_STATE: z
       .enum(["INTERNAL", "INVITE_ONLY", "PUBLIC", "MAINTENANCE"])
       .default("INTERNAL"),
@@ -119,7 +124,50 @@ export const serverEnvSchema = z
     const localOrigin =
       applicationUrl.hostname === "localhost" ||
       applicationUrl.hostname === "127.0.0.1";
-    if (value.NODE_ENV === "production" && applicationUrl.protocol !== "https:")
+    const localMode = value.APP_MODE === "local";
+    if (localMode) {
+      for (const key of ["NEXT_PUBLIC_APP_URL", "AUTH_URL"] as const) {
+        const url = new URL(value[key]);
+        if (
+          !["127.0.0.1", "localhost"].includes(url.hostname) ||
+          url.protocol !== "http:"
+        )
+          context.addIssue({
+            code: "custom",
+            path: [key],
+            message: "Local mode serves the app on http://127.0.0.1 only.",
+          });
+      }
+      if (!["local", "test"].includes(value.APP_ENV))
+        context.addIssue({
+          code: "custom",
+          path: ["APP_ENV"],
+          message: "Local mode runs with APP_ENV=local.",
+        });
+      if (value.MARKETING_INDEXING_ENABLED)
+        context.addIssue({
+          code: "custom",
+          path: ["MARKETING_INDEXING_ENABLED"],
+          message: "Local mode is never indexed.",
+        });
+      // The token is generated per launch, so it does not exist at build
+      // time; at runtime the proxy also fails closed without it.
+      if (
+        value.NODE_ENV === "production" &&
+        !value.DESKTOP_TOKEN &&
+        process.env.NEXT_PHASE !== "phase-production-build"
+      )
+        context.addIssue({
+          code: "custom",
+          path: ["DESKTOP_TOKEN"],
+          message: "Local mode requires the desktop shell token.",
+        });
+    }
+    if (
+      value.NODE_ENV === "production" &&
+      applicationUrl.protocol !== "https:" &&
+      !localMode
+    )
       context.addIssue({
         code: "custom",
         path: ["NEXT_PUBLIC_APP_URL"],
@@ -197,7 +245,12 @@ export const serverEnvSchema = z
         message:
           "Use SMTP_SECURE=true with port 465 (implicit TLS) and false with STARTTLS ports such as 587.",
       });
-    if (value.NODE_ENV === "production" && value.EMAIL_PROVIDER === "MOCK")
+    // Local mode needs no email: MOCK means "no outgoing mail" there.
+    if (
+      value.NODE_ENV === "production" &&
+      value.EMAIL_PROVIDER === "MOCK" &&
+      !localMode
+    )
       context.addIssue({
         code: "custom",
         path: ["EMAIL_PROVIDER"],
@@ -282,6 +335,8 @@ export function getServerEnv(): ServerEnv {
     AUTH_SECRET: process.env.AUTH_SECRET,
     AUTH_URL: process.env.AUTH_URL,
     APP_ENV: process.env.APP_ENV,
+    APP_MODE: process.env.APP_MODE,
+    DESKTOP_TOKEN: process.env.DESKTOP_TOKEN,
     ROLLOUT_STATE: process.env.ROLLOUT_STATE,
     PUBLIC_REGISTRATION_ENABLED: process.env.PUBLIC_REGISTRATION_ENABLED,
     EMAIL_VERIFICATION_REQUIRED: process.env.EMAIL_VERIFICATION_REQUIRED,

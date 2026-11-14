@@ -158,4 +158,73 @@ describe("environment validation", () => {
       }),
     ).toMatchObject({ AI_OPENAI_COMPATIBLE_STRUCTURED_MODE: "json_mode" });
   });
+
+  describe("APP_MODE=local (L1)", () => {
+    const local = {
+      NODE_ENV: "production",
+      APP_MODE: "local",
+      APP_ENV: "local",
+      NEXT_PUBLIC_APP_URL: "http://127.0.0.1:47831",
+      AUTH_URL: "http://127.0.0.1:47831",
+      DATABASE_URL:
+        "postgresql://wcf:wcf@127.0.0.1:5544/web_content_flow_local",
+      AUTH_SECRET: "local-secret-that-is-at-least-32-characters",
+      RATE_LIMIT_SECRET: "local-rate-limit-secret-with-at-least-32-chars",
+      DESKTOP_TOKEN: "d".repeat(64),
+      EMAIL_PROVIDER: "MOCK",
+    };
+
+    it("accepts a production desktop build on loopback HTTP without email", () => {
+      expect(parseServerEnv(local)).toMatchObject({
+        APP_MODE: "local",
+        EMAIL_PROVIDER: "MOCK",
+      });
+    });
+
+    it("does not require the per-launch token during next build", () => {
+      vi.stubEnv("NEXT_PHASE", "phase-production-build");
+      expect(
+        parseServerEnv({ ...local, DESKTOP_TOKEN: undefined }).APP_MODE,
+      ).toBe("local");
+      vi.unstubAllEnvs();
+    });
+
+    it("keeps server mode as the default with its production rules", () => {
+      expect(() => parseServerEnv({ ...local, APP_MODE: undefined })).toThrow(
+        /HTTPS/,
+      );
+      expect(
+        parseServerEnv({ ...local, NODE_ENV: "test", APP_MODE: undefined })
+          .APP_MODE,
+      ).toBe("server");
+    });
+
+    it("rejects non-loopback URLs, missing token, indexing and deployed APP_ENV", () => {
+      expect(() =>
+        parseServerEnv({
+          ...local,
+          NEXT_PUBLIC_APP_URL: "http://192.168.1.10:47831",
+        }),
+      ).toThrow(/127\.0\.0\.1/);
+      expect(() =>
+        parseServerEnv({
+          ...local,
+          AUTH_URL: "https://app.webcontentflow.com",
+        }),
+      ).toThrow(/127\.0\.0\.1/);
+      expect(() =>
+        parseServerEnv({ ...local, DESKTOP_TOKEN: undefined }),
+      ).toThrow(/desktop shell token/);
+      expect(() =>
+        parseServerEnv({ ...local, MARKETING_INDEXING_ENABLED: "true" }),
+      ).toThrow(/never indexed/);
+      expect(() =>
+        parseServerEnv({
+          ...local,
+          APP_ENV: "production",
+          DATABASE_ENVIRONMENT: "production",
+        }),
+      ).toThrow(/APP_ENV=local/);
+    });
+  });
 });

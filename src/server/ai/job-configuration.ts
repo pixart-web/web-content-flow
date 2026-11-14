@@ -24,10 +24,11 @@ export function getNewJobGenerationConfiguration(input: {
   const real =
     !input.forceMock &&
     env.AI_REAL_GENERATION_ENABLED &&
-    env.AI_PROVIDER_DEFAULT === "OPENAI";
+    env.AI_PROVIDER_DEFAULT !== "MOCK";
   return {
     mode: real ? ("REAL" as const) : ("MOCK" as const),
-    provider: real ? ("OPENAI" as const) : ("MOCK" as const),
+    // OPENAI (cloud) or LOCAL (an activated Ollama model, ADR-070).
+    provider: real ? env.AI_PROVIDER_DEFAULT : ("MOCK" as const),
     modelTier: "STANDARD" as const,
     modelId: real ? env.OPENAI_MODEL_STANDARD : "deterministic-mock-v1",
     promptKey: input.promptKey,

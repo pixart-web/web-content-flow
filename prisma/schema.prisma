@@ -47,6 +47,7 @@ enum GenerationMode {
 enum GenerationProvider {
   MOCK
   OPENAI
+  LOCAL
 }
 
 enum GenerationModelTier {

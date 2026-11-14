@@ -41,6 +41,9 @@ export const DEFAULT_POLICY_VERSION = "1.0.0";
 
 export function resolveTaskPolicy(
   prompt: Pick<PromptDefinition<unknown, unknown>, "key" | "repairPolicy">,
+  // The job's recorded provider: LOCAL jobs run on Ollama with no external
+  // fallback; everything else keeps the cloud default.
+  provider: "MOCK" | "OPENAI" | "LOCAL" = "OPENAI",
 ): TaskPolicy {
   return TaskPolicySchema.parse({
     taskKey: prompt.key,
@@ -48,7 +51,7 @@ export function resolveTaskPolicy(
     policyVersion: DEFAULT_POLICY_VERSION,
     privacy: "internal",
     requiredCapabilities: ["structured"],
-    preferredRuntimes: ["openai"],
+    preferredRuntimes: provider === "LOCAL" ? ["ollama"] : ["openai"],
     externalFallback: { allowed: false, runtimes: [] },
     repair: prompt.repairPolicy,
   });

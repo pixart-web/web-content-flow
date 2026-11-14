@@ -945,7 +945,12 @@ function replaceTarget(
 export async function handleCopyJob(prisma: PrismaClient, job: Job) {
   const stored = await prisma.generationJob.findUnique({
     where: { id: job.id },
-    select: { parentJobId: true, mode: true, briefRevision: true },
+    select: {
+      provider: true,
+      parentJobId: true,
+      mode: true,
+      briefRevision: true,
+    },
   });
   const raw = job.request as { kind?: string };
   if (raw.kind === "COPY_MODULE") {
@@ -981,7 +986,8 @@ export async function handleCopyJob(prisma: PrismaClient, job: Job) {
               module: "COPY",
               status: "QUEUED",
               mode: stored?.mode ?? "MOCK",
-              provider: stored?.mode === "REAL" ? "OPENAI" : "MOCK",
+              provider:
+                stored?.mode === "REAL" ? (stored?.provider ?? "MOCK") : "MOCK",
               briefRevision: stored?.briefRevision ?? null,
               promptKey: `copy.${plan.contentType.toLocaleLowerCase()}.generation`,
               promptVersion: CURRENT_PROMPT_VERSION,

@@ -521,12 +521,12 @@ Contexto comum: [Estado real do projeto](../audits/current-project-status.md) e 
 
 ### ADR-070 — Identidade do provider em texto, com o enum mantido por compatibilidade
 
-**Status:** Proposed.
+**Status:** Accepted (2026-11-14, product owner) — com o valor `LOCAL` em vez de `GATEWAY`.
 
-- **Decision:** Acrescentar as colunas `runtimeKey`, `modelRef` e `providerKind` (texto ou enum novo) a `GenerationJob` e `GenerationUsage`. O enum `GenerationProvider` (`MOCK | OPENAI`) mantém-se para os registos que já existem e passa a ter o valor `GATEWAY` para os novos.
-- **Alternatives:** Acrescentar um valor ao enum por cada runtime: obriga a uma migration por runtime e dificulta o rollback.
-- **Consequences:** Novos runtimes deixam de precisar de migrations. Os dados existentes continuam válidos.
-- **Migration considerations:** `ALTER TYPE … ADD VALUE` não se desfaz facilmente. Por isso é feito uma única vez, depois de aprovação, e as colunas novas são anuláveis.
+- **Decision:** As colunas `runtimeKey`, `modelRef`, `providerKind`, `policyKey`, `policyVersion`, `fallbackUsed` e `structuredMode` (B-05) guardam a identidade exata do runtime e do modelo em `GenerationJob` e `GenerationUsage`. O enum `GenerationProvider` ganha **um** valor, `LOCAL`, para toda a geração que corre fora da cloud (Ollama, servidores OpenAI-compatible): `MOCK | OPENAI | LOCAL`. A migration é `20261114210000_local_generation_provider`.
+- **Alternatives:** Um valor por runtime: obriga a uma migration por runtime. Um valor genérico `GATEWAY`: perde a distinção, útil para custo e uso, entre cloud e local.
+- **Consequences:** Novos runtimes locais não precisam de mais migrations, porque a identidade fica nas colunas de rota. O custo de `LOCAL` é 0 (corre no hardware do utilizador). Os dados existentes continuam válidos.
+- **Migration considerations:** `ALTER TYPE … ADD VALUE` não se desfaz: o PostgreSQL não remove valores de um enum. É aditiva e foi aprovada explicitamente. As colunas de rota são anuláveis.
 
 ### ADR-071 — Model Registry e políticas por tarefa como configuração versionada no repositório
 

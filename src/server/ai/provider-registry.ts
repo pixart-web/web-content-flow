@@ -7,9 +7,12 @@ export function getGenerationAvailability() {
   return {
     mockAvailable: env.NODE_ENV !== "production",
     realAvailable: env.AI_REAL_GENERATION_ENABLED,
-    provider: env.AI_REAL_GENERATION_ENABLED ? ("OPENAI" as const) : null,
+    provider:
+      env.AI_REAL_GENERATION_ENABLED && env.AI_PROVIDER_DEFAULT !== "MOCK"
+        ? env.AI_PROVIDER_DEFAULT
+        : null,
     defaultMode:
-      env.AI_PROVIDER_DEFAULT === "OPENAI" && env.AI_REAL_GENERATION_ENABLED
+      env.AI_PROVIDER_DEFAULT !== "MOCK" && env.AI_REAL_GENERATION_ENABLED
         ? ("REAL" as const)
         : ("MOCK" as const),
   };

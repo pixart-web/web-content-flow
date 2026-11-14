@@ -243,7 +243,12 @@ function scenarioFor(
 export async function handleSocialJob(prisma: PrismaClient, job: Job) {
   const stored = await prisma.generationJob.findUnique({
     where: { id: job.id },
-    select: { parentJobId: true, mode: true, briefRevision: true },
+    select: {
+      provider: true,
+      parentJobId: true,
+      mode: true,
+      briefRevision: true,
+    },
   });
   const raw = job.request as { kind?: string };
   if (raw.kind === "SOCIAL_MODULE") {
@@ -285,7 +290,8 @@ export async function handleSocialJob(prisma: PrismaClient, job: Job) {
               module: "SOCIAL",
               status: "QUEUED",
               mode: stored?.mode ?? "MOCK",
-              provider: stored?.mode === "REAL" ? "OPENAI" : "MOCK",
+              provider:
+                stored?.mode === "REAL" ? (stored?.provider ?? "MOCK") : "MOCK",
               briefRevision: stored?.briefRevision ?? null,
               promptKey: `social.${combination.contentType.toLocaleLowerCase()}.generation`,
               promptVersion: CURRENT_PROMPT_VERSION,

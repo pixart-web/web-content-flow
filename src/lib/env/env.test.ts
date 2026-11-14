@@ -237,4 +237,29 @@ describe("environment validation", () => {
       ).toThrow(/APP_ENV=local/);
     });
   });
+
+  it("selects LOCAL generation only with an Ollama model, without an OpenAI key", () => {
+    const base = {
+      NODE_ENV: "test",
+      NEXT_PUBLIC_APP_URL: "http://localhost:3000",
+      DATABASE_URL: "postgresql://test:test@localhost:5432/test",
+      AUTH_SECRET: "test-secret-that-is-at-least-32-characters",
+      AUTH_URL: "http://localhost:3000",
+      AI_PROVIDER_DEFAULT: "LOCAL",
+      AI_REAL_GENERATION_ENABLED: "true",
+    };
+    expect(() => parseServerEnv(base)).toThrow(
+      /AI_OLLAMA_BASE_URL and AI_OLLAMA_MODEL/,
+    );
+    expect(
+      parseServerEnv({
+        ...base,
+        AI_OLLAMA_BASE_URL: "http://127.0.0.1:11434",
+        AI_OLLAMA_MODEL: "gemma4:12b-it-qat",
+      }).AI_PROVIDER_DEFAULT,
+    ).toBe("LOCAL");
+    expect(() =>
+      parseServerEnv({ ...base, AI_PROVIDER_DEFAULT: "OPENAI" }),
+    ).toThrow(/OPENAI_API_KEY/);
+  });
 });

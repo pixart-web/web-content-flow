@@ -34,7 +34,10 @@ export async function GET() {
     const migrationReady = migrationsAreReady(migrations);
     const ready =
       migrationReady &&
-      (!env.AI_REAL_GENERATION_ENABLED || Boolean(env.OPENAI_API_KEY)) &&
+      (!env.AI_REAL_GENERATION_ENABLED ||
+        (env.AI_PROVIDER_DEFAULT === "LOCAL"
+          ? Boolean(env.AI_OLLAMA_BASE_URL && env.AI_OLLAMA_MODEL)
+          : Boolean(env.OPENAI_API_KEY))) &&
       (env.EMAIL_PROVIDER !== "RESEND" || Boolean(env.RESEND_API_KEY)) &&
       (env.EMAIL_PROVIDER !== "SMTP" ||
         Boolean(env.SMTP_HOST && env.SMTP_USER && env.SMTP_PASSWORD));

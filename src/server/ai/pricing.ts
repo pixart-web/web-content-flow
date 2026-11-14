@@ -29,6 +29,9 @@ export function calculateUsageCost(input: {
   generatedAt: Date;
   usage: NormalizedUsage;
 }): { amountMinorUnits: bigint; currency: "EUR" } | null {
+  // Local models run on the user's hardware: no provider bill (ADR-070).
+  if (input.provider === "LOCAL")
+    return { amountMinorUnits: BigInt(0), currency: "EUR" };
   const price = prices
     .filter(
       (candidate) =>

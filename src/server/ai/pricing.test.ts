@@ -69,4 +69,15 @@ describe("AI usage pricing", () => {
       currency: "EUR",
     });
   });
+
+  it("records local generation at zero cost (ADR-070)", () => {
+    expect(
+      calculateUsageCost({
+        provider: "LOCAL",
+        modelId: "gemma4:12b-it-qat",
+        generatedAt: new Date(),
+        usage: { totalTokens: 2_000, usageSource: "PROVIDER_REPORTED" },
+      }),
+    ).toEqual({ amountMinorUnits: BigInt(0), currency: "EUR" });
+  });
 });

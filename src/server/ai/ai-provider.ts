@@ -1,6 +1,6 @@
 import type { z } from "zod";
 
-export const generationProviders = ["MOCK", "OPENAI"] as const;
+export const generationProviders = ["MOCK", "OPENAI", "LOCAL"] as const;
 export type GenerationProvider = (typeof generationProviders)[number];
 export const generationModelTiers = ["STANDARD", "PREMIUM", "REPAIR"] as const;
 export type GenerationModelTier = (typeof generationModelTiers)[number];

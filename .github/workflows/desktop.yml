@@ -1,0 +1,58 @@
+name: Desktop
+
+# L5: builds and launches the desktop edition on each operating system, since
+# the Next.js server, argon2, sharp and PostgreSQL ship native binaries per
+# platform. No secrets are used; nothing is published.
+
+on:
+  pull_request:
+    paths:
+      - "src/desktop/**"
+      - "scripts/build-desktop.mjs"
+      - "scripts/desktop-smoke.mjs"
+      - "scripts/package-*.mjs"
+      - "tests/desktop/**"
+      - ".github/workflows/desktop.yml"
+      - "package.json"
+      - "pnpm-lock.yaml"
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  desktop:
+    name: desktop (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11.9.0
+          run_install: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.14.0
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm prisma:generate
+      - name: Embedded PostgreSQL runtime tests
+        run: pnpm test:desktop
+      - name: Build the desktop app for this platform
+        run: pnpm build:desktop
+      - name: Launch the desktop app (Linux, virtual display)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb gnome-keyring dbus-x11 > /dev/null
+          dbus-run-session -- bash -c 'echo "" | gnome-keyring-daemon --unlock --components=secrets > /dev/null && xvfb-run -a node scripts/desktop-smoke.mjs --no-sandbox'
+      - name: Launch the desktop app
+        if: runner.os != 'Linux'
+        run: node scripts/desktop-smoke.mjs

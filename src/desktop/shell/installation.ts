@@ -163,3 +163,50 @@ export function runtimeEnv(input: {
       : { AI_PROVIDER_DEFAULT: "MOCK", AI_REAL_GENERATION_ENABLED: "false" }),
   };
 }
+
+// Operating-system variables the child processes need on top of the app
+// environment: without SystemRoot, Windows cannot initialise networking
+// (Winsock 10108) and the web server cannot listen. Nothing else from the
+// shell's environment is passed on.
+const SYSTEM_KEYS = [
+  "PATH",
+  "Path",
+  "PATHEXT",
+  "HOME",
+  "USER",
+  "LOGNAME",
+  "USERNAME",
+  "USERPROFILE",
+  "TMPDIR",
+  "TEMP",
+  "TMP",
+  "LANG",
+  "LC_ALL",
+  "SystemRoot",
+  "SYSTEMROOT",
+  "SystemDrive",
+  "windir",
+  "WINDIR",
+  "ComSpec",
+  "APPDATA",
+  "LOCALAPPDATA",
+  "ProgramData",
+  "ProgramFiles",
+  "COMPUTERNAME",
+  "XDG_RUNTIME_DIR",
+  "DBUS_SESSION_BUS_ADDRESS",
+  "DISPLAY",
+  "WAYLAND_DISPLAY",
+] as const;
+
+export function withSystemEnv(
+  env: Record<string, string>,
+  source: Record<string, string | undefined> = process.env,
+): Record<string, string> {
+  const system: Record<string, string> = {};
+  for (const key of SYSTEM_KEYS) {
+    const value = source[key];
+    if (value !== undefined) system[key] = value;
+  }
+  return { ...system, ...env };
+}

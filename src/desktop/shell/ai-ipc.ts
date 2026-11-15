@@ -31,6 +31,7 @@ import {
 import type { DesktopAiOverview, DesktopEvaluationResult } from "./desktop-api";
 import {
   readSettings,
+  withSystemEnv,
   writeSettings,
   type InstallationPaths,
 } from "./installation";
@@ -195,13 +196,13 @@ export function registerAiIpc(context: {
               out,
             ],
             {
-              env: {
+              env: withSystemEnv({
                 ...context.env(),
                 AI_OLLAMA_BASE_URL: ollamaUrl(),
                 AI_OLLAMA_MODEL: entry.tag,
                 AI_OLLAMA_STRUCTURED_MODE: entry.structuredMode,
                 AI_OLLAMA_THINK: "false",
-              },
+              }),
               serviceName: "wcf-evaluate",
               stdio: "pipe",
             },

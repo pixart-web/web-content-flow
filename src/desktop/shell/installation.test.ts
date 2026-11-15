@@ -14,6 +14,7 @@ import {
   loadOrCreateSecrets,
   readSettings,
   runtimeEnv,
+  withSystemEnv,
   writeSettings,
   type Cipher,
 } from "./installation";
@@ -128,5 +129,17 @@ describe("desktop installation state (L4)", () => {
         },
       }),
     ).toThrow();
+  });
+
+  it("adds only the listed operating-system variables to child environments", () => {
+    const merged = withSystemEnv(
+      { APP_MODE: "local", PATH: "/app-path" },
+      { SystemRoot: "C:\\Windows", PATH: "/usr/bin", SECRET_TOKEN: "x" },
+    );
+    expect(merged).toEqual({
+      SystemRoot: "C:\\Windows",
+      PATH: "/app-path",
+      APP_MODE: "local",
+    });
   });
 });

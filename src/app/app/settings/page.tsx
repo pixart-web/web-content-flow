@@ -1,5 +1,6 @@
 import { signOutAction } from "@/features/auth/auth-actions";
 import { requireUser } from "@/server/auth/require-user";
+import { getServerEnv } from "@/lib/env/server";
 import { getGenerationAvailability } from "@/server/ai/provider-registry";
 import { listOwnedUsage } from "@/server/ai/usage-service";
 import { getPrisma } from "@/server/db/prisma";
@@ -8,6 +9,7 @@ import Link from "next/link";
 export default async function SettingsPage() {
   const user = await requireUser("/app/settings");
   const availability = getGenerationAvailability();
+  const localMode = getServerEnv().APP_MODE === "local";
   const usage = await listOwnedUsage(getPrisma(), user.id);
   const totalTokens = usage.reduce(
     (total, record) => total + (record.totalTokens ?? 0),
@@ -28,6 +30,7 @@ export default async function SettingsPage() {
           ["Security", "/app/settings/security"],
           ["Usage", "/app/settings/usage"],
           ["Privacy", "/app/settings/privacy"],
+          ...(localMode ? [["Local AI", "/app/settings/local-ai"]] : []),
         ].map(([label, href]) => (
           <Link
             className="border-default bg-surface hover:bg-surface-subtle rounded-control min-h-11 border p-3 font-semibold"
@@ -73,9 +76,11 @@ export default async function SettingsPage() {
           <div>
             <dt className="text-secondary text-sm">Provider status</dt>
             <dd className="mt-1 font-medium">
-              {availability.realAvailable
-                ? "OpenAI configured"
-                : "Real generation unavailable"}
+              {availability.provider === "LOCAL"
+                ? "Local model on this computer"
+                : availability.realAvailable
+                  ? "OpenAI configured"
+                  : "Real generation unavailable"}
             </dd>
           </div>
           <div>

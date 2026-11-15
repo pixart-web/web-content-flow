@@ -17,6 +17,7 @@ import { prepareLocalDatabase } from "@/desktop/local-database";
 import { portIsFree } from "@/desktop/postgres-supervisor";
 import { readMigrations } from "@/server/db/migration-runner";
 
+import { registerAiIpc } from "./ai-ipc";
 import {
   installationPaths,
   launchTokens,
@@ -108,6 +109,7 @@ async function start() {
       contextIsolation: true,
       sandbox: true,
       nodeIntegration: false,
+      preload: join(here, "preload.cjs"),
     },
   });
   await window.loadURL(loadingPage);
@@ -143,6 +145,7 @@ async function start() {
     tokens,
     settings,
   });
+  registerAiIpc({ origin: ORIGIN, here, paths, env: () => env, log });
   web = fork(join("web", "server.js"), env, "wcf-web");
   worker = fork("worker.mjs", env, "wcf-worker");
   const maintenance = () => fork("maintenance.mjs", env, "wcf-maintenance");
@@ -172,8 +175,26 @@ async function start() {
   await waitForReady(tokens.desktopToken);
   await window.loadURL(`${ORIGIN}/app`);
   log(`Window loaded: ${window.webContents.getURL()}`);
+  // Automated checks on a developer machine only (never in the packaged app):
+  // run a script in the loaded window and log its result.
+  const smokeScript = app.isPackaged
+    ? undefined
+    : process.env.WCF_DESKTOP_SMOKE_JS;
+  if (smokeScript) {
+    try {
+      const result: unknown =
+        await window.webContents.executeJavaScript(smokeScript);
+      log(`Smoke result: ${JSON.stringify(result)}`);
+    } catch (error: unknown) {
+      log(
+        `Smoke error: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
   // Automated launch check (CI-style smoke test on a developer machine).
-  const screenshot = process.env.WCF_DESKTOP_SMOKE_SCREENSHOT;
+  const screenshot = app.isPackaged
+    ? undefined
+    : process.env.WCF_DESKTOP_SMOKE_SCREENSHOT;
   if (screenshot) {
     const { writeFileSync } = await import("node:fs");
     writeFileSync(screenshot, (await window.webContents.capturePage()).toPNG());

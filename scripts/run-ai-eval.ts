@@ -121,7 +121,14 @@ async function main() {
   process.exitCode = report.passed ? 0 : 1;
 }
 
-main().catch((error: unknown) => {
-  console.error(error instanceof Error ? error.message : error);
-  process.exitCode = 2;
-});
+main()
+  .catch((error: unknown) => {
+    console.error(error instanceof Error ? error.message : error);
+    process.exitCode = 2;
+  })
+  .finally(() => {
+    // Under an Electron utilityProcess the open parent port keeps the
+    // process alive; exit explicitly so the desktop shell sees the result.
+    if ((process as typeof process & { parentPort?: unknown }).parentPort)
+      process.exit();
+  });

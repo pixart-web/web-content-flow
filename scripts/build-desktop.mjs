@@ -112,6 +112,17 @@ await build({
   },
   logLevel: "warning",
 });
+// Sandboxed preload scripts must be CommonJS.
+await build({
+  entryPoints: [join(root, "src", "desktop", "shell", "preload.ts")],
+  bundle: true,
+  platform: "node",
+  format: "cjs",
+  target: "node24",
+  outfile: join(out, "preload.cjs"),
+  external: ["electron"],
+  logLevel: "warning",
+});
 cpSync(join(root, "prisma", "migrations"), join(out, "migrations"), {
   recursive: true,
 });

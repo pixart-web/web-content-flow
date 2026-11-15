@@ -199,9 +199,20 @@ async function start() {
     ? undefined
     : process.env.WCF_DESKTOP_SMOKE_SCREENSHOT;
   if (screenshot) {
-    const { writeFileSync } = await import("node:fs");
-    writeFileSync(screenshot, (await window.webContents.capturePage()).toPNG());
-    log(`Smoke screenshot: ${screenshot}`);
+    // A capture can fail on virtual displays without a GPU; that must not
+    // turn a working launch into a startup failure.
+    try {
+      const { writeFileSync } = await import("node:fs");
+      writeFileSync(
+        screenshot,
+        (await window.webContents.capturePage()).toPNG(),
+      );
+      log(`Smoke screenshot: ${screenshot}`);
+    } catch (error: unknown) {
+      log(
+        `Smoke screenshot failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
     app.quit();
   }
 }

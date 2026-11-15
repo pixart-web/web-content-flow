@@ -50,7 +50,16 @@ export type DesktopEvaluationResult = Readonly<{
   durationMs: number;
 }>;
 
+export type DesktopPasswordResetResult =
+  | { ok: true }
+  | {
+      ok: false;
+      reason:
+        "invalid_password" | "denied" | "unavailable" | "no_owner" | "failed";
+    };
+
 export type WcfDesktopApi = Readonly<{
+  resetOwnerPassword: (password: string) => Promise<DesktopPasswordResetResult>;
   aiOverview: () => Promise<DesktopAiOverview>;
   startOllama: () => Promise<DesktopAiOverview>;
   downloadModel: (id: string, licenseAccepted: boolean) => Promise<void>;

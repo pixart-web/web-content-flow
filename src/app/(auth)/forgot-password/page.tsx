@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { DesktopPasswordReset } from "@/features/desktop/desktop-password-reset";
 import { getServerEnv } from "@/lib/env/server";
 import { forgotPasswordAction } from "@/features/auth/password-recovery-actions";
 import { PasswordRecoveryForm } from "@/features/auth/password-recovery-form";
@@ -9,10 +10,7 @@ export default function ForgotPasswordPage() {
     return (
       <>
         <h1 className="font-display text-2xl font-semibold">Reset password</h1>
-        <p className="text-secondary mt-3 text-sm">
-          The desktop edition does not send email. Password recovery for this
-          installation is done from the desktop app itself.
-        </p>
+        <DesktopPasswordReset />
         <Link
           className="text-link mt-6 inline-block text-sm underline"
           href="/sign-in"

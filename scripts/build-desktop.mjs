@@ -112,6 +112,23 @@ await build({
   },
   logLevel: "warning",
 });
+// macOS: native helper that asks the system to confirm the owner (L4c).
+if (process.platform === "darwin") {
+  mkdirSync(join(out, "bin"), { recursive: true });
+  execFileSync(
+    "swiftc",
+    [
+      "-O",
+      "-o",
+      join(out, "bin", "wcf-os-auth"),
+      join(root, "src", "desktop", "macos", "os-auth.swift"),
+    ],
+    { stdio: "inherit" },
+  );
+} else
+  console.warn(
+    "   (skipping the macOS authentication helper on this platform)",
+  );
 // Sandboxed preload scripts must be CommonJS.
 await build({
   entryPoints: [join(root, "src", "desktop", "shell", "preload.ts")],

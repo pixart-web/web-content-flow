@@ -10,10 +10,16 @@ const SESSION_MAX_AGE_SECONDS = 30 * 24 * 60 * 60;
 const SESSION_COOKIE = "authjs.session-token";
 const SECURE_SESSION_COOKIE = "__Secure-authjs.session-token";
 
-function cookieName(): string {
-  return process.env.NODE_ENV === "production"
-    ? SECURE_SESSION_COOKIE
-    : SESSION_COOKIE;
+// Secure cookies follow the app URL's protocol, exactly as Auth.js decides
+// which cookie to read (useSecureCookies). Using NODE_ENV instead made the
+// desktop edition (production build on http://127.0.0.1) write a cookie that
+// Auth.js never read, so sign-in did not stick.
+export function sessionCookiePolicy(authUrl = process.env.AUTH_URL) {
+  let secure = false;
+  try {
+    secure = new URL(authUrl ?? "").protocol === "https:";
+  } catch {}
+  return { name: secure ? SECURE_SESSION_COOKIE : SESSION_COOKIE, secure };
 }
 
 export async function createDatabaseSession(userId: string): Promise<void> {
@@ -25,10 +31,11 @@ export async function createDatabaseSession(userId: string): Promise<void> {
   });
 
   const cookieStore = await cookies();
-  cookieStore.set(cookieName(), sessionToken, {
+  const policy = sessionCookiePolicy();
+  cookieStore.set(policy.name, sessionToken, {
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: policy.secure,
     path: "/",
     expires,
   });

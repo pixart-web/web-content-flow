@@ -1,4 +1,4 @@
-import { execFile } from "node:child_process";
+import { execFile, spawn } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, rmSync } from "node:fs";
 import { createRequire } from "node:module";
 import { createServer } from "node:net";
@@ -54,6 +54,19 @@ export function pgCtlPath() {
   }
   const binary = process.platform === "win32" ? "pg_ctl.exe" : "pg_ctl";
   return join(dirname(entry), "..", "native", "bin", binary);
+}
+
+// Windows: `pg_ctl start` leaves PostgreSQL holding any inherited output
+// pipes, so waiting for them (execFile) never ends. Run it without pipes and
+// wait for pg_ctl itself; PostgreSQL's output goes to its log file.
+function runWithoutPipes(command: string, args: string[]) {
+  return new Promise<void>((resolve, reject) => {
+    const child = spawn(command, args, { stdio: "ignore", windowsHide: true });
+    child.once("error", reject);
+    child.once("exit", (code) =>
+      code === 0 ? resolve() : reject(new Error(`${command} exited ${code}`)),
+    );
+  });
 }
 
 export function readPostmasterPid(dataDir: string): number | null {
@@ -158,6 +171,9 @@ export async function startPostgres(
     password: options.password,
     port,
     persistent: true,
+    // Same encoding and collation on every platform (Windows would otherwise
+    // pick WIN1252, which cannot store all of the app's text).
+    initdbFlags: ["--encoding=UTF8", "--no-locale"],
     // Listen on loopback only; never on the network.
     postgresFlags: ["-c", "listen_addresses=127.0.0.1"],
     onLog: remember,
@@ -170,11 +186,31 @@ export async function startPostgres(
     log("Initialising the local database.");
     await postgres.initialise();
   }
+  // Windows: start and stop through pg_ctl, which drops administrator
+  // privileges (PostgreSQL refuses to run elevated) and keeps a log file.
+  const windows = process.platform === "win32";
+  const logFile = join(dirname(options.dataDir), "postgres.log");
   try {
-    await postgres.start();
+    if (windows)
+      await runWithoutPipes(pgCtlPath(), [
+        "start",
+        "-w",
+        "-t",
+        "60",
+        "-D",
+        options.dataDir,
+        "-l",
+        logFile,
+        "-o",
+        `-p ${port} -c listen_addresses=127.0.0.1`,
+      ]);
+    else await postgres.start();
   } catch (error: unknown) {
+    const tail = existsSync(logFile)
+      ? readFileSync(logFile, "utf8").split("\n").slice(-20).join("\n")
+      : "";
     throw new Error(
-      `PostgreSQL did not start: ${error instanceof Error ? error.message : String(error)}\n${recent.join("\n")}`,
+      `PostgreSQL did not start: ${error instanceof Error ? error.message : String(error)}\n${recent.join("\n")}\n${tail}`,
     );
   }
 
@@ -191,7 +227,13 @@ export async function startPostgres(
       "SELECT 1 FROM pg_database WHERE datname = $1",
       [options.database],
     );
-    if (exists.rowCount === 0) await postgres.createDatabase(options.database);
+    // Created here rather than with embedded-postgres, which only knows a
+    // server it started itself (Windows starts through pg_ctl).
+    if (exists.rowCount === 0) {
+      if (!/^[a-z_][a-z0-9_]{0,62}$/.test(options.database))
+        throw new Error("Invalid database name.");
+      await admin.query(`CREATE DATABASE "${options.database}"`);
+    }
   } finally {
     await admin.end();
   }
@@ -204,6 +246,19 @@ export async function startPostgres(
   return {
     port,
     databaseUrl: url.toString(),
-    stop: () => postgres.stop(),
+    stop: windows
+      ? async () => {
+          await run(pgCtlPath(), [
+            "stop",
+            "-D",
+            options.dataDir,
+            "-m",
+            "fast",
+            "-w",
+            "-t",
+            "60",
+          ]);
+        }
+      : () => postgres.stop(),
   };
 }

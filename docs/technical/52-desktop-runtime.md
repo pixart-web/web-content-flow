@@ -80,3 +80,28 @@ Diretório de dados no macOS: `~/Library/Application Support/web-content-flow-de
 - O electron-builder foi experimentado e abandonado: incluía todas as dependências do repositório (839 MB) e cortava o `node_modules` do servidor standalone.
 - **Sem assinatura Apple nem notarização:** um `.dmg` descarregado da internet fica em quarentena e o macOS pede "Abrir" com o botão direito. Para distribuir é preciso uma conta Apple Developer (Developer ID + notarização). As atualizações automáticas também dependem disso.
 - A pasta de dados da app instalada é `~/Library/Application Support/Web Content Flow/`.
+
+## Windows e Linux (L5)
+
+O workflow `.github/workflows/desktop.yml` corre em **Linux (x64), Windows (x64) e macOS (arm64)**. Em cada sistema faz o build nativo (Next, argon2, sharp e PostgreSQL têm binários por plataforma), corre o `pnpm test:desktop`, abre a app Electron real duas vezes (`scripts/desktop-smoke.mjs`: 1.º e 2.º arranque, encerramento limpo) e gera os pacotes sem assinatura como artefactos (14 dias):
+
+| Sistema | Pacote | Script |
+|---|---|---|
+| macOS | `.dmg` | `scripts/package-macos.mjs` |
+| Linux | `.tar.gz` e `.deb` (com `chrome-sandbox` setuid no `postinst`) | `scripts/package-linux.mjs` |
+| Windows | `.zip` portátil | `scripts/package-windows.mjs` |
+
+Diferenças por sistema encontradas e corrigidas no CI:
+
+- **Windows:** o PostgreSQL é arrancado e parado com o `pg_ctl`, que larga os privilégios de administrador (o PostgreSQL recusa correr elevado). É lançado sem pipes herdadas (senão o arranque nunca terminava) e com log em `postgres.log`.
+- **Windows:** os processos filhos precisam da `SystemRoot` e das outras variáveis do SO. Sem elas, o Winsock não inicializa (`10108`) e o servidor não abre a porta (`withSystemEnv`).
+- **Todos:** `initdb --encoding=UTF8 --no-locale`, porque o Windows escolhia `WIN1252`. A base de dados é criada com o cliente `pg`.
+- **Build em Windows:** o `pnpm` é um `.cmd` e precisa de shell. Os duplicados do PostgreSQL ficam como cópias, porque os symlinks exigem privilégios.
+- **Linux:** o `safeStorage` precisa de um keyring (GNOME Keyring ou KWallet). No CI é usado o `gnome-keyring` com `xvfb`. Uma execução falhou de forma intermitente nesse passo; a seguir.
+
+### O que falta
+
+- **Reposição da password em Windows e Linux:** o helper de confirmação só existe para macOS. Nos outros sistemas a reposição responde `unavailable`. Falta o equivalente com Windows Hello ou polkit.
+- **Hardware real:** o CI não tem GPU nem Ollama. A IA local em Windows e Linux (CUDA, CPU) ainda não foi testada.
+- **Assinatura:** um certificado de assinatura de código para Windows evita o aviso do SmartScreen. Linux não precisa.
+- **Instaladores:** um instalador NSIS ou MSI (atalhos, desinstalação) e um AppImage ficam para depois do `.zip` e do `.deb`.

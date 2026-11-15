@@ -56,7 +56,12 @@ rmSync(out, { recursive: true, force: true });
 mkdirSync(out, { recursive: true });
 
 console.warn("1/5 next build (standalone)");
-execFileSync("pnpm", ["exec", "next", "build"], { stdio: "inherit", env });
+// pnpm is a .cmd shim on Windows, which needs a shell.
+execFileSync("pnpm", ["exec", "next", "build"], {
+  stdio: "inherit",
+  env,
+  shell: process.platform === "win32",
+});
 const standalone = join(root, ".next", "standalone");
 if (!existsSync(join(standalone, "server.js")))
   throw new Error("next build did not produce .next/standalone/server.js");
@@ -170,7 +175,8 @@ cpSync(
     "native",
     "lib",
   );
-  if (existsSync(lib)) {
+  // Windows: symlinks need extra privileges; keep the copies there.
+  if (existsSync(lib) && process.platform !== "win32") {
     const byHash = new Map();
     for (const name of readdirSync(lib)) {
       const file = join(lib, name);

@@ -25,6 +25,7 @@ import {
   loadOrCreateSecrets,
   readSettings,
   runtimeEnv,
+  withSystemEnv,
   type Cipher,
 } from "./installation";
 
@@ -62,7 +63,7 @@ let quitting = false;
 
 function fork(entry: string, env: Record<string, string>, name: string) {
   const child = utilityProcess.fork(join(here, entry), [], {
-    env,
+    env: withSystemEnv(env),
     serviceName: name,
     stdio: "pipe",
   });
@@ -198,9 +199,20 @@ async function start() {
     ? undefined
     : process.env.WCF_DESKTOP_SMOKE_SCREENSHOT;
   if (screenshot) {
-    const { writeFileSync } = await import("node:fs");
-    writeFileSync(screenshot, (await window.webContents.capturePage()).toPNG());
-    log(`Smoke screenshot: ${screenshot}`);
+    // A capture can fail on virtual displays without a GPU; that must not
+    // turn a working launch into a startup failure.
+    try {
+      const { writeFileSync } = await import("node:fs");
+      writeFileSync(
+        screenshot,
+        (await window.webContents.capturePage()).toPNG(),
+      );
+      log(`Smoke screenshot: ${screenshot}`);
+    } catch (error: unknown) {
+      log(
+        `Smoke screenshot failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
     app.quit();
   }
 }
@@ -241,10 +253,12 @@ else {
     start().catch(async (error: unknown) => {
       const message = error instanceof Error ? error.message : String(error);
       log(`Startup failed: ${message}`);
-      dialog.showErrorBox(
-        "Web Content Flow could not start",
-        `${message}\n\nDetails: ${logFile}`,
-      );
+      // The dialog blocks until dismissed: skip it in automated checks.
+      if (app.isPackaged || !process.env.WCF_DESKTOP_SMOKE_SCREENSHOT)
+        dialog.showErrorBox(
+          "Web Content Flow could not start",
+          `${message}\n\nDetails: ${logFile}`,
+        );
       quitting = true;
       await stop().catch(() => {});
       app.exit(1);

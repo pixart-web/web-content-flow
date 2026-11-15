@@ -227,7 +227,13 @@ export async function startPostgres(
       "SELECT 1 FROM pg_database WHERE datname = $1",
       [options.database],
     );
-    if (exists.rowCount === 0) await postgres.createDatabase(options.database);
+    // Created here rather than with embedded-postgres, which only knows a
+    // server it started itself (Windows starts through pg_ctl).
+    if (exists.rowCount === 0) {
+      if (!/^[a-z_][a-z0-9_]{0,62}$/.test(options.database))
+        throw new Error("Invalid database name.");
+      await admin.query(`CREATE DATABASE "${options.database}"`);
+    }
   } finally {
     await admin.end();
   }

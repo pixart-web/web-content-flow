@@ -62,3 +62,23 @@ jobs:
       - name: Launch the desktop app
         if: runner.os != 'Linux'
         run: node scripts/desktop-smoke.mjs
+      - name: Package (Linux)
+        if: runner.os == 'Linux'
+        run: node scripts/package-linux.mjs
+      - name: Package (Windows)
+        if: runner.os == 'Windows'
+        run: node scripts/package-windows.mjs
+      - name: Package (macOS)
+        if: runner.os == 'macOS'
+        run: node scripts/package-macos.mjs
+      - name: Upload unsigned packages
+        uses: actions/upload-artifact@v7
+        with:
+          name: web-content-flow-desktop-${{ runner.os }}
+          path: |
+            dist/release/*.dmg
+            dist/release/*.deb
+            dist/release/*.tar.gz
+            dist/release/*.zip
+          if-no-files-found: error
+          retention-days: 14

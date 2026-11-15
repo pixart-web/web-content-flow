@@ -1,4 +1,4 @@
-import { execFile } from "node:child_process";
+import { execFile, spawn } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, rmSync } from "node:fs";
 import { createRequire } from "node:module";
 import { createServer } from "node:net";
@@ -54,6 +54,19 @@ export function pgCtlPath() {
   }
   const binary = process.platform === "win32" ? "pg_ctl.exe" : "pg_ctl";
   return join(dirname(entry), "..", "native", "bin", binary);
+}
+
+// Windows: `pg_ctl start` leaves PostgreSQL holding any inherited output
+// pipes, so waiting for them (execFile) never ends. Run it without pipes and
+// wait for pg_ctl itself; PostgreSQL's output goes to its log file.
+function runWithoutPipes(command: string, args: string[]) {
+  return new Promise<void>((resolve, reject) => {
+    const child = spawn(command, args, { stdio: "ignore", windowsHide: true });
+    child.once("error", reject);
+    child.once("exit", (code) =>
+      code === 0 ? resolve() : reject(new Error(`${command} exited ${code}`)),
+    );
+  });
 }
 
 export function readPostmasterPid(dataDir: string): number | null {
@@ -179,7 +192,7 @@ export async function startPostgres(
   const logFile = join(dirname(options.dataDir), "postgres.log");
   try {
     if (windows)
-      await run(pgCtlPath(), [
+      await runWithoutPipes(pgCtlPath(), [
         "start",
         "-w",
         "-t",

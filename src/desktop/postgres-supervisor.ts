@@ -42,8 +42,16 @@ function platformPackage() {
 }
 
 export function pgCtlPath() {
-  const fromEmbedded = createRequire(require.resolve("embedded-postgres"));
-  const entry = fromEmbedded.resolve(platformPackage());
+  let entry: string;
+  try {
+    // Desktop bundle: the platform package is copied next to main.mjs.
+    entry = require.resolve(platformPackage());
+  } catch {
+    // Development (pnpm): only visible from embedded-postgres itself.
+    entry = createRequire(require.resolve("embedded-postgres")).resolve(
+      platformPackage(),
+    );
+  }
   const binary = process.platform === "win32" ? "pg_ctl.exe" : "pg_ctl";
   return join(dirname(entry), "..", "native", "bin", binary);
 }

@@ -6,6 +6,8 @@ import type { DesktopDownloadProgress, WcfDesktopApi } from "./desktop-api";
 // fixed calls, never ipcRenderer itself.
 
 const api: WcfDesktopApi = {
+  resetOwnerPassword: (password) =>
+    ipcRenderer.invoke("wcf:reset-owner-password", password),
   aiOverview: () => ipcRenderer.invoke("wcf:ai-overview"),
   startOllama: () => ipcRenderer.invoke("wcf:ai-start-ollama"),
   downloadModel: (id, licenseAccepted) =>

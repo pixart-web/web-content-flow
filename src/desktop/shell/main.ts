@@ -18,6 +18,7 @@ import { portIsFree } from "@/desktop/postgres-supervisor";
 import { readMigrations } from "@/server/db/migration-runner";
 
 import { registerAiIpc } from "./ai-ipc";
+import { registerOwnerIpc } from "./owner-ipc";
 import {
   installationPaths,
   launchTokens,
@@ -146,6 +147,7 @@ async function start() {
     settings,
   });
   registerAiIpc({ origin: ORIGIN, here, paths, env: () => env, log });
+  registerOwnerIpc({ origin: ORIGIN, here, tokens, log });
   web = fork(join("web", "server.js"), env, "wcf-web");
   worker = fork("worker.mjs", env, "wcf-worker");
   const maintenance = () => fork("maintenance.mjs", env, "wcf-maintenance");

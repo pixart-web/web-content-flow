@@ -22,6 +22,10 @@ on:
 permissions:
   contents: read
 
+env:
+  # prisma.config.ts reads it; generate and the desktop tests never connect.
+  DATABASE_URL: postgresql://placeholder:placeholder@127.0.0.1:1/placeholder
+
 jobs:
   desktop:
     name: desktop (${{ matrix.os }})

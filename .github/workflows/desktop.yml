@@ -46,6 +46,8 @@ jobs:
           node-version: 24.14.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # Electron 45 downloads its binary lazily; fetch it before launching.
+      - run: node node_modules/electron/install.js
       - run: pnpm prisma:generate
       - name: Embedded PostgreSQL runtime tests
         run: pnpm test:desktop

@@ -82,7 +82,7 @@ export const serverEnvSchema = z
     EXPORT_RETENTION_HOURS: integerFromEnv(1, 168, 24),
     EXPORT_MAX_BYTES: integerFromEnv(10_000, 20_000_000, 2_000_000),
     RATE_LIMIT_SECRET: optionalSecretFromEnv(32),
-    AI_PROVIDER_DEFAULT: z.enum(["MOCK", "OPENAI"]).default("MOCK"),
+    AI_PROVIDER_DEFAULT: z.enum(["MOCK", "OPENAI", "LOCAL"]).default("MOCK"),
     AI_REAL_GENERATION_ENABLED: booleanFromEnv,
     AI_FAKE_OPENAI_ENABLED: booleanFromEnv,
     OPENAI_API_KEY: optionalSecretFromEnv(20),
@@ -108,6 +108,9 @@ export const serverEnvSchema = z
       .enum(["native_schema", "json_mode", "prompted"])
       .default("json_mode"),
     AI_REQUEST_TIMEOUT_MS: integerFromEnv(10_000, 180_000, 60_000),
+    // Local runtimes (Ollama, OpenAI-compatible) are much slower than the
+    // cloud: gemma4 12B on an M4 takes 30 s to 2+ min per item (doc 48).
+    AI_LOCAL_REQUEST_TIMEOUT_MS: integerFromEnv(30_000, 900_000, 300_000),
     AI_MAX_RETRIES: integerFromEnv(0, 3, 2),
     AI_MAX_CONCURRENT_REQUESTS: integerFromEnv(1, 16, 4),
     AI_MAX_ACTIVE_PROJECT_JOBS: integerFromEnv(1, 8, 2),
@@ -198,6 +201,7 @@ export const serverEnvSchema = z
       });
     if (
       value.AI_REAL_GENERATION_ENABLED &&
+      value.AI_PROVIDER_DEFAULT !== "LOCAL" &&
       !value.AI_FAKE_OPENAI_ENABLED &&
       !value.OPENAI_API_KEY
     )
@@ -205,6 +209,17 @@ export const serverEnvSchema = z
         code: "custom",
         path: ["OPENAI_API_KEY"],
         message: "OPENAI_API_KEY is required when real generation is enabled.",
+      });
+    // LOCAL generation runs on the activated Ollama model (ADR-070).
+    if (
+      value.AI_PROVIDER_DEFAULT === "LOCAL" &&
+      (!value.AI_OLLAMA_BASE_URL || !value.AI_OLLAMA_MODEL)
+    )
+      context.addIssue({
+        code: "custom",
+        path: ["AI_PROVIDER_DEFAULT"],
+        message:
+          "AI_PROVIDER_DEFAULT=LOCAL needs AI_OLLAMA_BASE_URL and AI_OLLAMA_MODEL.",
       });
     if (value.NODE_ENV === "production" && value.AI_FAKE_OPENAI_ENABLED)
       context.addIssue({
@@ -391,6 +406,7 @@ export function getServerEnv(): ServerEnv {
     AI_OPENAI_COMPATIBLE_STRUCTURED_MODE:
       process.env.AI_OPENAI_COMPATIBLE_STRUCTURED_MODE,
     AI_REQUEST_TIMEOUT_MS: process.env.AI_REQUEST_TIMEOUT_MS,
+    AI_LOCAL_REQUEST_TIMEOUT_MS: process.env.AI_LOCAL_REQUEST_TIMEOUT_MS,
     AI_MAX_RETRIES: process.env.AI_MAX_RETRIES,
     AI_MAX_CONCURRENT_REQUESTS: process.env.AI_MAX_CONCURRENT_REQUESTS,
     AI_MAX_ACTIVE_PROJECT_JOBS: process.env.AI_MAX_ACTIVE_PROJECT_JOBS,

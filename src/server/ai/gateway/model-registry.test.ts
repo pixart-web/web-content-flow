@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import { buildModelRegistry, findModelForTier } from "./model-registry";
+import { routeTask } from "./router";
+import { resolveTaskPolicy } from "./task-policy";
 
 const env = {
   OPENAI_MODEL_STANDARD: "model-standard",
@@ -65,5 +67,62 @@ describe("model registry", () => {
       status: "evaluation",
       capabilities: { structured: "prompted" },
     });
+  });
+
+  it("activates the Ollama model as LOCAL only when LOCAL generation is selected (ADR-070)", () => {
+    const local = {
+      ...env,
+      AI_OLLAMA_BASE_URL: "http://127.0.0.1:11434",
+      AI_OLLAMA_MODEL: "gemma4:12b-it-qat",
+    };
+    for (const variant of [
+      {
+        AI_PROVIDER_DEFAULT: "MOCK" as const,
+        AI_REAL_GENERATION_ENABLED: true,
+      },
+      {
+        AI_PROVIDER_DEFAULT: "LOCAL" as const,
+        AI_REAL_GENERATION_ENABLED: false,
+      },
+    ])
+      expect(
+        buildModelRegistry({ ...local, ...variant }).find(
+          (m) => m.runtimeKey === "ollama",
+        ),
+      ).toMatchObject({ status: "evaluation", persistedProvider: null });
+
+    const registry = buildModelRegistry({
+      ...local,
+      AI_PROVIDER_DEFAULT: "LOCAL",
+      AI_REAL_GENERATION_ENABLED: true,
+    });
+    expect(registry.find((m) => m.runtimeKey === "ollama")).toMatchObject({
+      status: "active",
+      persistedProvider: "LOCAL",
+    });
+    const policy = resolveTaskPolicy(
+      {
+        key: "copy.marketing_email.generation",
+        repairPolicy: "STRUCTURE_ONCE",
+      },
+      "LOCAL",
+    );
+    expect(policy.preferredRuntimes).toEqual(["ollama"]);
+    expect(policy.externalFallback.allowed).toBe(false);
+    const decision = routeTask({
+      policy,
+      tier: "STANDARD",
+      registry,
+      availability: {
+        mock: { available: true },
+        openai: { available: false, reason: "not_configured" },
+        ollama: { available: true },
+      },
+      privacy: policy.privacy,
+      externalFallbackConsent: false,
+    });
+    expect(decision.ok && decision.candidates[0]!.model.ref).toBe(
+      "ollama/gemma4:12b-it-qat",
+    );
   });
 });

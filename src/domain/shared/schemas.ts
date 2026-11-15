@@ -23,7 +23,7 @@ export const ContentItemVersionIdSchema = z
   .brand<"ContentItemVersionId">();
 
 export const GenerationModeSchema = z.enum(["MOCK", "REAL"]);
-export const GenerationProviderSchema = z.enum(["MOCK", "OPENAI"]);
+export const GenerationProviderSchema = z.enum(["MOCK", "OPENAI", "LOCAL"]);
 export const GenerationModelTierSchema = z.enum([
   "STANDARD",
   "PREMIUM",

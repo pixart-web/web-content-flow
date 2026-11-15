@@ -29,7 +29,7 @@ export const RegisteredModelSchema = z
     providerKind: z.enum(providerKinds),
     // Value persisted in the GenerationProvider DB enum. null = this runtime
     // cannot be recorded until ADR-070's enum step, so jobs never route to it.
-    persistedProvider: z.enum(["MOCK", "OPENAI"]).nullable(),
+    persistedProvider: z.enum(["MOCK", "OPENAI", "LOCAL"]).nullable(),
     tiers: z.array(z.enum(generationModelTiers)).min(1),
     capabilities: z
       .object({
@@ -52,6 +52,8 @@ type RegistryEnv = Pick<
   Partial<
     Pick<
       ServerEnv,
+      | "AI_PROVIDER_DEFAULT"
+      | "AI_REAL_GENERATION_ENABLED"
       | "AI_OLLAMA_BASE_URL"
       | "AI_OLLAMA_MODEL"
       | "AI_OLLAMA_STRUCTURED_MODE"
@@ -69,21 +71,27 @@ export function providerKindForUrl(url: string): ProviderKind {
 
 // ADR-077: local and self-hosted models enter as "evaluation" and stay out of
 // routing until they pass the task evaluation suite on the target hardware.
+// ADR-070: the configured Ollama model becomes "active" (recorded as LOCAL)
+// only when the installation selects LOCAL generation; the desktop shell does
+// that after the on-device evaluation passed.
 function localRuntimeModels(env: RegistryEnv): RegisteredModel[] {
   const models: RegisteredModel[] = [];
+  const localActive =
+    env.AI_PROVIDER_DEFAULT === "LOCAL" &&
+    env.AI_REAL_GENERATION_ENABLED === true;
   if (env.AI_OLLAMA_BASE_URL && env.AI_OLLAMA_MODEL)
     models.push({
       ref: `ollama/${env.AI_OLLAMA_MODEL}`,
       runtimeKey: "ollama",
       modelId: env.AI_OLLAMA_MODEL,
       providerKind: providerKindForUrl(env.AI_OLLAMA_BASE_URL),
-      persistedProvider: null,
+      persistedProvider: localActive ? "LOCAL" : null,
       tiers: [...generationModelTiers],
       capabilities: {
         structured: env.AI_OLLAMA_STRUCTURED_MODE ?? "native_schema",
         embeddings: false,
       },
-      status: "evaluation",
+      status: localActive ? "active" : "evaluation",
     });
   if (env.AI_OPENAI_COMPATIBLE_BASE_URL && env.AI_OPENAI_COMPATIBLE_MODEL)
     models.push({

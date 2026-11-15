@@ -14,7 +14,11 @@ export default async function UsageSettingsPage() {
   start.setUTCDate(1);
   start.setUTCHours(0, 0, 0, 0);
   const usage = await getPrisma().generationUsage.aggregate({
-    where: { userId: user.id, provider: "OPENAI", createdAt: { gte: start } },
+    where: {
+      userId: user.id,
+      provider: { not: "MOCK" },
+      createdAt: { gte: start },
+    },
     _sum: { totalTokens: true },
     _count: true,
   });

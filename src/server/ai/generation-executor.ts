@@ -7,6 +7,7 @@ import { getServerEnv } from "@/lib/env/server";
 import {
   ProviderError,
   type GenerationModelTier,
+  type GenerationProvider,
   type GenerationPurpose,
 } from "@/server/ai/ai-provider";
 import { currentGenerationSignal } from "@/server/ai/generation-signal";
@@ -55,7 +56,7 @@ function throwIfCancelled(signal: AbortSignal | undefined) {
 
 type RealProvenance = {
   generationMode: "REAL";
-  providerName: "MOCK" | "OPENAI";
+  providerName: GenerationProvider;
   model: string;
   modelTier: GenerationModelTier;
   promptKey: string;
@@ -131,7 +132,7 @@ export async function generateProductionSnapshot<TOutput>(
   snapshot: TOutput;
   provenance: {
     generationMode: "MOCK" | "REAL";
-    providerName: "MOCK" | "OPENAI";
+    providerName: GenerationProvider;
     model: string;
     modelTier: GenerationModelTier;
     promptKey: string;
@@ -185,9 +186,13 @@ export async function generateProductionSnapshot<TOutput>(
   throwIfCancelled(signal);
   const env = getServerEnv();
   const gateway = createAiGateway(env);
-  const policy = resolveTaskPolicy(prompt);
+  const policy = resolveTaskPolicy(prompt, job.provider);
   const route = gateway.selectRoute({ policy, tier, jobId: job.id });
   const provider = gateway.runtimeFor(route);
+  const requestTimeoutMs =
+    route.providerKind === "local" || route.providerKind === "self_hosted"
+      ? env.AI_LOCAL_REQUEST_TIMEOUT_MS
+      : env.AI_REQUEST_TIMEOUT_MS;
   const modelId = route.modelId;
   const estimatedInput = Math.ceil(JSON.stringify(promptInput.data).length / 4);
   const maximumInputTokens = Math.min(
@@ -249,7 +254,7 @@ export async function generateProductionSnapshot<TOutput>(
         systemInstructions: prompt.systemInstructions,
         userMessage,
         maximumOutputTokens,
-        timeoutMs: env.AI_REQUEST_TIMEOUT_MS,
+        timeoutMs: requestTimeoutMs,
         ...(input.scenario ? { scenario: input.scenario } : {}),
         ...(signal ? { signal } : {}),
       },
@@ -372,7 +377,7 @@ export async function generateProductionSnapshot<TOutput>(
               trustedConstraints: prompt.safetyNotes,
             }),
             maximumOutputTokens,
-            timeoutMs: env.AI_REQUEST_TIMEOUT_MS,
+            timeoutMs: requestTimeoutMs,
             ...(signal ? { signal } : {}),
           },
           input.schema,

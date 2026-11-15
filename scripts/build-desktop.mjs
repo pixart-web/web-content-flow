@@ -157,9 +157,55 @@ cpSync(
     verbatimSymlinks: true,
   },
 );
+// The PostgreSQL package ships ICU/OpenSSL libraries as identical copies
+// (the symlinks were hydrated); turn duplicates back into symlinks (~160 MB).
+{
+  const { createHash } = await import("node:crypto");
+  const { readdirSync, lstatSync, symlinkSync, unlinkSync } =
+    await import("node:fs");
+  const lib = join(
+    out,
+    "node_modules",
+    ...platformPackage.split("/"),
+    "native",
+    "lib",
+  );
+  if (existsSync(lib)) {
+    const byHash = new Map();
+    for (const name of readdirSync(lib)) {
+      const file = join(lib, name);
+      if (!lstatSync(file).isFile()) continue;
+      const hash = createHash("sha256")
+        .update(readFileSync(file))
+        .digest("hex");
+      byHash.set(hash, [...(byHash.get(hash) ?? []), name]);
+    }
+    for (const names of byHash.values()) {
+      if (names.length < 2) continue;
+      // Keep the most specific name (e.g. libicudata.68.2.dylib) as the file.
+      const [real, ...copies] = names.sort((a, b) => b.length - a.length);
+      for (const copy of copies) {
+        unlinkSync(join(lib, copy));
+        symlinkSync(real, join(lib, copy));
+      }
+    }
+  }
+}
 writeFileSync(
   join(out, "package.json"),
-  `${JSON.stringify({ name: "web-content-flow-desktop", private: true, type: "module", main: "main.mjs" }, null, 2)}\n`,
+  `${JSON.stringify(
+    {
+      name: "web-content-flow-desktop",
+      productName: "Web Content Flow",
+      version: JSON.parse(readFileSync(join(root, "package.json"), "utf8"))
+        .version,
+      private: true,
+      type: "module",
+      main: "main.mjs",
+    },
+    null,
+    2,
+  )}\n`,
 );
 
 console.warn("5/5 manifest");

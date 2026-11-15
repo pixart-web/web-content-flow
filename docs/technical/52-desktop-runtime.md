@@ -61,3 +61,22 @@ Depois disto, o invólucro arranca o servidor web e o worker do `pnpm build:desk
 | Encerramento | drain do worker (até 90 s) → servidor → PostgreSQL |
 
 Diretório de dados no macOS: `~/Library/Application Support/web-content-flow-desktop/` (o nome do pacote; o nome final do produto fica para a L4d).
+
+## Empacotamento macOS (L4d)
+
+`pnpm desktop:dmg` = `pnpm build:desktop` + `scripts/package-macos.mjs`:
+
+1. copia o `Electron.app` 45.2.3 e muda o nome e o identificador (`com.webcontentflow.desktop`);
+2. copia `dist/desktop` para `Contents/Resources/app` com `ditto` (mantém symlinks e permissões);
+3. assinatura **ad-hoc** (obrigatória em Apple Silicon) e `codesign --verify`;
+4. `.dmg` com `hdiutil` (UDZO), com atalho para Aplicações.
+
+| Medida (arm64) | Valor |
+|---|---|
+| `.dmg` | ≈ 239 MB |
+| App instalada | ≈ 462 MB (Electron 253 MB, app 209 MB: servidor 58 MB, PostgreSQL 136 MB depois de remover duplicados) |
+| Modelos | descarregados à parte pelo assistente (gemma4 ≈ 7,2 GB) |
+
+- O electron-builder foi experimentado e abandonado: incluía todas as dependências do repositório (839 MB) e cortava o `node_modules` do servidor standalone.
+- **Sem assinatura Apple nem notarização:** um `.dmg` descarregado da internet fica em quarentena e o macOS pede "Abrir" com o botão direito. Para distribuir é preciso uma conta Apple Developer (Developer ID + notarização). As atualizações automáticas também dependem disso.
+- A pasta de dados da app instalada é `~/Library/Application Support/Web Content Flow/`.

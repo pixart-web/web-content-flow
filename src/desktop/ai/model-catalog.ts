@@ -1,0 +1,125 @@
+import { z } from "zod";
+
+// L3 (LF-14, ADR L-5): the models the desktop edition may offer. Each entry
+// pins the Ollama manifest digest (an update is an explicit catalog change),
+// states the licence from the model's own licence file, the hardware profile
+// it needs and its evaluation status (docs/technical/48). The licence is shown
+// and accepted BEFORE download, because `ollama show --license` only works
+// once the model is on disk (L0 finding).
+
+export const hardwareProfiles = ["essential", "standard", "advanced"] as const;
+export type HardwareProfile = (typeof hardwareProfiles)[number];
+
+// Licences that let the end user use generated content commercially. A model
+// with any other licence cannot enter the catalog.
+export const ALLOWED_LICENSES = ["Apache-2.0", "MIT"] as const;
+
+export const CatalogEntrySchema = z
+  .object({
+    id: z.string().regex(/^[a-z0-9][a-z0-9.-]*$/),
+    displayName: z.string().min(1),
+    runtime: z.literal("ollama"),
+    tag: z.string().regex(/^[a-z0-9._-]+:[a-z0-9._-]+$/),
+    manifestDigest: z.string().regex(/^[0-9a-f]{64}$/),
+    sizeBytes: z.number().int().positive(),
+    parameters: z.string(),
+    license: z
+      .object({
+        spdx: z.enum(ALLOWED_LICENSES),
+        // Verified against the licence text shipped with the model.
+        verifiedAt: z.iso.date(),
+        url: z.url(),
+      })
+      .strict(),
+    minProfile: z.enum(hardwareProfiles),
+    structuredMode: z.enum(["native_schema", "json_mode", "prompted"]),
+    evaluation: z
+      .object({
+        suite: z.string(),
+        status: z.enum(["candidate", "not_recommended", "rejected"]),
+        summary: z.string().min(1),
+      })
+      .strict(),
+  })
+  .strict();
+
+export type CatalogEntry = z.infer<typeof CatalogEntrySchema>;
+
+const entries: CatalogEntry[] = [
+  {
+    id: "gemma4-12b-qat",
+    displayName: "Gemma 4 12B (QAT)",
+    runtime: "ollama",
+    tag: "gemma4:12b-it-qat",
+    manifestDigest:
+      "38044be4f923e5a55264ed7df4eaac2676651a905f735197c504045140c02bd3",
+    sizeBytes: 7_151_003_754,
+    parameters: "11.9B Q4_0",
+    license: {
+      spdx: "Apache-2.0",
+      verifiedAt: "2026-11-14",
+      url: "https://www.apache.org/licenses/LICENSE-2.0",
+    },
+    minProfile: "standard",
+    structuredMode: "native_schema",
+    evaluation: {
+      suite: "1.4.0",
+      status: "candidate",
+      summary:
+        "Valid structure in all seven modules on Apple M4; occasional invented product attribute; human review required.",
+    },
+  },
+  {
+    id: "qwen3.5-4b",
+    displayName: "Qwen 3.5 4B",
+    runtime: "ollama",
+    tag: "qwen3.5:4b",
+    manifestDigest:
+      "7f3251fa6878a78a606bcb3c074283306e5ad2ea411a7774a9dd98a4bc7f2d13",
+    sizeBytes: 3_973_305_013,
+    parameters: "4.5B nvfp4",
+    license: {
+      spdx: "Apache-2.0",
+      verifiedAt: "2026-11-14",
+      url: "https://www.apache.org/licenses/LICENSE-2.0",
+    },
+    minProfile: "essential",
+    structuredMode: "prompted",
+    evaluation: {
+      suite: "1.2.0",
+      status: "not_recommended",
+      summary:
+        "Invents product attributes in most product descriptions; Brand Profile 4/5.",
+    },
+  },
+  {
+    id: "qwen3.5-9b",
+    displayName: "Qwen 3.5 9B",
+    runtime: "ollama",
+    tag: "qwen3.5:9b",
+    manifestDigest:
+      "d63f830f28d515fefea546f213fca7a75e9dd5176ef51a6deabc952d1c99a911",
+    sizeBytes: 7_639_229_431,
+    parameters: "9.7B nvfp4",
+    license: {
+      spdx: "Apache-2.0",
+      verifiedAt: "2026-11-14",
+      url: "https://www.apache.org/licenses/LICENSE-2.0",
+    },
+    minProfile: "standard",
+    structuredMode: "prompted",
+    evaluation: {
+      suite: "1.1.0",
+      status: "rejected",
+      summary: "Misses the seoTitle length limit in every product description.",
+    },
+  },
+];
+
+export const MODEL_CATALOG: readonly CatalogEntry[] = Object.freeze(
+  entries.map((entry) => CatalogEntrySchema.parse(entry)),
+);
+
+export function findCatalogEntry(id: string) {
+  return MODEL_CATALOG.find((entry) => entry.id === id) ?? null;
+}

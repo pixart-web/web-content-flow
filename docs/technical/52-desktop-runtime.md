@@ -45,3 +45,19 @@ Depois disto, o invólucro arranca o servidor web e o worker do `pnpm build:desk
 - **Sem `pg_dump`** nos binários. Os snapshots servem para a mesma plataforma e a mesma versão major. Mudar um workspace de SO, ou para um servidor privado, precisa de uma exportação lógica (pacote de workspace), ainda por fazer.
 - **Tamanho:** um workspace vazio e migrado ocupa cerca de 70 MB por snapshot. Compressão e agendamento ficam para a L4 (UI de backups).
 - **Credenciais:** a password do PostgreSQL local, o `AUTH_SECRET`, o `RATE_LIMIT_SECRET` e os tokens do desktop são gerados no primeiro arranque e guardados no keychain pelo invólucro (L4). Este código recebe-os como parâmetros.
+
+## Invólucro Electron (L4a)
+
+`src/desktop/shell/main.ts` é o processo principal. O `pnpm build:desktop` gera `dist/desktop/main.mjs` com as migrations e o pacote de binários do PostgreSQL ao lado, e `pnpm desktop:start` abre a app (sem assinatura, para teste).
+
+| Passo | Detalhe |
+|---|---|
+| Segredos | `AUTH_SECRET`, `RATE_LIMIT_SECRET` e a password do PostgreSQL são gerados no 1.º arranque e cifrados com `safeStorage` (Keychain do macOS) em `secrets.bin` (0600) |
+| Tokens | `DESKTOP_TOKEN` (janela) e `DESKTOP_ADMIN_TOKEN` (só no processo principal), novos a cada arranque e nunca gravados |
+| Base de dados | `prepareLocalDatabase()`: snapshot antes de migrar uma base com dados |
+| Processos | `utilityProcess`: `web/server.js`, `worker.mjs` e `maintenance.mjs` (no arranque e de hora a hora). Logs em `logs/desktop.log` |
+| Janela | `contextIsolation`, `sandbox`, sem Node. Token injetado só nos pedidos a `http://127.0.0.1:47831`. Links externos abrem no browser |
+| IA | `settings.json`: só uma ativação registada e aprovada liga o modo `LOCAL` |
+| Encerramento | drain do worker (até 90 s) → servidor → PostgreSQL |
+
+Diretório de dados no macOS: `~/Library/Application Support/web-content-flow-desktop/` (o nome do pacote; o nome final do produto fica para a L4d).

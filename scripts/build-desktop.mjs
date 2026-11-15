@@ -14,6 +14,7 @@ import {
   existsSync,
   mkdirSync,
   readFileSync,
+  realpathSync,
   rmSync,
   writeFileSync,
 } from "node:fs";
@@ -54,13 +55,13 @@ const env = {
 rmSync(out, { recursive: true, force: true });
 mkdirSync(out, { recursive: true });
 
-console.warn("1/4 next build (standalone)");
+console.warn("1/5 next build (standalone)");
 execFileSync("pnpm", ["exec", "next", "build"], { stdio: "inherit", env });
 const standalone = join(root, ".next", "standalone");
 if (!existsSync(join(standalone, "server.js")))
   throw new Error("next build did not produce .next/standalone/server.js");
 
-console.warn("2/4 assemble web/");
+console.warn("2/5 assemble web/");
 cpSync(standalone, join(out, "web"), {
   recursive: true,
   verbatimSymlinks: true,
@@ -71,7 +72,7 @@ cpSync(join(root, ".next", "static"), join(out, "web", ".next", "static"), {
 cpSync(join(root, "public"), join(out, "web", "public"), { recursive: true });
 rmSync(join(out, "web", ".env"), { force: true });
 
-console.warn("3/4 bundle worker and maintenance");
+console.warn("3/5 bundle worker and maintenance");
 await build({
   entryPoints: {
     worker: join(root, "scripts", "run-worker.ts"),
@@ -88,12 +89,52 @@ await build({
   outExtension: { ".js": ".mjs" },
   tsconfig: join(root, "tsconfig.json"),
   banner: {
-    js: "import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);",
+    js: "import { createRequire as __wcfCreateRequire } from 'node:module'; const require = __wcfCreateRequire(import.meta.url);",
   },
   logLevel: "warning",
 });
 
-console.warn("4/4 manifest");
+console.warn("4/5 desktop shell (Electron main)");
+await build({
+  entryPoints: { main: join(root, "src", "desktop", "shell", "main.ts") },
+  bundle: true,
+  platform: "node",
+  format: "esm",
+  target: "node24",
+  outdir: out,
+  outExtension: { ".js": ".mjs" },
+  tsconfig: join(root, "tsconfig.json"),
+  // electron is provided by the runtime; the PostgreSQL binary packages are
+  // copied as-is because they locate their binaries relative to themselves.
+  external: ["electron", "@embedded-postgres/*"],
+  banner: {
+    js: "import { createRequire as __wcfCreateRequire } from 'node:module'; const require = __wcfCreateRequire(import.meta.url);",
+  },
+  logLevel: "warning",
+});
+cpSync(join(root, "prisma", "migrations"), join(out, "migrations"), {
+  recursive: true,
+});
+const platformPackage = `@embedded-postgres/${process.platform === "win32" ? "windows" : process.platform}-${process.arch}`;
+const embedded = realpathSync(join(root, "node_modules", "embedded-postgres"));
+// pnpm places the platform package next to embedded-postgres in the store.
+const platformSource = realpathSync(
+  join(embedded, "..", ...platformPackage.split("/")),
+);
+cpSync(
+  platformSource,
+  join(out, "node_modules", ...platformPackage.split("/")),
+  {
+    recursive: true,
+    verbatimSymlinks: true,
+  },
+);
+writeFileSync(
+  join(out, "package.json"),
+  `${JSON.stringify({ name: "web-content-flow-desktop", private: true, type: "module", main: "main.mjs" }, null, 2)}\n`,
+);
+
+console.warn("5/5 manifest");
 const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
 let commit = "unknown";
 try {

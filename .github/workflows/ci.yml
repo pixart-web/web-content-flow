@@ -9,6 +9,8 @@ permissions:
   contents: read
 
 env:
+  # The desktop shell is bundled in CI but never launched there.
+  ELECTRON_SKIP_BINARY_DOWNLOAD: "1"
   NEXT_PUBLIC_APP_URL: http://127.0.0.1:3000
   AUTH_URL: http://127.0.0.1:3000
   AUTH_SECRET: ci-only-auth-secret-with-at-least-32-characters

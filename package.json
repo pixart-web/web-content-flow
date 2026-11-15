@@ -12,6 +12,7 @@
     "build": "next build",
     "build:desktop": "node scripts/build-desktop.mjs",
     "desktop:start": "pnpm build:desktop && electron dist/desktop",
+    "desktop:dmg": "pnpm build:desktop && node scripts/package-macos.mjs",
     "start": "next start",
     "lint": "eslint . --max-warnings=0",
     "typecheck": "next typegen && tsc --noEmit",

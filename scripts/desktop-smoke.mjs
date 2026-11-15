@@ -29,11 +29,21 @@ function launch(label) {
       electron,
       [join(root, "dist", "desktop"), `--user-data-dir=${userData}`, ...extra],
       {
-        env: { ...process.env, WCF_DESKTOP_SMOKE_SCREENSHOT: screenshot },
+        env: {
+          ...process.env,
+          WCF_DESKTOP_SMOKE_SCREENSHOT: screenshot,
+          ELECTRON_ENABLE_LOGGING: "1",
+        },
         stdio: "inherit",
       },
     );
     const timer = setTimeout(() => {
+      // Show where the app stopped before failing.
+      try {
+        console.error(log());
+      } catch {
+        console.error("(no desktop log written)");
+      }
       child.kill();
       reject(new Error(`${label}: no exit within 4 minutes`));
     }, 240_000);

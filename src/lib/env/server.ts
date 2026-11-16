@@ -111,6 +111,12 @@ export const serverEnvSchema = z
     // Local runtimes (Ollama, OpenAI-compatible) are much slower than the
     // cloud: gemma4 12B on an M4 takes 30 s to 2+ min per item (doc 48).
     AI_LOCAL_REQUEST_TIMEOUT_MS: integerFromEnv(30_000, 900_000, 300_000),
+    // L6: local embedding model for client knowledge (doc 53). Uses the
+    // Ollama runtime at AI_OLLAMA_BASE_URL; unset = knowledge not indexed.
+    KNOWLEDGE_EMBEDDING_MODEL: z.preprocess(
+      (value) => (value === "" ? undefined : value),
+      z.enum(["bge-m3"]).optional(),
+    ),
     AI_MAX_RETRIES: integerFromEnv(0, 3, 2),
     AI_MAX_CONCURRENT_REQUESTS: integerFromEnv(1, 16, 4),
     AI_MAX_ACTIVE_PROJECT_JOBS: integerFromEnv(1, 8, 2),
@@ -210,6 +216,12 @@ export const serverEnvSchema = z
         path: ["OPENAI_API_KEY"],
         message: "OPENAI_API_KEY is required when real generation is enabled.",
       });
+    if (value.KNOWLEDGE_EMBEDDING_MODEL && !value.AI_OLLAMA_BASE_URL)
+      context.addIssue({
+        code: "custom",
+        path: ["KNOWLEDGE_EMBEDDING_MODEL"],
+        message: "KNOWLEDGE_EMBEDDING_MODEL needs AI_OLLAMA_BASE_URL.",
+      });
     // LOCAL generation runs on the activated Ollama model (ADR-070).
     if (
       value.AI_PROVIDER_DEFAULT === "LOCAL" &&
@@ -247,7 +259,11 @@ export const serverEnvSchema = z
         "AI_OPENAI_COMPATIBLE",
       ],
     ] as const)
-      if (Boolean(url) !== Boolean(model))
+      if (
+        Boolean(url) !== Boolean(model) &&
+        // Ollama may serve only the knowledge embedding model (L6).
+        !(prefix === "AI_OLLAMA" && url && value.KNOWLEDGE_EMBEDDING_MODEL)
+      )
         context.addIssue({
           code: "custom",
           path: [`${prefix}_BASE_URL`],
@@ -407,6 +423,7 @@ export function getServerEnv(): ServerEnv {
       process.env.AI_OPENAI_COMPATIBLE_STRUCTURED_MODE,
     AI_REQUEST_TIMEOUT_MS: process.env.AI_REQUEST_TIMEOUT_MS,
     AI_LOCAL_REQUEST_TIMEOUT_MS: process.env.AI_LOCAL_REQUEST_TIMEOUT_MS,
+    KNOWLEDGE_EMBEDDING_MODEL: process.env.KNOWLEDGE_EMBEDDING_MODEL,
     AI_MAX_RETRIES: process.env.AI_MAX_RETRIES,
     AI_MAX_CONCURRENT_REQUESTS: process.env.AI_MAX_CONCURRENT_REQUESTS,
     AI_MAX_ACTIVE_PROJECT_JOBS: process.env.AI_MAX_ACTIVE_PROJECT_JOBS,

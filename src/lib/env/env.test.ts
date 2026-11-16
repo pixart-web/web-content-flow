@@ -262,4 +262,27 @@ describe("environment validation", () => {
       parseServerEnv({ ...base, AI_PROVIDER_DEFAULT: "OPENAI" }),
     ).toThrow(/OPENAI_API_KEY/);
   });
+
+  it("lets Ollama serve only the knowledge embedding model", () => {
+    const base = {
+      NODE_ENV: "test",
+      NEXT_PUBLIC_APP_URL: "http://localhost:3000",
+      DATABASE_URL: "postgresql://test:test@localhost:5432/test",
+      AUTH_SECRET: "test-secret-that-is-at-least-32-characters",
+      AUTH_URL: "http://localhost:3000",
+    };
+    expect(
+      parseServerEnv({
+        ...base,
+        AI_OLLAMA_BASE_URL: "http://127.0.0.1:11434",
+        KNOWLEDGE_EMBEDDING_MODEL: "bge-m3",
+      }).KNOWLEDGE_EMBEDDING_MODEL,
+    ).toBe("bge-m3");
+    expect(() =>
+      parseServerEnv({ ...base, AI_OLLAMA_BASE_URL: "http://127.0.0.1:11434" }),
+    ).toThrow(/set together/);
+    expect(() =>
+      parseServerEnv({ ...base, KNOWLEDGE_EMBEDDING_MODEL: "bge-m3" }),
+    ).toThrow(/needs AI_OLLAMA_BASE_URL/);
+  });
 });

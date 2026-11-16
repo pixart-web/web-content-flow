@@ -40,6 +40,7 @@
     "capture:stills": "node --import tsx scripts/capture-product-stills.ts",
     "worker": "NODE_OPTIONS=--conditions=react-server tsx scripts/run-worker.ts",
     "worker:once": "NODE_OPTIONS=--conditions=react-server tsx scripts/run-worker.ts --once",
+    "eval:knowledge": "node --conditions=react-server --import tsx scripts/run-knowledge-eval.ts",
     "eval:ai": "node --conditions=react-server --import tsx scripts/run-ai-eval.ts",
     "ai:health": "node --conditions=react-server --import tsx scripts/check-ai-runtimes.ts",
     "maintenance": "node --conditions=react-server --import tsx scripts/run-maintenance.ts",

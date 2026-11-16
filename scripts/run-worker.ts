@@ -2,6 +2,11 @@ import "./local-node-env";
 import { randomUUID } from "node:crypto";
 
 import { createPrismaClient } from "../src/server/db/create-prisma-client";
+import { getServerEnv } from "../src/lib/env/server";
+import {
+  indexPendingKnowledge,
+  knowledgeIndexerConfig,
+} from "../src/server/knowledge/indexer";
 import { processNextJob } from "../src/workers/generation-worker";
 
 const once = process.argv.includes("--once");
@@ -60,7 +65,15 @@ async function run() {
     }, 30_000);
     do {
       if (shuttingDown) break;
-      const processed = await processNextJob(prisma, workerId);
+      let processed = await processNextJob(prisma, workerId);
+      // L6: index client knowledge while there is no generation job.
+      const knowledge = knowledgeIndexerConfig(getServerEnv());
+      if (!processed && knowledge && !shuttingDown)
+        processed =
+          (await indexPendingKnowledge(prisma, knowledge).catch(() => {
+            console.error(JSON.stringify({ event: "knowledge.index_failed" }));
+            return 0;
+          })) > 0;
       if (once) break;
       await new Promise((resolve) =>
         setTimeout(resolve, processed ? 250 : 2_000),

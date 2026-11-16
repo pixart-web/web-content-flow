@@ -30,7 +30,7 @@ beforeAll(async () => {
         input: validBrief,
         requestId: "local-provider-fixture",
         model: "fixture",
-        promptVersion: "1.1.0",
+        promptVersion: "1.2.0",
         schemaVersion: "1.0",
         timeoutMs: 10_000,
       },

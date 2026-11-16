@@ -29,7 +29,13 @@ export type EvaluationReport = Readonly<{
   hardware: string | null;
   samplesPerCase: number;
   thresholds: typeof EVALUATION_THRESHOLDS & { maxP95LatencyMs: number | null };
-  cases: readonly { id: string; promptKey: string; summary: CaseSummary }[];
+  cases: readonly {
+    id: string;
+    promptKey: string;
+    summary: CaseSummary;
+    // Average count of the client's facts used (--with-knowledge cases).
+    factsUsedAverage?: number;
+  }[];
   passed: boolean;
 }>;
 
@@ -37,7 +43,7 @@ async function runSample(
   adapter: AiProvider,
   testCase: EvaluationCase,
   options: { model: string; timeoutMs: number; sample: number },
-): Promise<SampleOutcome> {
+): Promise<SampleOutcome & { factsUsed: number | null }> {
   const requestId = `evaluation-${testCase.id}-${options.sample}`;
   const startedAt = performance.now();
   let tokens: number | null = null;
@@ -119,6 +125,12 @@ async function runSample(
       output === null ? [] : prohibitedWordHits(output, testCase.wordsToAvoid),
     unsupportedClaimHits:
       output === null ? [] : unsupportedClaimHits(output, testCase.context),
+    factsUsed:
+      output === null || !testCase.expectedFacts
+        ? null
+        : testCase.expectedFacts.filter((fact) =>
+            JSON.stringify(output).toLowerCase().includes(fact.toLowerCase()),
+          ).length,
   };
 }
 
@@ -135,7 +147,7 @@ export async function runEvaluation(input: {
 }): Promise<EvaluationReport> {
   const results: EvaluationReport["cases"][number][] = [];
   for (const testCase of input.cases) {
-    const outcomes: SampleOutcome[] = [];
+    const outcomes: (SampleOutcome & { factsUsed: number | null })[] = [];
     for (let sample = 1; sample <= input.samplesPerCase; sample += 1)
       outcomes.push(
         await runSample(input.adapter, testCase, {
@@ -144,9 +156,20 @@ export async function runEvaluation(input: {
           sample,
         }),
       );
+    const facts = outcomes
+      .map((outcome) => outcome.factsUsed)
+      .filter((value): value is number => value !== null);
     results.push({
       id: testCase.id,
       promptKey: testCase.promptKey,
+      ...(facts.length > 0
+        ? {
+            factsUsedAverage:
+              Math.round(
+                (facts.reduce((a, b) => a + b, 0) / facts.length) * 10,
+              ) / 10,
+          }
+        : {}),
       summary: summarizeCase(
         outcomes,
         input.maxP95LatencyMs === undefined
@@ -174,7 +197,7 @@ export async function runEvaluation(input: {
 const percent = (value: number) => `${Math.round(value * 100)}%`;
 
 export function renderEvaluationMarkdown(report: EvaluationReport) {
-  const rows = report.cases.map(({ id, summary }) =>
+  const rows = report.cases.map(({ id, summary, factsUsedAverage }) =>
     [
       id,
       summary.passed ? "PASS" : "FAIL",
@@ -185,6 +208,7 @@ export function renderEvaluationMarkdown(report: EvaluationReport) {
       summary.latencyP50Ms ?? "—",
       summary.latencyP95Ms ?? "—",
       summary.averageTotalTokens ?? "—",
+      factsUsedAverage ?? "—",
       summary.failures.join("; ") || "—",
     ].join(" | "),
   );
@@ -197,8 +221,8 @@ export function renderEvaluationMarkdown(report: EvaluationReport) {
     `- Thresholds: first-pass valid ≥ ${percent(report.thresholds.firstPassValidRate)}, valid after repair ≥ ${percent(report.thresholds.afterRepairValidRate)}, 0 prohibited words, 0 unsupported-claim flags${report.thresholds.maxP95LatencyMs === null ? "" : `, p95 ≤ ${report.thresholds.maxP95LatencyMs} ms`}`,
     "- Unsupported-claim flags are a heuristic (numbers, awards, rankings, URLs and product attributes absent from the context); review flagged outputs manually.",
     "",
-    "| Case | Result | First-pass valid | Valid after repair | Prohibited words | Claim flags | p50 ms | p95 ms | Avg tokens | Failures |",
-    "|---|---|---|---|---|---|---|---|---|---|",
+    "| Case | Result | First-pass valid | Valid after repair | Prohibited words | Claim flags | p50 ms | p95 ms | Avg tokens | Client facts used | Failures |",
+    "|---|---|---|---|---|---|---|---|---|---|---|",
     ...rows.map((row) => `| ${row} |`),
     "",
   ].join("\n");

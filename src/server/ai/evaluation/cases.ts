@@ -25,7 +25,30 @@ import { MockProvider } from "@/server/ai/providers/mock-provider";
 
 // Fixed, synthetic evaluation inputs (fictional UrbanStride brand). The suite
 // version changes whenever cases or scoring change, so reports stay comparable.
-export const EVALUATION_SUITE_VERSION = "1.4.0";
+export const EVALUATION_SUITE_VERSION = "1.5.0";
+
+// L6 B5 (doc 53, R8): the client's own product sheet, given to the copy cases
+// as clientKnowledge in the --with-knowledge variant. English, so the
+// unsupported-claim detector (English attribute terms) can see the facts.
+export const CLIENT_KNOWLEDGE_FIXTURE = [
+  {
+    source: "UrbanStride Daily — product sheet",
+    text: "The UrbanStride Daily upper is a knit made from recycled polyester: 12 plastic bottles are reused in every pair. The outsole is natural rubber with a herringbone tread designed for wet cobblestone pavements.",
+  },
+  {
+    source: "UrbanStride Daily — product sheet",
+    text: "The removable insole is cork foam and can be hand-washed in cold water. Each shoe weighs 280 grams in size 42. Sizes run from 36 to 46, without half sizes.",
+  },
+] as const;
+
+// Facts from the sheet whose presence in an output shows it was used.
+export const CLIENT_KNOWLEDGE_FACTS = [
+  "recycled polyester",
+  "natural rubber",
+  "herringbone",
+  "cork",
+  "280",
+] as const;
 
 const brief = {
   schemaVersion: "1.0",
@@ -77,6 +100,8 @@ export type EvaluationCase = Readonly<{
   repair: "NONE" | "STRUCTURE_ONCE";
   safetyNotes: readonly string[];
   wordsToAvoid: readonly string[];
+  // Present in the --with-knowledge variant only.
+  expectedFacts?: readonly string[];
 }>;
 
 const copyTypes: readonly GeneralCopyType[] = [
@@ -85,7 +110,9 @@ const copyTypes: readonly GeneralCopyType[] = [
   "FAQ_DOCUMENT",
 ];
 
-export async function buildEvaluationCases(): Promise<EvaluationCase[]> {
+export async function buildEvaluationCases(
+  options: { withKnowledge?: boolean } = {},
+): Promise<EvaluationCase[]> {
   await loadPromptCatalog();
   const brandProfile = (
     await new MockProvider().generateStructured(
@@ -297,9 +324,24 @@ export async function buildEvaluationCases(): Promise<EvaluationCase[]> {
       throw new Error(
         `Evaluation case ${definition.id} has no registered prompt.`,
       );
-    const context = prompt.inputSchema.parse(definition.context);
+    const withKnowledge =
+      options.withKnowledge === true && definition.id.startsWith("copy.");
+    const context = prompt.inputSchema.parse(
+      withKnowledge
+        ? {
+            ...(definition.context as Record<string, unknown>),
+            clientKnowledge: CLIENT_KNOWLEDGE_FIXTURE,
+          }
+        : definition.context,
+    );
     return {
       ...definition,
+      ...(withKnowledge
+        ? {
+            id: `${definition.id}+knowledge`,
+            expectedFacts: CLIENT_KNOWLEDGE_FACTS,
+          }
+        : {}),
       context,
       systemInstructions: prompt.systemInstructions,
       userMessage: prompt.buildUserMessage(context),

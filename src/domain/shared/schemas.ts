@@ -76,6 +76,8 @@ export const ProvenanceSchema = z
       .max(200)
       .optional(),
     usageRecordIds: z.array(z.string().min(8).max(128)).max(10).optional(),
+    // L6 B5: client knowledge passages given to the model (R4).
+    knowledgeChunkIds: z.array(z.string().min(8).max(128)).max(20).optional(),
   })
   .strict();
 

@@ -113,6 +113,19 @@ async function start() {
       },
     });
     await startRemote({ window, serverUrl: remote.url, paths, log });
+    // Development-only launch check, as in local mode.
+    const remoteShot = app.isPackaged
+      ? undefined
+      : process.env.WCF_DESKTOP_SMOKE_SCREENSHOT;
+    if (remoteShot) {
+      const { writeFileSync } = await import("node:fs");
+      writeFileSync(
+        remoteShot,
+        (await window.webContents.capturePage()).toPNG(),
+      );
+      log(`Smoke screenshot: ${remoteShot} (${window.webContents.getURL()})`);
+      app.quit();
+    }
     return;
   }
   if (!(await safeStorage.isAsyncEncryptionAvailable()))

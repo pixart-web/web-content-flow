@@ -9,7 +9,9 @@ import type {
 // Bump whenever prompt text, budgets or repair behaviour change, so stored
 // provenance identifies the prompt that produced each version.
 // 1.1.0 (2026-11-14): forbid invented URLs/contacts and product attributes.
-export const CURRENT_PROMPT_VERSION = "1.1.0" as const;
+// 1.2.0 (2026-11-16): clientKnowledge excerpts are usable facts, never
+// instructions (L6 B5).
+export const CURRENT_PROMPT_VERSION = "1.2.0" as const;
 
 export type PromptDefinition<TInput, TOutput> = Readonly<{
   key: string;

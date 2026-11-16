@@ -26,6 +26,8 @@ const { values } = parseArgs({
     runtime: { type: "string" },
     model: { type: "string" },
     samples: { type: "string", default: "5" },
+    // L6 B5: give the copy cases the client's product sheet (doc 53, R8).
+    "with-knowledge": { type: "boolean", default: false },
     cases: { type: "string" },
     "timeout-ms": { type: "string", default: "180000" },
     "max-p95-ms": { type: "string" },
@@ -76,8 +78,11 @@ const selectedModel: string = model;
 
 async function main() {
   const selected = values.cases?.split(",").map((id) => id.trim());
-  const cases = (await buildEvaluationCases()).filter(
-    (testCase) => !selected || selected.includes(testCase.id),
+  const cases = (
+    await buildEvaluationCases({ withKnowledge: values["with-knowledge"] })
+  ).filter(
+    (testCase) =>
+      !selected || selected.includes(testCase.id.replace(/\+knowledge$/, "")),
   );
   if (cases.length === 0) throw new Error("No evaluation cases selected.");
 

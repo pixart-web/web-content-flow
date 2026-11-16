@@ -1,6 +1,6 @@
 # Conhecimento por cliente — resultados B1 a B4
 
-**Data:** 2026-11-16 · **Proposta e decisões:** [53-skills-and-client-knowledge.md](53-skills-and-client-knowledge.md) (PR #48) · **Estado:** B1 a B4 implementados; B5 a seguir.
+**Data:** 2026-11-16 · **Proposta e decisões:** [53-skills-and-client-knowledge.md](53-skills-and-client-knowledge.md) (PR #48) · **Estado:** B1 a B5 implementados. O uso na geração (B5) fica **desligado**: o ganho não se confirmou (R8).
 
 As cinco decisões foram aprovadas em 2026-11-16: armazenamento na opção 1 (vetores em PostgreSQL, pesquisa em Node), migration B1, texto e Markdown na v1, downloads dos candidatos, e `guidance` de pacotes instalados desligada.
 
@@ -36,6 +36,28 @@ As cinco decisões foram aprovadas em 2026-11-16: armazenamento na opção 1 (ve
   2. o worker com o `bge-m3` passou-o a 1/1 (`INDEXED`, `bge-m3@790764642607`, 1024 dimensões);
   3. removi-o, e ficaram 0 documentos e 0 excertos.
 
-## A seguir: B5
+## B5: excertos na geração (implementado, desligado)
 
-Injetar os excertos encontrados como **contexto não confiável**, com orçamento de tokens e provenance dos excertos usados. Depois, medir no `eval:ai` se os atributos inventados diminuem quando o cliente fornece a ficha técnica (R8). A funcionalidade só é ativada se o ganho se confirmar.
+- `retrieveKnowledgeForGeneration` pesquisa os excertos do projeto a partir do texto do contexto (sem identificadores nem provenance). Respeita o orçamento `KNOWLEDGE_MAX_CONTEXT_TOKENS` (1500) e, se o Ollama falhar, gera sem conhecimento.
+- Os excertos entram como `clientKnowledge`, ao lado do contexto. A provenance de cada conteúdo guarda `knowledgeChunkIds` (R4).
+- Prompt **1.2.0**: os excertos são factos utilizáveis e nunca instruções. Devem ser indicados tal como estão, sem os alargar a afirmações que não fazem.
+- A funcionalidade fica atrás de `KNOWLEDGE_IN_GENERATION_ENABLED`, **desligada por omissão**.
+
+### Medição R8 (gemma4:12b-it-qat, Apple M4, 5 amostras por caso, suite 1.5.0)
+
+A variante `pnpm eval:ai --with-knowledge` dá aos casos de copy uma ficha técnica do cliente: poliéster reciclado, sola de borracha natural com padrão em espinha, palmilha de cortiça e 280 g.
+
+| Caso | Sem conhecimento | Com conhecimento (1.ª instrução) | Com conhecimento (instrução reforçada) |
+|---|---|---|---|
+| Descrição de produto: atributos inventados | 0 | 13 (*breathable, cushioned, lightweight, sustainable*) | 5 (*durable, lightweight*) |
+| Email: atributos inventados | 0 | 2 (*lightweight*) | 2 (*lightweight*) |
+| Factos da ficha usados (de 5) | — | 5 | 5 |
+| JSON válido à primeira | 100% | 100% | 100% |
+
+**Leitura:** com a ficha, o modelo usa todos os factos verdadeiros, mas tira deles conclusões que a ficha não diz. Por exemplo, 280 g passa a «lightweight» e o poliéster reciclado a «sustainable». A instrução reforçada reduziu as invenções para menos de metade, mas continuam acima do nível sem conhecimento. **O R8 não é cumprido, por isso a funcionalidade fica desligada.**
+
+**Hipóteses para retomar** (cada uma precisa de nova medição):
+
+1. Verificação depois da geração: assinalar na UI, para revisão humana, os termos que o detetor marca, em vez de os deixar passar em silêncio.
+2. Repetir com um modelo de texto mais forte, quando houver candidato aprovado.
+3. Medir também com ficha e resultado em português. O detetor atual só conhece termos em inglês.

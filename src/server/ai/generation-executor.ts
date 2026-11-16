@@ -18,6 +18,7 @@ import {
 } from "@/server/ai/gateway/gateway";
 import { logAiEvent } from "@/server/ai/gateway/ai-events";
 import { resolveTaskPolicy } from "@/server/ai/gateway/task-policy";
+import { retrieveKnowledgeForGeneration } from "@/server/knowledge/retrieval";
 import { debugResolvedPrompt } from "@/server/ai/prompt-debug";
 import {
   recordGenerationUsage,
@@ -64,6 +65,7 @@ type RealProvenance = {
   generationPurpose: GenerationPurpose;
   repairAttempted: boolean;
   usageRecordIds: string[];
+  knowledgeChunkIds?: string[];
 };
 
 // One place that turns validated provider output into the stored snapshot.
@@ -81,6 +83,7 @@ function finishRealSnapshot<TOutput>(input: {
   purpose: GenerationPurpose;
   repairAttempted: boolean;
   usageId: string;
+  knowledgeChunkIds?: readonly string[];
 }): { snapshot: TOutput; provenance: RealProvenance } {
   const asRecord = (value: unknown) =>
     typeof value === "object" && value !== null
@@ -98,6 +101,9 @@ function finishRealSnapshot<TOutput>(input: {
     generationPurpose: input.purpose,
     repairAttempted: input.repairAttempted,
     usageRecordIds: [input.usageId],
+    ...(input.knowledgeChunkIds?.length
+      ? { knowledgeChunkIds: [...input.knowledgeChunkIds] }
+      : {}),
   };
   const normalized =
     resultRecord && candidateProvenance
@@ -194,7 +200,25 @@ export async function generateProductionSnapshot<TOutput>(
       ? env.AI_LOCAL_REQUEST_TIMEOUT_MS
       : env.AI_REQUEST_TIMEOUT_MS;
   const modelId = route.modelId;
-  const estimatedInput = Math.ceil(JSON.stringify(promptInput.data).length / 4);
+  // L6 B5: the client's own passages, as data next to the context.
+  const knowledge = await retrieveKnowledgeForGeneration(prisma, {
+    projectId: job.projectId,
+    context: promptInput.data,
+    env,
+  });
+  const generationContext: unknown =
+    knowledge &&
+    promptInput.data &&
+    typeof promptInput.data === "object" &&
+    !Array.isArray(promptInput.data)
+      ? {
+          ...(promptInput.data as Record<string, unknown>),
+          clientKnowledge: knowledge.excerpts,
+        }
+      : promptInput.data;
+  const estimatedInput = Math.ceil(
+    JSON.stringify(generationContext).length / 4,
+  );
   const maximumInputTokens = Math.min(
     prompt.maximumInputTokens,
     env.AI_MAX_REQUEST_INPUT_TOKENS,
@@ -226,7 +250,7 @@ export async function generateProductionSnapshot<TOutput>(
       ...routeColumns(route),
     },
   });
-  const userMessage = prompt.buildUserMessage(promptInput.data);
+  const userMessage = prompt.buildUserMessage(generationContext);
   debugResolvedPrompt(env, {
     jobId: job.id,
     promptKey: input.promptKey,
@@ -242,7 +266,7 @@ export async function generateProductionSnapshot<TOutput>(
       {
         input: env.AI_FAKE_OPENAI_ENABLED
           ? { syntheticCandidate: input.candidate, context: input.context }
-          : promptInput.data,
+          : generationContext,
         requestId: job.id,
         model: modelId,
         modelTier: tier,
@@ -305,6 +329,7 @@ export async function generateProductionSnapshot<TOutput>(
       purpose: input.purpose,
       repairAttempted: false,
       usageId: usage.id,
+      ...(knowledge ? { knowledgeChunkIds: knowledge.chunkIds } : {}),
     });
   } catch (error: unknown) {
     logRequestFailure(error, {
@@ -427,6 +452,7 @@ export async function generateProductionSnapshot<TOutput>(
           purpose: input.purpose,
           repairAttempted: true,
           usageId: repairUsage.id,
+          ...(knowledge ? { knowledgeChunkIds: knowledge.chunkIds } : {}),
         });
       } catch (repairError: unknown) {
         logRequestFailure(repairError, {

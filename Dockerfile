@@ -11,7 +11,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --frozen-lockfile
 COPY . .
 ARG APP_URL
-RUN DATABASE_URL=postgresql://build:build@127.0.0.1:1/build pnpm prisma:generate \
+RUN DATABASE_URL=postgresql://placeholder:placeholder@127.0.0.1:1/build pnpm prisma:generate \
  && APP_URL="$APP_URL" node scripts/build-server.mjs
 
 FROM node:24.14.0-bookworm-slim AS runtime

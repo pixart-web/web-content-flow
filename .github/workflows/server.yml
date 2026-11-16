@@ -38,7 +38,7 @@ jobs:
           HTTP_PORT=8080
           HTTPS_PORT=8443
           POSTGRES_PASSWORD=$(openssl rand -hex 24)
-          AUTH_SECRET=$(openssl rand -hex 32)
+          AUTH_SECRET=ci-only-$(openssl rand -hex 32)
           RATE_LIMIT_SECRET=$(openssl rand -hex 32)
           APP_MODE=server
           APP_ENV=production
@@ -64,7 +64,8 @@ jobs:
           docker compose --env-file .env.server logs migrate | grep '"migrations.applied"'
           curl -fsk https://localhost:8443/health/live
           curl -fsk https://localhost:8443/health/ready | grep '"status":"ready"'
-          test -z "$(docker compose --env-file .env.server port postgres 5432 2>/dev/null)"
+          # Postgres must not be published on the host (no "->" mapping).
+          ! docker compose --env-file .env.server ps postgres --format '{{.Ports}}' | grep -F -- '->'
       - name: Restart keeps the data
         run: |
           docker compose --env-file .env.server down

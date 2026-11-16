@@ -1,0 +1,6 @@
+# L7: HTTPS in front of the web service. A public DOMAIN gets a Let's
+# Encrypt certificate automatically; "localhost" gets Caddy's local CA.
+{$DOMAIN} {
+	encode zstd gzip
+	reverse_proxy web:3000
+}

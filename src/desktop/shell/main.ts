@@ -19,6 +19,7 @@ import { readMigrations } from "@/server/db/migration-runner";
 
 import { registerAiIpc } from "./ai-ipc";
 import { registerOwnerIpc } from "./owner-ipc";
+import { registerRemoteServerIpc, startRemote } from "./remote-server";
 import {
   installationPaths,
   launchTokens,
@@ -98,6 +99,35 @@ const loadingPage = `data:text/html;charset=utf-8,${encodeURIComponent(
 )}`;
 
 async function start() {
+  const remote = readSettings(paths.settingsFile).remoteServer;
+  if (remote) {
+    // L7: client of a private server — nothing local starts.
+    window = new BrowserWindow({
+      width: 1360,
+      height: 900,
+      title: "Web Content Flow",
+      webPreferences: {
+        contextIsolation: true,
+        sandbox: true,
+        nodeIntegration: false,
+      },
+    });
+    await startRemote({ window, serverUrl: remote.url, paths, log });
+    // Development-only launch check, as in local mode.
+    const remoteShot = app.isPackaged
+      ? undefined
+      : process.env.WCF_DESKTOP_SMOKE_SCREENSHOT;
+    if (remoteShot) {
+      const { writeFileSync } = await import("node:fs");
+      writeFileSync(
+        remoteShot,
+        (await window.webContents.capturePage()).toPNG(),
+      );
+      log(`Smoke screenshot: ${remoteShot} (${window.webContents.getURL()})`);
+      app.quit();
+    }
+    return;
+  }
   if (!(await safeStorage.isAsyncEncryptionAvailable()))
     throw new Error("Secure storage (Keychain) is not available.");
   if (!(await portIsFree(PORT)))
@@ -149,6 +179,7 @@ async function start() {
   });
   registerAiIpc({ origin: ORIGIN, here, paths, env: () => env, log });
   registerOwnerIpc({ origin: ORIGIN, here, tokens, log });
+  registerRemoteServerIpc({ origin: ORIGIN, paths, log });
   web = fork(join("web", "server.js"), env, "wcf-web");
   worker = fork("worker.mjs", env, "wcf-worker");
   const maintenance = () => fork("maintenance.mjs", env, "wcf-maintenance");

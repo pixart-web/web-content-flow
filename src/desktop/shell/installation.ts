@@ -105,6 +105,17 @@ export const InstallationSettingsSchema = z
     format: z.literal(1),
     ollamaBaseUrl: z.url().default("http://127.0.0.1:11434"),
     localModel: LocalModelActivationSchema.nullable().default(null),
+    // L7: when set, the app is a client of this private server (https only).
+    remoteServer: z
+      .object({
+        url: z
+          .url()
+          .refine((value) => value.startsWith("https://"), "https only"),
+        connectedAt: z.iso.datetime(),
+      })
+      .strict()
+      .nullable()
+      .default(null),
   })
   .strict();
 export type InstallationSettings = z.infer<typeof InstallationSettingsSchema>;

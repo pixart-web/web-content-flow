@@ -33,3 +33,6 @@ next-env.d.ts
 
 # AI evaluation reports (pnpm eval:ai); publish summaries in docs instead
 eval-reports/
+
+# L7 private server settings (secrets)
+.env.server

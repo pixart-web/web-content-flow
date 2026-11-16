@@ -158,26 +158,26 @@ enum ContentItemVersionSource {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String    @unique
-  emailVerified DateTime?
-  image         String?
-  passwordHash  String?
-  plan          PlanId    @default(FREE)
-  onboardingStep Int      @default(0)
+  id                    String                @id @default(cuid())
+  name                  String?
+  email                 String                @unique
+  emailVerified         DateTime?
+  image                 String?
+  passwordHash          String?
+  plan                  PlanId                @default(FREE)
+  onboardingStep        Int                   @default(0)
   onboardingCompletedAt DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  accounts      Account[]
-  sessions      Session[]
-  projects      Project[]
-  profileVersions BrandProfileVersion[]
-  contentVersions ContentItemVersion[]
-  generationUsage GenerationUsage[]
-  usageReservations UsageReservation[]
-  passwordResetTokens PasswordResetToken[]
-  contentExports ContentExport[]
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  accounts              Account[]
+  sessions              Session[]
+  projects              Project[]
+  profileVersions       BrandProfileVersion[]
+  contentVersions       ContentItemVersion[]
+  generationUsage       GenerationUsage[]
+  usageReservations     UsageReservation[]
+  passwordResetTokens   PasswordResetToken[]
+  contentExports        ContentExport[]
 }
 
 model Account {
@@ -219,26 +219,28 @@ model VerificationToken {
 }
 
 model Project {
-  id             String        @id @default(cuid())
-  userId         String
-  name           String
-  brandName      String
-  type           String
-  status         ProjectStatus @default(DRAFT)
-  outputLanguage String        @default("English")
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
-  brief          ProjectBrief?
-  brandProfile   BrandProfile?
-  generationJobs GenerationJob[]
-  contentItems    ContentItem[]
-  modules         ProjectModule[]
-  generationUsage GenerationUsage[]
-  usageReservations UsageReservation[]
-  contentExports ContentExport[]
-  currentBrandProfileVersionId String? @unique
-  currentBrandProfileVersion BrandProfileVersion? @relation("CurrentBrandProfileVersion", fields: [currentBrandProfileVersionId], references: [id], onDelete: SetNull)
-  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                           String               @id @default(cuid())
+  userId                       String
+  name                         String
+  brandName                    String
+  type                         String
+  status                       ProjectStatus        @default(DRAFT)
+  outputLanguage               String               @default("English")
+  createdAt                    DateTime             @default(now())
+  updatedAt                    DateTime             @updatedAt
+  brief                        ProjectBrief?
+  brandProfile                 BrandProfile?
+  generationJobs               GenerationJob[]
+  contentItems                 ContentItem[]
+  modules                      ProjectModule[]
+  generationUsage              GenerationUsage[]
+  usageReservations            UsageReservation[]
+  contentExports               ContentExport[]
+  knowledgeDocuments           KnowledgeDocument[]
+  knowledgeChunks              KnowledgeChunk[]
+  currentBrandProfileVersionId String?              @unique
+  currentBrandProfileVersion   BrandProfileVersion? @relation("CurrentBrandProfileVersion", fields: [currentBrandProfileVersionId], references: [id], onDelete: SetNull)
+  user                         User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([userId, updatedAt(sort: Desc)])
@@ -269,13 +271,13 @@ model ContentExport {
   mimeType           String
   payload            Bytes?
   byteSize           Int
-  checksum            String
-  errorCode           String?
-  expiresAt           DateTime
-  createdAt           DateTime     @default(now())
-  completedAt         DateTime?
-  project             Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  requestedBy         User         @relation(fields: [requestedByUserId], references: [id], onDelete: Cascade)
+  checksum           String
+  errorCode          String?
+  expiresAt          DateTime
+  createdAt          DateTime     @default(now())
+  completedAt        DateTime?
+  project            Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  requestedBy        User         @relation(fields: [requestedByUserId], references: [id], onDelete: Cascade)
 
   @@index([projectId, createdAt(sort: Desc)])
   @@index([requestedByUserId, createdAt(sort: Desc)])
@@ -329,22 +331,22 @@ model BrandProfile {
 }
 
 model BrandProfileVersion {
-  id             String                    @id @default(cuid())
-  brandProfileId String
-  versionNumber  Int
-  schemaVersion  String
-  snapshot       Json
-  source         BrandProfileVersionSource
-  actorUserId    String?
-  mock           Boolean                   @default(false)
-  provenance     Json
-  createdAt      DateTime                  @default(now())
-  brandProfile   BrandProfile              @relation(fields: [brandProfileId], references: [id], onDelete: Cascade)
-  actorUser      User?                     @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
-  currentForProject Project?               @relation("CurrentBrandProfileVersion")
-  generationJob  GenerationJob?            @relation("JobProducedVersion")
-  sourcedContentItems ContentItem[]         @relation("ContentItemSourceBrandProfile")
-  contentVersions    ContentItemVersion[]   @relation("ContentVersionBrandProfile")
+  id                  String                    @id @default(cuid())
+  brandProfileId      String
+  versionNumber       Int
+  schemaVersion       String
+  snapshot            Json
+  source              BrandProfileVersionSource
+  actorUserId         String?
+  mock                Boolean                   @default(false)
+  provenance          Json
+  createdAt           DateTime                  @default(now())
+  brandProfile        BrandProfile              @relation(fields: [brandProfileId], references: [id], onDelete: Cascade)
+  actorUser           User?                     @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+  currentForProject   Project?                  @relation("CurrentBrandProfileVersion")
+  generationJob       GenerationJob?            @relation("JobProducedVersion")
+  sourcedContentItems ContentItem[]             @relation("ContentItemSourceBrandProfile")
+  contentVersions     ContentItemVersion[]      @relation("ContentVersionBrandProfile")
 
   @@unique([brandProfileId, versionNumber])
   @@index([brandProfileId, createdAt(sort: Desc)])
@@ -352,58 +354,58 @@ model BrandProfileVersion {
 }
 
 model GenerationJob {
-  id                    String              @id @default(cuid())
-  projectId             String
-  parentJobId           String?
-  scopeType             GenerationScopeType
-  scopeId               String?
-  module                GenerationModule
-  status                GenerationJobStatus @default(PREPARING)
-  mode                  GenerationMode      @default(MOCK)
-  provider              GenerationProvider  @default(MOCK)
-  modelTier             GenerationModelTier @default(STANDARD)
-  modelId               String?
-  promptKey             String?
-  promptVersion         String?
-  generationPurpose     GenerationPurpose?
-  briefRevision         Int?
-  providerAttemptCount  Int                 @default(0)
+  id                      String               @id @default(cuid())
+  projectId               String
+  parentJobId             String?
+  scopeType               GenerationScopeType
+  scopeId                 String?
+  module                  GenerationModule
+  status                  GenerationJobStatus  @default(PREPARING)
+  mode                    GenerationMode       @default(MOCK)
+  provider                GenerationProvider   @default(MOCK)
+  modelTier               GenerationModelTier  @default(STANDARD)
+  modelId                 String?
+  promptKey               String?
+  promptVersion           String?
+  generationPurpose       GenerationPurpose?
+  briefRevision           Int?
+  providerAttemptCount    Int                  @default(0)
   normalizedProviderError String?
-  repairAttempted       Boolean             @default(false)
-  runtimeKey            String?
-  modelRef              String?
-  providerKind          String?
-  policyKey             String?
-  policyVersion         String?
-  fallbackUsed          Boolean?
-  structuredMode        String?
-  idempotencyKey        String
-  attempt               Int                 @default(0)
-  maxAttempts           Int                 @default(3)
-  availableAt           DateTime            @default(now())
-  leaseToken            String?
-  leaseOwner            String?
-  leaseExpiresAt        DateTime?
-  lastLeaseHeartbeatAt  DateTime?
-  cancelRequestedAt     DateTime?
-  brandProfileVersionId String?             @unique
-  request               Json
-  safeErrorCode         String?
-  safeErrorDetails      Json?
-  usage                 Json?
-  createdAt             DateTime            @default(now())
-  updatedAt             DateTime            @updatedAt
-  startedAt             DateTime?
-  completedAt           DateTime?
-  project               Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  parentJob             GenerationJob?       @relation("JobHierarchy", fields: [parentJobId], references: [id], onDelete: SetNull)
-  childJobs             GenerationJob[]      @relation("JobHierarchy")
-  brandProfileVersion   BrandProfileVersion? @relation("JobProducedVersion", fields: [brandProfileVersionId], references: [id], onDelete: SetNull)
-  steps                 GenerationJobStep[]
+  repairAttempted         Boolean              @default(false)
+  runtimeKey              String?
+  modelRef                String?
+  providerKind            String?
+  policyKey               String?
+  policyVersion           String?
+  fallbackUsed            Boolean?
+  structuredMode          String?
+  idempotencyKey          String
+  attempt                 Int                  @default(0)
+  maxAttempts             Int                  @default(3)
+  availableAt             DateTime             @default(now())
+  leaseToken              String?
+  leaseOwner              String?
+  leaseExpiresAt          DateTime?
+  lastLeaseHeartbeatAt    DateTime?
+  cancelRequestedAt       DateTime?
+  brandProfileVersionId   String?              @unique
+  request                 Json
+  safeErrorCode           String?
+  safeErrorDetails        Json?
+  usage                   Json?
+  createdAt               DateTime             @default(now())
+  updatedAt               DateTime             @updatedAt
+  startedAt               DateTime?
+  completedAt             DateTime?
+  project                 Project              @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  parentJob               GenerationJob?       @relation("JobHierarchy", fields: [parentJobId], references: [id], onDelete: SetNull)
+  childJobs               GenerationJob[]      @relation("JobHierarchy")
+  brandProfileVersion     BrandProfileVersion? @relation("JobProducedVersion", fields: [brandProfileVersionId], references: [id], onDelete: SetNull)
+  steps                   GenerationJobStep[]
   producedContentVersion  ContentItemVersion?  @relation("ContentVersionSourceJob")
-  sourcedContentItems      ContentItem[]        @relation("ContentItemSourceJob")
-  generationUsage          GenerationUsage[]
-  usageReservation         UsageReservation?
+  sourcedContentItems     ContentItem[]        @relation("ContentItemSourceJob")
+  generationUsage         GenerationUsage[]
+  usageReservation        UsageReservation?
 
   @@unique([projectId, idempotencyKey])
   @@index([projectId, createdAt(sort: Desc)])
@@ -416,28 +418,28 @@ model GenerationJob {
 }
 
 model ContentItem {
-  id                          String          @id @default(cuid())
+  id                          String               @id @default(cuid())
   projectId                   String
   module                      ContentModule
   type                        String
   identityKey                 String?
   title                       String
-  status                      ContentStatus   @default(DRAFT)
-  currentVersionId            String?         @unique
-  sourceJobId                 String?         @unique
+  status                      ContentStatus        @default(DRAFT)
+  currentVersionId            String?              @unique
+  sourceJobId                 String?              @unique
   sourceBrandProfileVersionId String
-  createdAt                   DateTime        @default(now())
-  updatedAt                   DateTime        @updatedAt
-  project                     Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  currentVersion              ContentItemVersion? @relation("CurrentContentItemVersion", fields: [currentVersionId], references: [id], onDelete: SetNull)
+  createdAt                   DateTime             @default(now())
+  updatedAt                   DateTime             @updatedAt
+  project                     Project              @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  currentVersion              ContentItemVersion?  @relation("CurrentContentItemVersion", fields: [currentVersionId], references: [id], onDelete: SetNull)
   versions                    ContentItemVersion[] @relation("ContentItemVersions")
-  sourceJob                   GenerationJob?  @relation("ContentItemSourceJob", fields: [sourceJobId], references: [id], onDelete: SetNull)
-  sourceBrandProfileVersion   BrandProfileVersion @relation("ContentItemSourceBrandProfile", fields: [sourceBrandProfileVersionId], references: [id], onDelete: Restrict)
+  sourceJob                   GenerationJob?       @relation("ContentItemSourceJob", fields: [sourceJobId], references: [id], onDelete: SetNull)
+  sourceBrandProfileVersion   BrandProfileVersion  @relation("ContentItemSourceBrandProfile", fields: [sourceBrandProfileVersionId], references: [id], onDelete: Restrict)
 
+  @@unique([projectId, module, identityKey])
   @@index([projectId, module, status])
   @@index([projectId, updatedAt(sort: Desc)])
   @@index([sourceBrandProfileVersionId])
-  @@unique([projectId, module, identityKey])
 }
 
 model ContentItemVersion {
@@ -479,7 +481,7 @@ model GenerationUsage {
   promptVersion           String
   generationPurpose       GenerationPurpose
   attemptNumber           Int
-  repair                   Boolean               @default(false)
+  repair                  Boolean               @default(false)
   inputTokens             Int?
   outputTokens            Int?
   cachedInputTokens       Int?
@@ -569,4 +571,45 @@ model BetaInterest {
   updatedAt            DateTime @updatedAt
 
   @@index([createdAt(sort: Desc)])
+}
+
+// L6 (doc 53, decisions 2026-11-16): documents a client provides for one
+// project, split into chunks with local embeddings. Every chunk carries its
+// projectId so a search can be scoped without joins; status and media type
+// are text (no enum: adding enum values is irreversible).
+model KnowledgeDocument {
+  id            String           @id @default(cuid())
+  projectId     String
+  title         String
+  mediaType     String
+  content       String
+  byteSize      Int
+  contentSha256 String
+  status        String           @default("PENDING")
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  project       Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  chunks        KnowledgeChunk[]
+
+  @@unique([projectId, contentSha256])
+  @@index([projectId, createdAt])
+}
+
+model KnowledgeChunk {
+  id             String            @id @default(cuid())
+  documentId     String
+  projectId      String
+  ordinal        Int
+  text           String
+  tokenEstimate  Int
+  // Float32 little-endian, L2-normalised; null until indexed.
+  embedding      Bytes?
+  embeddingModel String?
+  embeddingDims  Int?
+  createdAt      DateTime          @default(now())
+  document       KnowledgeDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  project        Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([documentId, ordinal])
+  @@index([projectId, embeddingModel])
 }

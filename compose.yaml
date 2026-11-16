@@ -1,0 +1,98 @@
+# L7: Web Content Flow private server (APP_MODE=server).
+#   cp .env.server.example .env.server   # fill it in
+#   docker compose --env-file .env.server up -d --build
+# Services: PostgreSQL 16 (private network only), one-shot migrations, web,
+# worker, hourly maintenance and Caddy (automatic HTTPS for $DOMAIN).
+name: web-content-flow
+
+x-app: &app
+  image: web-content-flow:server
+  build:
+    context: .
+    args:
+      APP_URL: ${APP_URL:?set APP_URL in .env.server}
+  env_file: ${WCF_ENV_FILE:-.env.server}
+  environment:
+    NEXT_PUBLIC_APP_URL: ${APP_URL}
+    AUTH_URL: ${APP_URL}
+    DATABASE_URL: postgresql://wcf:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@postgres:5432/web_content_flow
+  restart: unless-stopped
+
+services:
+  postgres:
+    image: postgres:16.15-alpine
+    environment:
+      POSTGRES_DB: web_content_flow
+      POSTGRES_USER: wcf
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_INITDB_ARGS: --encoding=UTF8 --no-locale
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wcf -d web_content_flow"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  migrate:
+    <<: *app
+    command: ["node", "migrate.mjs", "./migrations"]
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  web:
+    <<: *app
+    command: ["node", "web/server.js"]
+    environment:
+      NEXT_PUBLIC_APP_URL: ${APP_URL}
+      AUTH_URL: ${APP_URL}
+      DATABASE_URL: postgresql://wcf:${POSTGRES_PASSWORD}@postgres:5432/web_content_flow
+      HOSTNAME: 0.0.0.0
+      PORT: "3000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  worker:
+    <<: *app
+    command: ["node", "worker.mjs"]
+    stop_grace_period: 90s
+    healthcheck:
+      disable: true
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  maintenance:
+    <<: *app
+    command:
+      ["sh", "-c", "while true; do node maintenance.mjs; sleep 3600; done"]
+    healthcheck:
+      disable: true
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  caddy:
+    image: caddy:2.10-alpine
+    environment:
+      DOMAIN: ${DOMAIN:?set DOMAIN}
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      web:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  caddy_data:
+  caddy_config:

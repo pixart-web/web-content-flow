@@ -58,7 +58,15 @@ export type DesktopPasswordResetResult =
         "invalid_password" | "denied" | "unavailable" | "no_owner" | "failed";
     };
 
+export type DesktopRemoteServerResult =
+  | { ok: true }
+  | {
+      ok: false;
+      reason: "invalid_url" | "unreachable" | "not_web_content_flow";
+    };
+
 export type WcfDesktopApi = Readonly<{
+  connectRemoteServer: (url: string) => Promise<DesktopRemoteServerResult>;
   resetOwnerPassword: (password: string) => Promise<DesktopPasswordResetResult>;
   aiOverview: () => Promise<DesktopAiOverview>;
   startOllama: () => Promise<DesktopAiOverview>;

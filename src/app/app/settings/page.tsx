@@ -30,7 +30,12 @@ export default async function SettingsPage() {
           ["Security", "/app/settings/security"],
           ["Usage", "/app/settings/usage"],
           ["Privacy", "/app/settings/privacy"],
-          ...(localMode ? [["Local AI", "/app/settings/local-ai"]] : []),
+          ...(localMode
+            ? [
+                ["Local AI", "/app/settings/local-ai"],
+                ["Private server", "/app/settings/server"],
+              ]
+            : []),
         ].map(([label, href]) => (
           <Link
             className="border-default bg-surface hover:bg-surface-subtle rounded-control min-h-11 border p-3 font-semibold"

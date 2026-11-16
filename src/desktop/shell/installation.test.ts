@@ -61,6 +61,7 @@ describe("desktop installation state (L4)", () => {
       format: 1,
       ollamaBaseUrl: "http://127.0.0.1:11434",
       localModel: null,
+      remoteServer: null,
     });
   });
 
@@ -89,6 +90,7 @@ describe("desktop installation state (L4)", () => {
     writeSettings(paths.settingsFile, {
       format: 1,
       ollamaBaseUrl: "http://127.0.0.1:11434",
+      remoteServer: null,
       localModel: {
         catalogId: "gemma4-12b-qat",
         tag: "gemma4:12b-it-qat",

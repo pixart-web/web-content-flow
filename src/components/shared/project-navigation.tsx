@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  BookOpen,
   CalendarDays,
   FileOutput,
   FileText,
@@ -27,6 +28,7 @@ const iconByLabel = {
   "General Copy": Type,
   "Content Calendar": CalendarDays,
   Library,
+  Knowledge: BookOpen,
   Export: FileOutput,
 } as const;
 

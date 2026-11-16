@@ -86,6 +86,7 @@ export default async function ProjectLayout({
         ] as const)
       : []),
     ["Library", `/app/projects/${projectId}/library`],
+    ["Knowledge", `/app/projects/${projectId}/knowledge`],
     ["Export", `/app/projects/${projectId}/export`],
   ] as const;
 

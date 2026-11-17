@@ -100,11 +100,24 @@ export const LocalModelActivationSchema = z
   .strict();
 export type LocalModelActivation = z.infer<typeof LocalModelActivationSchema>;
 
+// L6 on desktop: the embedding model for client knowledge (bge-m3, pinned
+// digest). Independent of the text model: it only needs Ollama.
+export const KnowledgeModelSchema = z
+  .object({
+    tag: z.literal("bge-m3"),
+    digest: z.string().regex(/^[0-9a-f]{64}$/),
+    license: z.literal("MIT"),
+    licenseAcceptedAt: z.iso.datetime(),
+  })
+  .strict();
+export type KnowledgeModel = z.infer<typeof KnowledgeModelSchema>;
+
 export const InstallationSettingsSchema = z
   .object({
     format: z.literal(1),
     ollamaBaseUrl: z.url().default("http://127.0.0.1:11434"),
     localModel: LocalModelActivationSchema.nullable().default(null),
+    knowledgeModel: KnowledgeModelSchema.nullable().default(null),
     // L7: when set, the app is a client of this private server (https only).
     remoteServer: z
       .object({
@@ -172,6 +185,14 @@ export function runtimeEnv(input: {
           AI_OLLAMA_THINK: "false",
         }
       : { AI_PROVIDER_DEFAULT: "MOCK", AI_REAL_GENERATION_ENABLED: "false" }),
+    // Client knowledge: the worker indexes documents and generation uses the
+    // client's passages (B5) once the embedding model is installed.
+    ...(input.settings.knowledgeModel
+      ? {
+          AI_OLLAMA_BASE_URL: input.settings.ollamaBaseUrl,
+          KNOWLEDGE_EMBEDDING_MODEL: input.settings.knowledgeModel.tag,
+        }
+      : {}),
   };
 }
 

@@ -34,6 +34,17 @@ export type DesktopAiOverview = Readonly<{
     tag: string;
     evaluatedAt: string;
   }> | null;
+  // Embedding model for client knowledge (bge-m3).
+  knowledge: Readonly<{
+    id: "bge-m3";
+    displayName: string;
+    sizeBytes: number;
+    license: "MIT";
+    licenseUrl: string;
+    installed: boolean;
+    digestMatches: boolean;
+    active: boolean;
+  }>;
 }>;
 
 export type DesktopDownloadProgress = Readonly<{
@@ -80,6 +91,8 @@ export type WcfDesktopApi = Readonly<{
   ) => () => void;
   evaluateModel: (id: string) => Promise<DesktopEvaluationResult>;
   activateModel: (id: string) => Promise<void>;
+  downloadKnowledgeModel: (licenseAccepted: boolean) => Promise<void>;
+  removeKnowledgeModel: () => Promise<void>;
   deactivateModel: () => Promise<void>;
   openExternal: (url: string) => Promise<void>;
 }>;

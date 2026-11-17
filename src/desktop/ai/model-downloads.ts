@@ -60,9 +60,18 @@ export async function installedDigest(
   return found?.digest ?? null;
 }
 
+// The fields a download needs: catalog text models and the pinned embedding
+// model share the same verified pull.
+export type PullableModel = Readonly<{
+  id: string;
+  tag: string;
+  manifestDigest: string;
+  license: Readonly<{ spdx: CatalogEntry["license"]["spdx"] }>;
+}>;
+
 export async function pullCatalogModel(input: {
   baseUrl: string;
-  entry: CatalogEntry;
+  entry: PullableModel;
   licenseAcceptedAt: Date | null;
   onProgress?: (progress: PullProgress) => void;
   signal?: AbortSignal;

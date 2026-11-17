@@ -203,6 +203,132 @@ function ModelCard(props: {
   );
 }
 
+// L6 on desktop: the embedding model that makes client knowledge searchable
+// and lets generation use the client's own facts (B5).
+function KnowledgeModelCard(props: {
+  knowledge: DesktopAiOverview["knowledge"];
+  api: WcfDesktopApi;
+}) {
+  const { knowledge, api } = props;
+  const [accepted, setAccepted] = useState(false);
+  const [progress, setProgress] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(
+    () =>
+      api.onDownloadProgress((event) => {
+        if (event.id === knowledge.id)
+          setProgress(
+            event.percent === null
+              ? event.status
+              : `${event.status} ${event.percent}%`,
+          );
+      }),
+    [api, knowledge.id],
+  );
+
+  const ready = knowledge.active && knowledge.digestMatches;
+  return (
+    <section className="border-default bg-surface rounded-panel border p-6">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h2 className="font-display text-xl font-semibold">Client knowledge</h2>
+        <span className="text-secondary text-sm">
+          {gb(knowledge.sizeBytes)} · {knowledge.license}
+        </span>
+      </div>
+      <p className="text-secondary mt-2 text-sm">
+        {knowledge.displayName} makes each project&apos;s documents searchable
+        and lets generation use the client&apos;s own facts. It runs in Ollama
+        on this computer; documents never leave it.
+      </p>
+      {ready ? (
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <p className="text-sm font-semibold" role="status">
+            On: documents are indexed on this computer.
+          </p>
+          <button
+            className={secondary}
+            onClick={() =>
+              void api
+                .removeKnowledgeModel()
+                .catch((e: Error) => setError(e.message))
+            }
+          >
+            Turn off (restarts the app)
+          </button>
+        </div>
+      ) : (
+        <div className="mt-4 space-y-3">
+          {knowledge.active && !knowledge.digestMatches ? (
+            <p className="text-sm" role="alert">
+              The installed copy does not match the verified version. Download
+              it again.
+            </p>
+          ) : null}
+          <label className="flex items-start gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={accepted}
+              onChange={(event) => setAccepted(event.target.checked)}
+            />
+            <span>
+              I accept the{" "}
+              <button
+                className="text-link underline"
+                type="button"
+                onClick={() => void api.openExternal(knowledge.licenseUrl)}
+              >
+                {knowledge.license} licence
+              </button>{" "}
+              of {knowledge.displayName}.
+            </span>
+          </label>
+          <div className="flex flex-wrap gap-3">
+            <button
+              className={primary}
+              disabled={!accepted || progress !== null}
+              onClick={() => {
+                setError(null);
+                setProgress("Starting");
+                void api
+                  .downloadKnowledgeModel(accepted)
+                  .catch((e: Error) => setError(e.message))
+                  .finally(() => setProgress(null));
+              }}
+            >
+              {knowledge.installed && knowledge.digestMatches
+                ? "Turn on (restarts the app)"
+                : `Download ${gb(knowledge.sizeBytes)} and turn on`}
+            </button>
+            {progress !== null ? (
+              <button
+                className={secondary}
+                onClick={() => void api.cancelDownload(knowledge.id)}
+              >
+                Cancel
+              </button>
+            ) : null}
+          </div>
+          {progress !== null ? (
+            <p
+              className="text-secondary text-sm"
+              role="status"
+              aria-live="polite"
+            >
+              {progress}
+            </p>
+          ) : null}
+        </div>
+      )}
+      {error ? (
+        <p className="mt-3 text-sm" role="alert">
+          {error}
+        </p>
+      ) : null}
+    </section>
+  );
+}
+
 export function LocalAiSetup() {
   // undefined while rendering on the server; null outside the desktop app.
   const api = useSyncExternalStore<WcfDesktopApi | null | undefined>(
@@ -342,6 +468,9 @@ export function LocalAiSetup() {
             ))}
           </ul>
         </section>
+      ) : null}
+      {ollama.state === "running" ? (
+        <KnowledgeModelCard api={api} knowledge={overview.knowledge} />
       ) : null}
       {error ? (
         <p className="text-sm" role="alert">

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   addKnowledgeDocumentAction,
   deleteKnowledgeDocumentAction,
@@ -37,6 +38,18 @@ export default async function ProjectKnowledgePage({
           >
             Documents are saved but not searchable yet: local knowledge needs
             the embedding model (bge-m3) on this computer.
+            {getServerEnv().APP_MODE === "local" ? (
+              <>
+                {" "}
+                <Link
+                  className="text-link font-semibold underline"
+                  href="/app/settings/local-ai"
+                >
+                  Set it up in Local AI settings
+                </Link>
+                .
+              </>
+            ) : null}
           </p>
         ) : null}
       </header>

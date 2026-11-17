@@ -21,6 +21,7 @@ import {
   pullCatalogModel,
 } from "@/desktop/ai/model-downloads";
 import { ollamaStatus, startOllama } from "@/desktop/ai/ollama-runtime";
+import { APPROVED_EMBEDDING_MODEL } from "@/server/knowledge/ollama-embedder";
 
 import {
   ACTIVATION_CASES,
@@ -41,6 +42,17 @@ import {
 // reach these channels.
 
 const GB = 1024 ** 3;
+
+// The pinned embedding model for client knowledge (doc 54), downloaded with
+// the same licence-first, digest-checked pull as the text models.
+export const KNOWLEDGE_MODEL = {
+  id: "bge-m3",
+  tag: APPROVED_EMBEDDING_MODEL.config.tag,
+  manifestDigest: APPROVED_EMBEDDING_MODEL.digest,
+  license: { spdx: APPROVED_EMBEDDING_MODEL.license },
+  licenseUrl: "https://opensource.org/license/mit",
+  sizeBytes: APPROVED_EMBEDDING_MODEL.sizeBytes,
+} as const;
 
 export function registerAiIpc(context: {
   origin: string;
@@ -96,7 +108,22 @@ export function registerAiIpc(context: {
       ),
     );
     const active = settings().localModel;
+    const knowledgeDigest = running
+      ? await installedDigest(ollamaUrl(), KNOWLEDGE_MODEL.tag).catch(
+          () => null,
+        )
+      : null;
     return {
+      knowledge: {
+        id: "bge-m3",
+        displayName: "BGE-M3 (client knowledge search)",
+        sizeBytes: KNOWLEDGE_MODEL.sizeBytes,
+        license: "MIT",
+        licenseUrl: KNOWLEDGE_MODEL.licenseUrl,
+        installed: knowledgeDigest !== null,
+        digestMatches: knowledgeDigest === KNOWLEDGE_MODEL.manifestDigest,
+        active: settings().knowledgeModel !== null,
+      },
       hardware: {
         cpu: hardware.cpu,
         memoryGb: Math.round(hardware.memoryBytes / GB),
@@ -168,6 +195,57 @@ export function registerAiIpc(context: {
       }
     },
   );
+
+  handle(
+    "wcf:ai-download-knowledge-model",
+    async (event, licenseAccepted: boolean) => {
+      if (licenseAccepted !== true)
+        throw new Error("The licence must be accepted.");
+      const accepted = new Date();
+      const controller = new AbortController();
+      downloads.set(KNOWLEDGE_MODEL.id, controller);
+      try {
+        const installed = await pullCatalogModel({
+          baseUrl: ollamaUrl(),
+          entry: KNOWLEDGE_MODEL,
+          licenseAcceptedAt: accepted,
+          signal: controller.signal,
+          onProgress: (progress) =>
+            event.sender.send("wcf:ai-download-progress", {
+              id: KNOWLEDGE_MODEL.id,
+              status: progress.status,
+              percent: progress.percent,
+            }),
+        });
+        writeSettings(context.paths.settingsFile, {
+          ...settings(),
+          knowledgeModel: {
+            tag: "bge-m3",
+            digest: installed.digest,
+            license: "MIT",
+            licenseAcceptedAt: installed.licenseAcceptedAt,
+          },
+        });
+      } finally {
+        downloads.delete(KNOWLEDGE_MODEL.id);
+      }
+      context.log(
+        "Knowledge model bge-m3 downloaded and verified; restarting.",
+      );
+      app.relaunch();
+      app.quit();
+    },
+  );
+
+  handle("wcf:ai-remove-knowledge-model", async () => {
+    writeSettings(context.paths.settingsFile, {
+      ...settings(),
+      knowledgeModel: null,
+    });
+    context.log("Knowledge model turned off; restarting.");
+    app.relaunch();
+    app.quit();
+  });
 
   handle("wcf:ai-cancel-download", async (_event, id: string) => {
     downloads.get(id)?.abort();

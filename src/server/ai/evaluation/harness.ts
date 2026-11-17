@@ -2,6 +2,10 @@ import { CURRENT_PROMPT_VERSION } from "@/ai/prompts/registry";
 import "server-only";
 
 import {
+  buildClaimRevisionMessage,
+  CLAIM_REVISION_INSTRUCTIONS,
+} from "@/ai/prompts/claim-revision";
+import {
   buildStructuralRepairMessage,
   STRUCTURAL_REPAIR_INSTRUCTIONS,
 } from "@/ai/prompts/structural-repair";
@@ -10,6 +14,7 @@ import { ProviderError, type AiProvider } from "@/server/ai/ai-provider";
 import { EVALUATION_SUITE_VERSION, type EvaluationCase } from "./cases";
 import {
   EVALUATION_THRESHOLDS,
+  heldOutClaimHits,
   prohibitedWordHits,
   summarizeCase,
   unsupportedClaimHits,
@@ -35,6 +40,11 @@ export type EvaluationReport = Readonly<{
     summary: CaseSummary;
     // Average count of the client's facts used (--with-knowledge cases).
     factsUsedAverage?: number;
+    // Held-out synonyms (measurement only) and, with --claim-revision, how
+    // many samples were revised and the detector flags before revising.
+    heldOutClaimFlags?: number;
+    heldOutTerms?: readonly string[];
+    claimRevision?: { revisedSamples: number; flagsBeforeRevision: number };
   }[];
   passed: boolean;
 }>;
@@ -42,8 +52,20 @@ export type EvaluationReport = Readonly<{
 async function runSample(
   adapter: AiProvider,
   testCase: EvaluationCase,
-  options: { model: string; timeoutMs: number; sample: number },
-): Promise<SampleOutcome & { factsUsed: number | null }> {
+  options: {
+    model: string;
+    timeoutMs: number;
+    sample: number;
+    claimRevision?: boolean;
+  },
+): Promise<
+  SampleOutcome & {
+    factsUsed: number | null;
+    heldOut: readonly string[];
+    revised: boolean;
+    flagsBeforeRevision: number;
+  }
+> {
   const requestId = `evaluation-${testCase.id}-${options.sample}`;
   const startedAt = performance.now();
   let tokens: number | null = null;
@@ -114,7 +136,44 @@ async function runSample(
       }
     }
   }
+  // B5 hypothesis 1: one revision when the detector flags the output of a
+  // case that has client knowledge.
+  let revised = false;
+  let flagsBeforeRevision = 0;
+  const clientKnowledge = (testCase.context as { clientKnowledge?: unknown })
+    .clientKnowledge;
+  if (output !== null && options.claimRevision && clientKnowledge) {
+    const before = unsupportedClaimHits(output, testCase.context);
+    flagsBeforeRevision = before.length;
+    if (before.length > 0) {
+      try {
+        const revision = await adapter.generateStructured(
+          {
+            ...base,
+            requestId: `${requestId}-claims`,
+            schemaName: `${base.schemaName}_claims`,
+            input: {},
+            systemInstructions: CLAIM_REVISION_INSTRUCTIONS,
+            userMessage: buildClaimRevisionMessage({
+              priorOutput: output,
+              unsupportedTerms: before,
+              clientKnowledge,
+            }),
+          },
+          testCase.schema,
+        );
+        addTokens(revision.usage.totalTokens);
+        output = revision.data;
+        revised = true;
+      } catch {
+        // Keep the first output; its flags still count.
+      }
+    }
+  }
   return {
+    revised,
+    flagsBeforeRevision,
+    heldOut: output === null ? [] : heldOutClaimHits(output, testCase.context),
     firstPassValid,
     repairAttempted,
     validAfterRepair,
@@ -143,25 +202,42 @@ export async function runEvaluation(input: {
   timeoutMs: number;
   maxP95LatencyMs?: number;
   hardware?: string;
+  claimRevision?: boolean;
   now?: () => Date;
 }): Promise<EvaluationReport> {
   const results: EvaluationReport["cases"][number][] = [];
   for (const testCase of input.cases) {
-    const outcomes: (SampleOutcome & { factsUsed: number | null })[] = [];
+    const outcomes: Awaited<ReturnType<typeof runSample>>[] = [];
     for (let sample = 1; sample <= input.samplesPerCase; sample += 1)
       outcomes.push(
         await runSample(input.adapter, testCase, {
           model: input.model,
           timeoutMs: input.timeoutMs,
           sample,
+          ...(input.claimRevision ? { claimRevision: true } : {}),
         }),
       );
     const facts = outcomes
       .map((outcome) => outcome.factsUsed)
       .filter((value): value is number => value !== null);
+    const heldOut = outcomes.flatMap((outcome) => outcome.heldOut);
     results.push({
       id: testCase.id,
       promptKey: testCase.promptKey,
+      heldOutClaimFlags: heldOut.length,
+      heldOutTerms: [...new Set(heldOut)].sort(),
+      ...(input.claimRevision
+        ? {
+            claimRevision: {
+              revisedSamples: outcomes.filter((outcome) => outcome.revised)
+                .length,
+              flagsBeforeRevision: outcomes.reduce(
+                (total, outcome) => total + outcome.flagsBeforeRevision,
+                0,
+              ),
+            },
+          }
+        : {}),
       ...(facts.length > 0
         ? {
             factsUsedAverage:

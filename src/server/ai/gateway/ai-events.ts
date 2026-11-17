@@ -49,7 +49,18 @@ export type AiEvent =
       event: "ai.request.failed";
       errorCode: ProviderErrorCode | "UNKNOWN";
       retryable: boolean;
-    });
+    })
+  | {
+      // L6 B5: counts only, never the flagged words or the text.
+      event: "ai.claim_revision";
+      jobId: string;
+      runtimeKey: string;
+      modelRef: string;
+      outcome: "revised" | "failed";
+      errorCode: ProviderErrorCode | "UNKNOWN" | null;
+      flagged: number;
+      remaining: number;
+    };
 
 export function logAiEvent(event: AiEvent) {
   const line = JSON.stringify({

@@ -78,6 +78,15 @@ export const ProvenanceSchema = z
     usageRecordIds: z.array(z.string().min(8).max(128)).max(10).optional(),
     // L6 B5: client knowledge passages given to the model (R4).
     knowledgeChunkIds: z.array(z.string().min(8).max(128)).max(20).optional(),
+    // L6 B5: claim words the detector flagged and those left after the one
+    // automatic revision (shown for human review).
+    claimRevision: z
+      .object({
+        flagged: z.array(z.string().min(1).max(120)).max(40),
+        remaining: z.array(z.string().min(1).max(120)).max(40),
+      })
+      .strict()
+      .optional(),
   })
   .strict();
 

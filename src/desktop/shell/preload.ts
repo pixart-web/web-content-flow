@@ -21,6 +21,10 @@ const api: WcfDesktopApi = {
   downloadModel: (id, licenseAccepted) =>
     ipcRenderer.invoke("wcf:ai-download", id, licenseAccepted),
   cancelDownload: (id) => ipcRenderer.invoke("wcf:ai-cancel-download", id),
+  downloadKnowledgeModel: (licenseAccepted) =>
+    ipcRenderer.invoke("wcf:ai-download-knowledge-model", licenseAccepted),
+  removeKnowledgeModel: () =>
+    ipcRenderer.invoke("wcf:ai-remove-knowledge-model"),
   onDownloadProgress: (listener) => {
     const handler = (_event: unknown, progress: DesktopDownloadProgress) =>
       listener(progress);

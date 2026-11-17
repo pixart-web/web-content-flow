@@ -61,6 +61,7 @@ describe("desktop installation state (L4)", () => {
       format: 1,
       ollamaBaseUrl: "http://127.0.0.1:11434",
       localModel: null,
+      knowledgeModel: null,
       remoteServer: null,
     });
   });
@@ -85,12 +86,43 @@ describe("desktop installation state (L4)", () => {
     });
   });
 
+  it("indexes client knowledge only once the embedding model is installed, even without a text model", async () => {
+    const without = parseServerEnv(
+      runtimeEnv({ ...(await base()), settings: readSettings("/nonexistent") }),
+    );
+    expect(without.KNOWLEDGE_EMBEDDING_MODEL).toBeUndefined();
+    const paths = root();
+    writeSettings(paths.settingsFile, {
+      ...readSettings("/nonexistent"),
+      knowledgeModel: {
+        tag: "bge-m3",
+        digest:
+          "7907646426070047a77226ac3e684fbbe8410524f7b4a74d02837e43f2146bab",
+        license: "MIT",
+        licenseAcceptedAt: "2026-11-17T10:00:00.000Z",
+      },
+    });
+    const parsed = parseServerEnv(
+      runtimeEnv({
+        ...(await base()),
+        settings: readSettings(paths.settingsFile),
+      }),
+    );
+    expect(parsed).toMatchObject({
+      KNOWLEDGE_EMBEDDING_MODEL: "bge-m3",
+      AI_OLLAMA_BASE_URL: "http://127.0.0.1:11434",
+      KNOWLEDGE_IN_GENERATION_ENABLED: true,
+      AI_PROVIDER_DEFAULT: "MOCK",
+    });
+  });
+
   it("switches to LOCAL generation only with a recorded, passed activation", async () => {
     const paths = root();
     writeSettings(paths.settingsFile, {
       format: 1,
       ollamaBaseUrl: "http://127.0.0.1:11434",
       remoteServer: null,
+      knowledgeModel: null,
       localModel: {
         catalogId: "gemma4-12b-qat",
         tag: "gemma4:12b-it-qat",

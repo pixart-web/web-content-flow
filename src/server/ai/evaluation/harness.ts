@@ -11,7 +11,11 @@ import {
 } from "@/ai/prompts/structural-repair";
 import { ProviderError, type AiProvider } from "@/server/ai/ai-provider";
 
-import { EVALUATION_SUITE_VERSION, type EvaluationCase } from "./cases";
+import {
+  EVALUATION_SUITE_VERSION,
+  type EvaluationCase,
+  type EvaluationLanguage,
+} from "./cases";
 import {
   EVALUATION_THRESHOLDS,
   heldOutClaimHits,
@@ -26,8 +30,21 @@ import {
 // (local hardware usually serves one request at a time), and scores them.
 // Prompt and output text never leave this process except inside the scoring.
 
+// One generated sample for human reading (--save-samples): the first output
+// and, when the claim revision ran, the revised one with what each flagged.
+export type EvaluationSampleRecord = Readonly<{
+  caseId: string;
+  sample: number;
+  firstOutput: unknown;
+  firstFlags: readonly string[];
+  revisedOutput: unknown;
+  remainingFlags: readonly string[];
+  heldOut: readonly string[];
+}>;
+
 export type EvaluationReport = Readonly<{
   suiteVersion: string;
+  language: EvaluationLanguage;
   generatedAt: string;
   runtimeKey: string;
   model: string;
@@ -57,6 +74,7 @@ async function runSample(
     timeoutMs: number;
     sample: number;
     claimRevision?: boolean;
+    onSample?: (record: EvaluationSampleRecord) => void;
   },
 ): Promise<
   SampleOutcome & {
@@ -140,6 +158,7 @@ async function runSample(
   // case that has client knowledge.
   let revised = false;
   let flagsBeforeRevision = 0;
+  const firstOutput = output;
   const clientKnowledge = (testCase.context as { clientKnowledge?: unknown })
     .clientKnowledge;
   if (output !== null && options.claimRevision && clientKnowledge) {
@@ -170,10 +189,26 @@ async function runSample(
       }
     }
   }
+  const heldOut =
+    output === null ? [] : heldOutClaimHits(output, testCase.context);
+  const remaining =
+    output === null ? [] : unsupportedClaimHits(output, testCase.context);
+  options.onSample?.({
+    caseId: testCase.id,
+    sample: options.sample,
+    firstOutput,
+    firstFlags:
+      firstOutput === null
+        ? []
+        : unsupportedClaimHits(firstOutput, testCase.context),
+    revisedOutput: revised ? output : null,
+    remainingFlags: remaining,
+    heldOut,
+  });
   return {
     revised,
     flagsBeforeRevision,
-    heldOut: output === null ? [] : heldOutClaimHits(output, testCase.context),
+    heldOut,
     firstPassValid,
     repairAttempted,
     validAfterRepair,
@@ -182,8 +217,7 @@ async function runSample(
     totalTokens: tokens,
     prohibitedWordHits:
       output === null ? [] : prohibitedWordHits(output, testCase.wordsToAvoid),
-    unsupportedClaimHits:
-      output === null ? [] : unsupportedClaimHits(output, testCase.context),
+    unsupportedClaimHits: remaining,
     factsUsed:
       output === null || !testCase.expectedFacts
         ? null
@@ -203,6 +237,8 @@ export async function runEvaluation(input: {
   maxP95LatencyMs?: number;
   hardware?: string;
   claimRevision?: boolean;
+  language?: EvaluationLanguage;
+  onSample?: (record: EvaluationSampleRecord) => void;
   now?: () => Date;
 }): Promise<EvaluationReport> {
   const results: EvaluationReport["cases"][number][] = [];
@@ -215,6 +251,7 @@ export async function runEvaluation(input: {
           timeoutMs: input.timeoutMs,
           sample,
           ...(input.claimRevision ? { claimRevision: true } : {}),
+          ...(input.onSample ? { onSample: input.onSample } : {}),
         }),
       );
     const facts = outcomes
@@ -256,6 +293,7 @@ export async function runEvaluation(input: {
   }
   return {
     suiteVersion: EVALUATION_SUITE_VERSION,
+    language: input.language ?? "en",
     generatedAt: (input.now?.() ?? new Date()).toISOString(),
     runtimeKey: input.runtimeKey,
     model: input.model,
@@ -292,7 +330,7 @@ export function renderEvaluationMarkdown(report: EvaluationReport) {
     `# AI evaluation — ${report.runtimeKey}/${report.model}`,
     "",
     `- Result: **${report.passed ? "PASS" : "FAIL"}**`,
-    `- Suite ${report.suiteVersion}, ${report.samplesPerCase} samples per case, ${report.generatedAt}`,
+    `- Suite ${report.suiteVersion} (${report.language}), ${report.samplesPerCase} samples per case, ${report.generatedAt}`,
     `- Hardware: ${report.hardware ?? "not recorded"}`,
     `- Thresholds: first-pass valid ≥ ${percent(report.thresholds.firstPassValidRate)}, valid after repair ≥ ${percent(report.thresholds.afterRepairValidRate)}, 0 prohibited words, 0 unsupported-claim flags${report.thresholds.maxP95LatencyMs === null ? "" : `, p95 ≤ ${report.thresholds.maxP95LatencyMs} ms`}`,
     "- Unsupported-claim flags are a heuristic (numbers, awards, rankings, URLs and product attributes absent from the context); review flagged outputs manually.",

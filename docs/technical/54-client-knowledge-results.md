@@ -60,7 +60,7 @@ A variante `pnpm eval:ai --with-knowledge` dá aos casos de copy uma ficha técn
 
 1. Verificação depois da geração: assinalar na UI, para revisão humana, os termos que o detetor marca, em vez de os deixar passar em silêncio. **Medida a 2026-11-17, ver abaixo.**
 2. Repetir com um modelo de texto mais forte, quando houver candidato aprovado. *Por fazer:* o único outro modelo de texto do catálogo (qwen3.5:9b) está rejeitado.
-3. Medir também com ficha e resultado em português. O detetor atual só conhece termos em inglês. *Por fazer.*
+3. Medir também com ficha e resultado em português. **Medida a 2026-11-17, ver «B5 em português».**
 
 ## B5 com revisão automática (hipótese 1, 2026-11-17)
 
@@ -84,4 +84,45 @@ Para não medir só a lista que dispara a revisão, a avaliação conta também 
 
 **Estado:** a revisão está implementada no executor e só corre com conhecimento do cliente. **Ligado por decisão do product owner a 2026-11-17** (`KNOWLEDGE_IN_GENERATION_ENABLED=true` por omissão; `false` desliga). Só tem efeito onde há excertos indexados, ou seja, com `KNOWLEDGE_EMBEDDING_MODEL=bge-m3`.
 
-Ligado sem estes passos, que ficam como trabalho seguinte: ler uma amostra de textos revistos, medir em português (hipótese 3) e mostrar na UI as marcas que sobram (`claimRevision.remaining`). **Desktop (2026-11-17):** na página «Local AI», o cartão «Client knowledge» descarrega o `bge-m3` pelo mesmo fluxo dos modelos de texto (licença MIT aceite antes do download, digest fixo verificado) e reinicia a app. A partir daí o invólucro define `KNOWLEDGE_EMBEDDING_MODEL=bge-m3` e `AI_OLLAMA_BASE_URL` para o worker, mesmo sem modelo de texto ativo. Desligar volta a reiniciar sem o modelo. A página de conhecimento de cada projeto aponta para essa configuração enquanto não estiver ligada.
+Os três passos que ficaram por fazer quando se ligou (ler textos revistos, medir em português, mostrar as marcas na UI) estão na secção seguinte. **Desktop (2026-11-17):** na página «Local AI», o cartão «Client knowledge» descarrega o `bge-m3` pelo mesmo fluxo dos modelos de texto (licença MIT aceite antes do download, digest fixo verificado) e reinicia a app. A partir daí o invólucro define `KNOWLEDGE_EMBEDDING_MODEL=bge-m3` e `AI_OLLAMA_BASE_URL` para o worker, mesmo sem modelo de texto ativo. Desligar volta a reiniciar sem o modelo. A página de conhecimento de cada projeto aponta para essa configuração enquanto não estiver ligada.
+
+## B5 em português, leitura dos textos e marcas na UI (2026-11-17)
+
+### O que mudou
+
+- **Detetor em português.** `unsupportedClaimHits` passa a conhecer, além dos termos em inglês, os equivalentes pt-PT (com grafias do Brasil) como padrões com género e número: *respirável/respiráveis*, *impermeável*, *durável*, *durabilidade*, *ergonómico*, *reciclado/a/os/as*, *sustentável*, *ecológico*, *feito à mão*, *em pele*, *garantia*, *portes grátis*, *ultra-leve*… E alegações: *premiado*, *certificado*, *mais vendido*, *líder de mercado*, *N clientes/avaliações/estrelas*. O contexto é testado com o mesmo padrão, por isso «reciclado» na ficha apoia «recicladas» no texto. *Leve* fica de fora: é também uma forma do verbo levar.
+- **Materiais ditos por outras palavras.** «sola de borracha» e «rubber sole» ficam apoiados quando o contexto diz «borracha»/«rubber» de qualquer forma. A ficha diz «a sola exterior é de borracha natural», e a primeira versão do detetor marcava esse facto verdadeiro. Teria pedido ao modelo que o tirasse.
+- **Avaliação.** `pnpm eval:ai --language pt-PT` gera os casos em «Portuguese (Portugal)» com a mesma ficha traduzida (factos: *poliéster reciclado, borracha natural, espinha, cortiça, 280*). `--save-samples` guarda o primeiro texto e o texto revisto de cada amostra ao lado do relatório, para leitura. A lista de controlo ganha sinónimos em português (*leveza, duradouro, resistente, amigo do ambiente, arejado, baixo impacto, materiais responsáveis*…). Suite **1.6.0**.
+- **Correção encontrada pelo caminho.** `ContentProvenanceSchema` (estrito) não aceitava `knowledgeChunkIds` nem `claimRevision`, e só aceitava `provider` «mock» ou «openai». Uma geração de Website, Social, Ads, Video, Copy ou Calendar com conhecimento do cliente, ou feita com o runtime `ollama` ou `openai-compatible`, falhava ao validar o snapshot. Só o Brand Profile, que usa outro esquema, escapava. O esquema aceita agora os quatro runtimes e os dois campos B5. Há testes no executor para ambos os casos.
+- **UI.** Nos editores de Copy, Website, Social, Ads e Video, `ClaimReviewNotice` mostra «Check these claims before using the text» com as palavras de `claimRevision.remaining`, quando sobra alguma. Sem marcas, mostra só quantos excertos do cliente foram usados e quantas alegações a revisão tirou. Sem conhecimento, não mostra nada. Uma edição manual mantém apenas as marcas cujas palavras ainda estão no texto (`claimRevisionAfterEdit`), na provenance guardada e na cópia dentro do snapshot.
+- **Estilo.** A regra global `* { border-color }` passou para `@layer base`. Fora de camada, ganhava a todas as utilidades de cor de contorno do Tailwind (`border-error` incluído).
+
+### Medição em português (gemma4:12b-it-qat, Apple M4, 5 amostras por caso, casos de copy)
+
+Contagens com o detetor final, recalculadas sobre os textos guardados. A corrida «sem conhecimento» não guardou textos, por isso conta com o detetor da altura.
+
+| | Sem conhecimento | Com conhecimento | Com conhecimento + revisão |
+|---|---|---|---|
+| Descrição de produto: atributos inventados | 0 | 8 (*sustentáveis, durável, durabilidade, ultra-leve*) | **2** (*ultra-leve*; 7 antes da revisão, 3 de 5 amostras revistas) |
+| Email: atributos inventados | 0 | 1 (*durabilidade*) | **0** (1 antes; 1 de 5 revista) |
+| FAQ: atributos inventados | 0 | 0 | 0 |
+| Lista de controlo (sinónimos), descrição + email | 3 | 15 (*leveza, duradouro*) | 14 (*leveza, duradouro, resistente*) |
+| Factos da ficha usados (de 5) | — | 5 | 5 |
+| JSON válido | 100% | 100% | 100% |
+| Latência p50 / p95, descrição | 48 / 71 s | 60 / 64 s | **131 / 153 s** |
+| Latência p50 / p95, email | 42 / 59 s | 50 / 56 s | 56 / 122 s |
+
+As 2 marcas de *ultra-leve* que sobram vêm de o detetor da corrida não conhecer ainda a grafia com hífen: a revisão nunca as recebeu. Com o detetor final, seriam enviadas para revisão.
+
+**Inglês, repetição com o detetor novo** (mesma sessão, com revisão): descrição 6 marcas → **0** (4 de 5 revistas), FAQ 2 → **0** (2 de 5), email 0. Lista de controlo: 3 (*eco*, *light on your feet*). Factos 5 de 5. Latência p50 da descrição: 107 s. O resultado anterior mantém-se.
+
+### Leitura de textos revistos (amostras guardadas, pt-PT)
+
+- **A revisão é cirúrgica.** Tira a frase ou o adjetivo marcado e deixa o resto igual. Por exemplo, «Material de gáspea sustentável com poliéster reciclado» passa a «Material de gáspea com poliéster reciclado», e «Sapatos leves, sustentáveis e práticos» a «Sapatos leves e práticos».
+- **Às vezes leva factos verdadeiros.** Numa amostra, ao tirar «sustentável», o modelo apagou o benefício inteiro, com o poliéster reciclado (que a ficha diz). Apagou também «Processo de produção direto ao consumidor», que o brief suporta. O facto continuava noutro campo, por isso a contagem de factos usados (5 de 5) não o mostra.
+- **Só sai o que está na lista.** A revisão não tira a mesma qualidade dita por outras palavras: *Conforto duradouro*, *Peso ultra-leve*, *leveza* e *sapatos leves* ficam. A lista de controlo não desce com a revisão (15 → 14). Também há inferências que nenhuma lista apanha: *Segurança em superfícies molhadas* (a partir do piso em espinha) e *Fácil manutenção e higiene* (a partir da palmilha lavável).
+
+**Leitura:** em português, a revisão faz o mesmo que em inglês. Desce as palavras da lista para perto de zero sem perder factos, ao custo de cerca do dobro do tempo na descrição de produto. Mas o «0» do R8 mede a lista, não a ausência de inferências. Os textos com conhecimento continuam a ter qualidades deduzidas com outras palavras, e a revisão não as vê. Por isso as marcas na UI são um aviso parcial: o texto continua a precisar de revisão humana, sobretudo nas descrições de produto. Isso já está dito no aviso fixo do editor («Review factual claims… before use»).
+
+**Seguinte (por decidir):** alargar a lista aos sinónimos frequentes (*leveza, duradouro, resistente*) passa a disparar a revisão, mas deixa de haver lista de controlo independente. A alternativa é testar uma revisão orientada pela ficha («cada qualidade tem de citar um facto dos excertos») em vez de uma lista. Ambas precisam de nova medição.
+

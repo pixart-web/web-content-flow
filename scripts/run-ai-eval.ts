@@ -6,8 +6,12 @@ import { join } from "node:path";
 import { parseArgs } from "node:util";
 
 import { getServerEnv } from "../src/lib/env/server";
-import { buildEvaluationCases } from "../src/server/ai/evaluation/cases";
 import {
+  buildEvaluationCases,
+  type EvaluationLanguage,
+} from "../src/server/ai/evaluation/cases";
+import {
+  type EvaluationSampleRecord,
   renderEvaluationMarkdown,
   runEvaluation,
 } from "../src/server/ai/evaluation/harness";
@@ -30,6 +34,11 @@ const { values } = parseArgs({
     "with-knowledge": { type: "boolean", default: false },
     // B5 hypothesis 1: revise outputs the claim detector flags (doc 54).
     "claim-revision": { type: "boolean", default: false },
+    // Output language of the cases and the client sheet: en or pt-PT.
+    language: { type: "string", default: "en" },
+    // Write each sample's first and revised output next to the report, for
+    // reading (synthetic fixtures only; eval-reports/ is git-ignored).
+    "save-samples": { type: "boolean", default: false },
     cases: { type: "string" },
     "timeout-ms": { type: "string", default: "180000" },
     "max-p95-ms": { type: "string" },
@@ -63,6 +72,9 @@ if (runtimeKey === "openai" && !values["allow-cloud"])
 const model = values.model ?? runtimes[runtimeKey]!.model;
 if (!model)
   throw new Error(`No model configured for ${runtimeKey}; pass --model.`);
+if (values.language !== "en" && values.language !== "pt-PT")
+  throw new Error("--language must be en or pt-PT.");
+const language: EvaluationLanguage = values.language;
 const samplesPerCase = Number(values.samples);
 if (!Number.isInteger(samplesPerCase) || samplesPerCase < 1)
   throw new Error("--samples must be a positive integer.");
@@ -81,7 +93,10 @@ const selectedModel: string = model;
 async function main() {
   const selected = values.cases?.split(",").map((id) => id.trim());
   const cases = (
-    await buildEvaluationCases({ withKnowledge: values["with-knowledge"] })
+    await buildEvaluationCases({
+      withKnowledge: values["with-knowledge"],
+      language,
+    })
   ).filter(
     (testCase) =>
       !selected || selected.includes(testCase.id.replace(/\+knowledge$/, "")),
@@ -104,6 +119,7 @@ async function main() {
       );
   }
 
+  const samples: EvaluationSampleRecord[] = [];
   const report = await runEvaluation({
     adapter: createRuntimeAdapter(selectedRuntime, env),
     runtimeKey: selectedRuntime,
@@ -116,15 +132,24 @@ async function main() {
       : {}),
     ...(hardware ? { hardware } : {}),
     ...(values["claim-revision"] ? { claimRevision: true } : {}),
+    language,
+    ...(values["save-samples"]
+      ? { onSample: (record: EvaluationSampleRecord) => samples.push(record) }
+      : {}),
   });
 
   mkdirSync(values.out, { recursive: true });
   const stem = join(
     values.out,
-    `${report.generatedAt.replaceAll(":", "-")}-${selectedRuntime}-${selectedModel.replace(/[^A-Za-z0-9._-]/g, "_")}`,
+    `${report.generatedAt.replaceAll(":", "-")}-${language}-${selectedRuntime}-${selectedModel.replace(/[^A-Za-z0-9._-]/g, "_")}`,
   );
   writeFileSync(`${stem}.json`, `${JSON.stringify(report, null, 2)}\n`);
   writeFileSync(`${stem}.md`, renderEvaluationMarkdown(report));
+  if (samples.length > 0)
+    writeFileSync(
+      `${stem}.samples.json`,
+      `${JSON.stringify(samples, null, 2)}\n`,
+    );
   console.warn(`${report.passed ? "PASS" : "FAIL"} — report: ${stem}.md`);
   process.exitCode = report.passed ? 0 : 1;
 }

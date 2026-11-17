@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import {
   BrandProfileVersionIdSchema,
+  ClaimRevisionSchema,
   ContentItemIdSchema,
   ContentItemVersionIdSchema,
   GenerationModeSchema,
@@ -36,7 +37,8 @@ export const ProofContentTypeSchema = z.literal("FOUNDATION_COPY");
 
 export const ContentProvenanceSchema = z
   .object({
-    provider: z.enum(["mock", "openai"]),
+    // The gateway runtime that produced the content (application-owned).
+    provider: z.enum(["mock", "openai", "ollama", "openai-compatible"]),
     model: z.string().min(1).max(128),
     promptVersion: z.string().min(1).max(32),
     schemaVersion: z.string().min(1).max(32),
@@ -56,6 +58,10 @@ export const ContentProvenanceSchema = z
       .max(200)
       .optional(),
     usageRecordIds: z.array(z.string().min(8).max(128)).max(10).optional(),
+    // L6 B5: client knowledge passages given to the model and the claim
+    // review left for a person (doc 54).
+    knowledgeChunkIds: z.array(z.string().min(8).max(128)).max(20).optional(),
+    claimRevision: ClaimRevisionSchema.optional(),
   })
   .strict();
 

@@ -14,6 +14,7 @@ import {
   saveContentAction,
 } from "@/features/content/content-actions";
 import { regenerateAdsAction } from "./ads-actions";
+import { ClaimReviewNotice } from "@/features/content/claim-review-notice";
 
 type Version = {
   id: string;
@@ -151,6 +152,7 @@ export function AdsItemEditor({
             {message}
           </p>
         ) : null}
+        <ClaimReviewNotice provenance={snapshot.provenance} />
         <fieldset className="border-default bg-surface rounded-card border p-5">
           <legend className="px-1 font-semibold">Asset</legend>
           <label className="block text-sm font-semibold">

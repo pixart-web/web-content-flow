@@ -25,11 +25,10 @@ import { MockProvider } from "@/server/ai/providers/mock-provider";
 
 // Fixed, synthetic evaluation inputs (fictional UrbanStride brand). The suite
 // version changes whenever cases or scoring change, so reports stay comparable.
-export const EVALUATION_SUITE_VERSION = "1.5.0";
+export const EVALUATION_SUITE_VERSION = "1.6.0";
 
 // L6 B5 (doc 53, R8): the client's own product sheet, given to the copy cases
-// as clientKnowledge in the --with-knowledge variant. English, so the
-// unsupported-claim detector (English attribute terms) can see the facts.
+// as clientKnowledge in the --with-knowledge variant.
 export const CLIENT_KNOWLEDGE_FIXTURE = [
   {
     source: "UrbanStride Daily — product sheet",
@@ -50,7 +49,34 @@ export const CLIENT_KNOWLEDGE_FACTS = [
   "280",
 ] as const;
 
-const brief = {
+// The same sheet in European Portuguese, for the pt-PT suite (--language
+// pt-PT): most of the Web Content Flow's clients write in Portuguese.
+export const CLIENT_KNOWLEDGE_FIXTURE_PT = [
+  {
+    source: "UrbanStride Daily — ficha de produto",
+    text: "A gáspea da UrbanStride Daily é uma malha de poliéster reciclado: cada par reaproveita 12 garrafas de plástico. A sola exterior é de borracha natural, com um piso em espinha pensado para a calçada molhada.",
+  },
+  {
+    source: "UrbanStride Daily — ficha de produto",
+    text: "A palmilha amovível é de espuma de cortiça e pode ser lavada à mão em água fria. Cada sapato pesa 280 gramas no tamanho 42. Os tamanhos vão do 36 ao 46, sem meios números.",
+  },
+] as const;
+
+export const CLIENT_KNOWLEDGE_FACTS_PT = [
+  "poliéster reciclado",
+  "borracha natural",
+  "espinha",
+  "cortiça",
+  "280",
+] as const;
+
+export type EvaluationLanguage = "en" | "pt-PT";
+const outputLanguages: Record<EvaluationLanguage, string> = {
+  en: "English",
+  "pt-PT": "Portuguese (Portugal)",
+};
+
+const englishBrief = {
   schemaVersion: "1.0",
   project: {
     projectName: "UrbanStride Launch",
@@ -111,9 +137,15 @@ const copyTypes: readonly GeneralCopyType[] = [
 ];
 
 export async function buildEvaluationCases(
-  options: { withKnowledge?: boolean } = {},
+  options: { withKnowledge?: boolean; language?: EvaluationLanguage } = {},
 ): Promise<EvaluationCase[]> {
   await loadPromptCatalog();
+  const language = options.language ?? "en";
+  const outputLanguage = outputLanguages[language];
+  const brief = {
+    ...englishBrief,
+    languageModules: { ...englishBrief.languageModules, outputLanguage },
+  };
   const brandProfile = (
     await new MockProvider().generateStructured(
       {
@@ -144,7 +176,7 @@ export async function buildEvaluationCases(
     desiredAction: "Explore the fictional collection",
     toneOverride: "BRAND_DEFAULT",
     lengthPreference: { value: "MEDIUM" },
-    outputLanguage: "English",
+    outputLanguage,
   });
 
   const calendarSettings = CalendarGenerationRequestSchema.parse({
@@ -168,7 +200,7 @@ export async function buildEvaluationCases(
       includeUnscheduledExistingContent: true,
       allowPlannedPlaceholders: true,
     },
-    outputLanguage: "English",
+    outputLanguage,
   });
   const calendarWeek = { startDate: "2026-12-07", endDate: "2026-12-13" };
   const calendarSources = (
@@ -330,7 +362,10 @@ export async function buildEvaluationCases(
       withKnowledge
         ? {
             ...(definition.context as Record<string, unknown>),
-            clientKnowledge: CLIENT_KNOWLEDGE_FIXTURE,
+            clientKnowledge:
+              language === "pt-PT"
+                ? CLIENT_KNOWLEDGE_FIXTURE_PT
+                : CLIENT_KNOWLEDGE_FIXTURE,
           }
         : definition.context,
     );
@@ -339,7 +374,10 @@ export async function buildEvaluationCases(
       ...(withKnowledge
         ? {
             id: `${definition.id}+knowledge`,
-            expectedFacts: CLIENT_KNOWLEDGE_FACTS,
+            expectedFacts:
+              language === "pt-PT"
+                ? CLIENT_KNOWLEDGE_FACTS_PT
+                : CLIENT_KNOWLEDGE_FACTS,
           }
         : {}),
       context,

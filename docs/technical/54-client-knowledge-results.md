@@ -1,6 +1,6 @@
-# Conhecimento por cliente — resultados B1 a B4
+# Conhecimento por cliente — resultados B1 a B5
 
-**Data:** 2026-11-16 · **Proposta e decisões:** [53-skills-and-client-knowledge.md](53-skills-and-client-knowledge.md) (PR #48) · **Estado:** B1 a B5 implementados. O uso na geração (B5) fica **desligado**: o ganho não se confirmou (R8).
+**Data:** 2026-11-16 · **Proposta e decisões:** [53-skills-and-client-knowledge.md](53-skills-and-client-knowledge.md) (PR #48) · **Estado:** B1 a B5 implementados. Na 1.ª medição o ganho não se confirmou (R8). Com a revisão automática (2026-11-17, secção «B5 com revisão») passa a cumprir o R8 na avaliação; o interruptor continua **desligado por omissão** até decisão do product owner.
 
 As cinco decisões foram aprovadas em 2026-11-16: armazenamento na opção 1 (vetores em PostgreSQL, pesquisa em Node), migration B1, texto e Markdown na v1, downloads dos candidatos, e `guidance` de pacotes instalados desligada.
 
@@ -58,6 +58,28 @@ A variante `pnpm eval:ai --with-knowledge` dá aos casos de copy uma ficha técn
 
 **Hipóteses para retomar** (cada uma precisa de nova medição):
 
-1. Verificação depois da geração: assinalar na UI, para revisão humana, os termos que o detetor marca, em vez de os deixar passar em silêncio.
-2. Repetir com um modelo de texto mais forte, quando houver candidato aprovado.
-3. Medir também com ficha e resultado em português. O detetor atual só conhece termos em inglês.
+1. Verificação depois da geração: assinalar na UI, para revisão humana, os termos que o detetor marca, em vez de os deixar passar em silêncio. **Medida a 2026-11-17, ver abaixo.**
+2. Repetir com um modelo de texto mais forte, quando houver candidato aprovado. *Por fazer:* o único outro modelo de texto do catálogo (qwen3.5:9b) está rejeitado.
+3. Medir também com ficha e resultado em português. O detetor atual só conhece termos em inglês. *Por fazer.*
+
+## B5 com revisão automática (hipótese 1, 2026-11-17)
+
+Quando a geração recebe conhecimento do cliente, o detetor determinístico procura palavras de atributos que nem o contexto nem os excertos dizem. Se encontrar alguma, há **um** pedido de revisão ao mesmo modelo (`CLAIM_REVISION_INSTRUCTIONS`, chave `<prompt>.claims`): tirar ou reescrever essas frases sem as trocar por outra qualidade que a ficha não diz, mantendo o esquema e os factos. O que sobrar fica na provenance (`claimRevision.flagged` e `claimRevision.remaining`) para revisão humana. Se a revisão falhar, fica o primeiro resultado com as suas marcas.
+
+Para não medir só a lista que dispara a revisão, a avaliação conta também uma **lista de controlo** de sinónimos que nunca dispara a revisão (*featherlight*, *eco*, *long-lasting*, *airy*, *premium*…).
+
+**Medição** (gemma4:12b-it-qat, Apple M4, 5 amostras por caso, mesma sessão, `pnpm eval:ai --with-knowledge [--claim-revision]`):
+
+| | Sem conhecimento | Com conhecimento | Com conhecimento + revisão |
+|---|---|---|---|
+| Descrição de produto: atributos inventados | 0 | 7 (*durable, lightweight, sustainable*) | **0** (6 marcas antes da revisão; 5 de 5 amostras revistas) |
+| Email: atributos inventados | 0 | 1 (*durable*) | **0** (2 antes; 2 de 5 revistas) |
+| Lista de controlo (sinónimos) | 0 | 0 | 0 |
+| Factos da ficha usados (de 5) | — | 5 | 5 |
+| JSON válido | 100% | 100% | 100% |
+| Latência p50 / p95, descrição | 41 / 54 s | 48 / 55 s | **110 / 121 s** |
+| Latência p50 / p95, email | 32 / 39 s | 41 / 42 s | 43 / 97 s |
+
+**Leitura:** com a revisão, os atributos inventados ficam ao nível de quem não usa conhecimento (0) e os 5 factos da ficha mantêm-se. **O R8 passa a ser cumprido na avaliação.** Limites: 5 amostras por caso; o detetor e a lista de controlo são listas de palavras em inglês afinadas ao calçado, por isso uma inferência dita por outras palavras pode escapar; os textos revistos não foram lidos por uma pessoa. O custo é tempo: quando há revisão, a geração demora cerca do dobro.
+
+**Estado:** a revisão está implementada no executor e só corre com conhecimento do cliente. `KNOWLEDGE_IN_GENERATION_ENABLED` continua `false` por omissão. Ligar fica para decisão do product owner, de preferência depois de alguém ler uma amostra de textos revistos e de medir em português (hipótese 3). Falta ainda mostrar na UI as marcas que sobram (`claimRevision.remaining`).

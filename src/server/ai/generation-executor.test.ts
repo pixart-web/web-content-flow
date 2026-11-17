@@ -55,6 +55,12 @@ vi.mock("@/ai/prompts/registry", () => ({
   }),
 }));
 
+// L6 B5: knowledge is off unless a test provides excerpts.
+const retrieveKnowledge = vi.fn<() => Promise<unknown>>(async () => null);
+vi.mock("@/server/knowledge/retrieval", () => ({
+  retrieveKnowledgeForGeneration: () => retrieveKnowledge(),
+}));
+
 const { generateProductionSnapshot } = await import("./generation-executor");
 const { ProviderError } = await import("./ai-provider");
 const { runWithGenerationSignal } = await import("./generation-signal");
@@ -275,5 +281,79 @@ describe("AI events (B-08)", () => {
     } finally {
       env.AI_REAL_GENERATION_ENABLED = true;
     }
+  });
+});
+
+describe("claim revision with client knowledge (L6 B5)", () => {
+  const providerResult = (value: string) => ({
+    data: { value },
+    provider: "OPENAI",
+    model: "gpt-test",
+    modelTier: "STANDARD",
+    mock: false,
+    finishState: "COMPLETED",
+    usage: { totalTokens: 10, usageSource: "PROVIDER_REPORTED" },
+  });
+  beforeEach(() => {
+    generateStructured.mockReset();
+    reserveUsage.mockReset();
+    recordGenerationUsage.mockClear();
+    vi.spyOn(console, "info").mockImplementation(() => undefined);
+    vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    retrieveKnowledge.mockResolvedValue({
+      excerpts: [{ source: "Sheet", text: "Each shoe weighs 280 grams." }],
+      chunkIds: ["chunk_000001"],
+    });
+  });
+  afterEach(() => {
+    retrieveKnowledge.mockResolvedValue(null);
+    vi.restoreAllMocks();
+  });
+
+  it("revises flagged words once and records what remains", async () => {
+    generateStructured
+      .mockResolvedValueOnce(providerResult("A lightweight, durable shoe."))
+      .mockResolvedValueOnce(providerResult("A 280 g shoe."));
+    recordGenerationUsage
+      .mockResolvedValueOnce({ id: "usage_main" })
+      .mockResolvedValueOnce({ id: "usage_claims" });
+    const result = await generateProductionSnapshot(prisma, input);
+    expect(result.snapshot).toEqual({ value: "A 280 g shoe." });
+    const revision = generateStructured.mock.calls[1]?.[0] as {
+      promptKey: string;
+      userMessage: string;
+    };
+    expect(revision.promptKey).toBe("copy.test.claims");
+    expect(JSON.parse(revision.userMessage)).toMatchObject({
+      unsupportedTerms: ["durable", "lightweight"],
+      clientKnowledge: [{ text: "Each shoe weighs 280 grams." }],
+    });
+    expect(result.provenance).toMatchObject({
+      usageRecordIds: ["usage_main", "usage_claims"],
+      knowledgeChunkIds: ["chunk_000001"],
+      claimRevision: { flagged: ["durable", "lightweight"], remaining: [] },
+    });
+  });
+
+  it("keeps the first output and its flags when the revision fails", async () => {
+    generateStructured
+      .mockResolvedValueOnce(providerResult("A lightweight shoe."))
+      .mockRejectedValueOnce(new ProviderError("TIMEOUT", true, "slow"));
+    const result = await generateProductionSnapshot(prisma, input);
+    expect(result.snapshot).toEqual({ value: "A lightweight shoe." });
+    expect(result.provenance.claimRevision).toEqual({
+      flagged: ["lightweight"],
+      remaining: ["lightweight"],
+    });
+  });
+
+  it("makes no extra request when nothing is flagged or there is no knowledge", async () => {
+    generateStructured.mockResolvedValue(providerResult("A 280 g shoe."));
+    await generateProductionSnapshot(prisma, input);
+    retrieveKnowledge.mockResolvedValue(null);
+    generateStructured.mockResolvedValue(providerResult("A lightweight shoe."));
+    const result = await generateProductionSnapshot(prisma, input);
+    expect(generateStructured).toHaveBeenCalledTimes(2);
+    expect(result.provenance.claimRevision).toBeUndefined();
   });
 });

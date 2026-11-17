@@ -9,6 +9,7 @@ import {
   type GenerationModelTier,
   type GenerationProvider,
   type GenerationPurpose,
+  type ProviderErrorCode,
 } from "@/server/ai/ai-provider";
 import { currentGenerationSignal } from "@/server/ai/generation-signal";
 import {
@@ -30,6 +31,11 @@ import {
   buildStructuralRepairMessage,
   STRUCTURAL_REPAIR_INSTRUCTIONS,
 } from "@/ai/prompts/structural-repair";
+import {
+  buildClaimRevisionMessage,
+  CLAIM_REVISION_INSTRUCTIONS,
+} from "@/ai/prompts/claim-revision";
+import { unsupportedClaimHits } from "@/server/ai/unsupported-claims";
 
 function logRequestFailure(
   error: unknown,
@@ -66,6 +72,7 @@ type RealProvenance = {
   repairAttempted: boolean;
   usageRecordIds: string[];
   knowledgeChunkIds?: string[];
+  claimRevision?: { flagged: string[]; remaining: string[] };
 };
 
 // One place that turns validated provider output into the stored snapshot.
@@ -83,7 +90,9 @@ function finishRealSnapshot<TOutput>(input: {
   purpose: GenerationPurpose;
   repairAttempted: boolean;
   usageId: string;
+  extraUsageIds?: readonly string[];
   knowledgeChunkIds?: readonly string[];
+  claimRevision?: { flagged: string[]; remaining: string[] };
 }): { snapshot: TOutput; provenance: RealProvenance } {
   const asRecord = (value: unknown) =>
     typeof value === "object" && value !== null
@@ -100,10 +109,11 @@ function finishRealSnapshot<TOutput>(input: {
     promptVersion: input.promptVersion,
     generationPurpose: input.purpose,
     repairAttempted: input.repairAttempted,
-    usageRecordIds: [input.usageId],
+    usageRecordIds: [input.usageId, ...(input.extraUsageIds ?? [])],
     ...(input.knowledgeChunkIds?.length
       ? { knowledgeChunkIds: [...input.knowledgeChunkIds] }
       : {}),
+    ...(input.claimRevision ? { claimRevision: input.claimRevision } : {}),
   };
   const normalized =
     resultRecord && candidateProvenance
@@ -146,6 +156,8 @@ export async function generateProductionSnapshot<TOutput>(
     generationPurpose: GenerationPurpose;
     repairAttempted: boolean;
     usageRecordIds: string[];
+    knowledgeChunkIds?: string[];
+    claimRevision?: { flagged: string[]; remaining: string[] };
   };
 }> {
   const job = await prisma.generationJob.findUniqueOrThrow({
@@ -317,10 +329,89 @@ export async function generateProductionSnapshot<TOutput>(
       totalTokens: result.usage.totalTokens ?? null,
       usageSource: result.usage.usageSource,
     });
+    // L6 B5, hypothesis 1 (doc 54): with client knowledge, words the claim
+    // detector flags get one revision request; whatever remains is recorded
+    // for human review. A failed revision keeps the first output.
+    let data = result.data;
+    let claimRevision: { flagged: string[]; remaining: string[] } | undefined;
+    const extraUsageIds: string[] = [];
+    if (knowledge && !env.AI_FAKE_OPENAI_ENABLED) {
+      const flagged = unsupportedClaimHits(data, generationContext);
+      if (flagged.length > 0) {
+        const revisionStartedAt = performance.now();
+        let revisionFailure: ProviderErrorCode | "UNKNOWN" | null = null;
+        try {
+          throwIfCancelled(signal);
+          const revised = await provider.generateStructured(
+            {
+              input: {},
+              requestId: `${job.id}-claims`,
+              model: modelId,
+              modelTier: tier,
+              purpose: input.purpose,
+              promptKey: `${input.promptKey}.claims`,
+              promptVersion: input.promptVersion,
+              schemaVersion: "1.0",
+              schemaName: `${input.promptKey.replaceAll(".", "_")}_claims`,
+              systemInstructions: CLAIM_REVISION_INSTRUCTIONS,
+              userMessage: buildClaimRevisionMessage({
+                priorOutput: data,
+                unsupportedTerms: flagged,
+                clientKnowledge: knowledge.excerpts,
+              }),
+              maximumOutputTokens,
+              timeoutMs: requestTimeoutMs,
+              ...(signal ? { signal } : {}),
+            },
+            input.schema,
+          );
+          const revisionUsage = await recordGenerationUsage(prisma, {
+            jobId: job.id,
+            provider: route.persistedProvider,
+            modelId: revised.model,
+            modelTier: revised.modelTier,
+            promptKey: `${input.promptKey}.claims`,
+            promptVersion: input.promptVersion,
+            purpose: input.purpose,
+            attemptNumber: job.providerAttemptCount + 2,
+            repair: false,
+            usage: revised.usage,
+            route: routeColumns(route),
+            latencyMs: performance.now() - revisionStartedAt,
+          });
+          extraUsageIds.push(revisionUsage.id);
+          data = revised.data;
+        } catch (revisionError: unknown) {
+          if (
+            revisionError instanceof ProviderError &&
+            revisionError.code === "CANCELLED"
+          )
+            throw revisionError;
+          revisionFailure =
+            revisionError instanceof ProviderError
+              ? revisionError.code
+              : "UNKNOWN";
+        }
+        claimRevision = {
+          flagged,
+          remaining: unsupportedClaimHits(data, generationContext),
+        };
+        logAiEvent({
+          event: "ai.claim_revision",
+          jobId: job.id,
+          runtimeKey: route.runtimeKey,
+          modelRef: route.modelRef,
+          outcome: revisionFailure ? "failed" : "revised",
+          errorCode: revisionFailure,
+          flagged: flagged.length,
+          remaining: claimRevision.remaining.length,
+        });
+      }
+    }
     return finishRealSnapshot({
       schema: input.schema,
       candidate: input.candidate,
-      data: result.data,
+      data,
       route,
       model: result.model,
       modelTier: result.modelTier,
@@ -329,7 +420,9 @@ export async function generateProductionSnapshot<TOutput>(
       purpose: input.purpose,
       repairAttempted: false,
       usageId: usage.id,
+      ...(extraUsageIds.length ? { extraUsageIds } : {}),
       ...(knowledge ? { knowledgeChunkIds: knowledge.chunkIds } : {}),
+      ...(claimRevision ? { claimRevision } : {}),
     });
   } catch (error: unknown) {
     logRequestFailure(error, {

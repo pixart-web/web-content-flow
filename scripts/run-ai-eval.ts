@@ -28,6 +28,8 @@ const { values } = parseArgs({
     samples: { type: "string", default: "5" },
     // L6 B5: give the copy cases the client's product sheet (doc 53, R8).
     "with-knowledge": { type: "boolean", default: false },
+    // B5 hypothesis 1: revise outputs the claim detector flags (doc 54).
+    "claim-revision": { type: "boolean", default: false },
     cases: { type: "string" },
     "timeout-ms": { type: "string", default: "180000" },
     "max-p95-ms": { type: "string" },
@@ -113,6 +115,7 @@ async function main() {
       ? { maxP95LatencyMs: Number(values["max-p95-ms"]) }
       : {}),
     ...(hardware ? { hardware } : {}),
+    ...(values["claim-revision"] ? { claimRevision: true } : {}),
   });
 
   mkdirSync(values.out, { recursive: true });

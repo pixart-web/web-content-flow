@@ -65,7 +65,10 @@ export type DesktopRemoteServerResult =
       reason: "invalid_url" | "unreachable" | "not_web_content_flow";
     };
 
+export type DesktopPlatform = "darwin" | "win32" | "linux" | "other";
+
 export type WcfDesktopApi = Readonly<{
+  platform: DesktopPlatform;
   connectRemoteServer: (url: string) => Promise<DesktopRemoteServerResult>;
   resetOwnerPassword: (password: string) => Promise<DesktopPasswordResetResult>;
   aiOverview: () => Promise<DesktopAiOverview>;

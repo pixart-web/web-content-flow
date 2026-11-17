@@ -5,24 +5,60 @@ import { useState, useSyncExternalStore } from "react";
 
 import type {
   DesktopPasswordResetResult,
+  DesktopPlatform,
   WcfDesktopApi,
 } from "@/desktop/shell/desktop-api";
 
-// L4c: owner password reset in the desktop edition. The desktop app asks
-// macOS to confirm it is you (Touch ID or your Mac password) before changing
-// anything; no email is involved.
+// L4c / L8: owner password reset in the desktop edition. The desktop app asks
+// the operating system to confirm it is you (macOS: Touch ID or your Mac
+// password; Windows: Windows Hello; Linux: your account password via polkit)
+// before changing anything; no email is involved.
 
-const messages: Record<
-  Exclude<DesktopPasswordResetResult, { ok: true }>["reason"],
-  string
+type Reason = Exclude<DesktopPasswordResetResult, { ok: true }>["reason"];
+
+const systems: Record<
+  DesktopPlatform,
+  { name: string; prompt: string; unavailable: string }
 > = {
-  invalid_password: "Use between 12 and 128 characters.",
-  denied: "macOS did not confirm your identity. Nothing was changed.",
-  unavailable:
-    "This Mac cannot confirm your identity (Touch ID or account password).",
-  no_owner: "This computer has no owner profile yet.",
-  failed: "The password could not be changed. Please try again.",
+  darwin: {
+    name: "macOS",
+    prompt:
+      "macOS will ask you to confirm it is you with Touch ID or your Mac password.",
+    unavailable:
+      "This Mac cannot confirm your identity (Touch ID or account password).",
+  },
+  win32: {
+    name: "Windows",
+    prompt:
+      "Windows Hello will ask you to confirm it is you (PIN, face or fingerprint).",
+    unavailable:
+      "Windows Hello is not set up for this account. Set up a PIN in Settings › Accounts › Sign-in options, then try again.",
+  },
+  linux: {
+    name: "the system",
+    prompt:
+      "The system will ask for your account password to confirm it is you.",
+    unavailable:
+      "This computer cannot confirm your identity: password reset needs the .deb installation (it registers the polkit rule) and a desktop session with a polkit agent.",
+  },
+  other: {
+    name: "the system",
+    prompt: "The system will ask you to confirm it is you.",
+    unavailable: "This computer cannot confirm your identity.",
+  },
 };
+
+function messageFor(reason: Reason, platform: DesktopPlatform) {
+  const system = systems[platform];
+  const messages: Record<Reason, string> = {
+    invalid_password: "Use between 12 and 128 characters.",
+    denied: `${system.name === "the system" ? "The system" : system.name} did not confirm your identity. Nothing was changed.`,
+    unavailable: system.unavailable,
+    no_owner: "This computer has no owner profile yet.",
+    failed: "The password could not be changed. Please try again.",
+  };
+  return messages[reason];
+}
 
 export function DesktopPasswordReset() {
   const api = useSyncExternalStore<WcfDesktopApi | null | undefined>(
@@ -45,6 +81,7 @@ export function DesktopPasswordReset() {
         computer to reset the password.
       </p>
     );
+  const platform = api.platform ?? "other";
   if (done)
     return (
       <div className="mt-4 space-y-4" role="status">
@@ -73,16 +110,13 @@ export function DesktopPasswordReset() {
           .resetOwnerPassword(password)
           .then((result) => {
             if (result.ok) setDone(true);
-            else setMessage(messages[result.reason]);
+            else setMessage(messageFor(result.reason, platform));
           })
-          .catch(() => setMessage(messages.failed))
+          .catch(() => setMessage(messageFor("failed", platform)))
           .finally(() => setBusy(false));
       }}
     >
-      <p className="text-secondary text-sm">
-        macOS will ask you to confirm it is you with Touch ID or your Mac
-        password.
-      </p>
+      <p className="text-secondary text-sm">{systems[platform].prompt}</p>
       <label className="block text-sm font-semibold">
         New password
         <input
@@ -114,7 +148,7 @@ export function DesktopPasswordReset() {
         disabled={busy}
         type="submit"
       >
-        {busy ? "Waiting for macOS…" : "Change password"}
+        {busy ? `Waiting for ${systems[platform].name}…` : "Change password"}
       </button>
       {message ? (
         <p className="text-sm" role="alert">

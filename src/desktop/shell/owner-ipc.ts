@@ -1,15 +1,14 @@
-import { execFile } from "node:child_process";
-import { existsSync } from "node:fs";
 import { join } from "node:path";
 
 import { app, ipcMain } from "electron";
 
 import type { DesktopPasswordResetResult } from "./desktop-api";
+import { authenticateOwner, type OsAuthOutcome } from "./os-auth";
 
-// L4c (decision L-8): owner password reset in the desktop edition. macOS
-// confirms the logged-in user (Touch ID or account password, system dialog,
-// via bin/wcf-os-auth); only then does the shell call the local admin
-// endpoint with the admin token, which the window never holds.
+// L4c (decision L-8): owner password reset in the desktop edition. The
+// operating system confirms the logged-in user in its own dialog (os-auth.ts:
+// macOS, Windows Hello or polkit); only then does the shell call the local
+// admin endpoint with the admin token, which the window never holds.
 
 export function registerOwnerIpc(context: {
   origin: string;
@@ -19,20 +18,16 @@ export function registerOwnerIpc(context: {
 }) {
   const helper = join(context.here, "bin", "wcf-os-auth");
 
-  const authenticate = () =>
-    new Promise<"authenticated" | "denied" | "unavailable">((resolve) => {
-      // Development-only switch to exercise the rest of the flow in tests.
-      if (!app.isPackaged && process.env.WCF_DESKTOP_FAKE_OS_AUTH === "approve")
-        return resolve("authenticated");
-      if (process.platform !== "darwin" || !existsSync(helper))
-        return resolve("unavailable");
-      execFile(helper, ["reset the Web Content Flow password"], (error) => {
-        const code = (error as { code?: number } | null)?.code ?? 0;
-        resolve(
-          code === 0 ? "authenticated" : code === 3 ? "unavailable" : "denied",
-        );
-      });
+  const authenticate = (): Promise<OsAuthOutcome> => {
+    // Development-only switch to exercise the rest of the flow in tests.
+    if (!app.isPackaged && process.env.WCF_DESKTOP_FAKE_OS_AUTH === "approve")
+      return Promise.resolve("authenticated");
+    return authenticateOwner({
+      platform: process.platform,
+      reason: "reset the Web Content Flow password",
+      macHelper: helper,
     });
+  };
 
   ipcMain.handle(
     "wcf:reset-owner-password",
@@ -46,7 +41,9 @@ export function registerOwnerIpc(context: {
       )
         return { ok: false, reason: "invalid_password" };
       const outcome = await authenticate();
-      context.log(`Owner password reset: macOS authentication ${outcome}.`);
+      context.log(
+        `Owner password reset: ${process.platform} authentication ${outcome}.`,
+      );
       if (outcome !== "authenticated") return { ok: false, reason: outcome };
       const response = await fetch(
         `${context.origin}/api/local/owner-password`,

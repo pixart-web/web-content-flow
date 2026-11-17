@@ -4,6 +4,7 @@ import type { Prisma, PrismaClient } from "@/generated/prisma/client";
 import { ContentProvenanceSchema } from "@/domain/content/content-schemas";
 import { parseRegisteredContentSnapshot } from "@/domain/content/content-registry";
 import type { Result } from "@/lib/result/result";
+import { claimRevisionAfterEdit } from "@/server/ai/unsupported-claims";
 import { getPrisma } from "@/server/db/prisma";
 import { createContentRepository } from "@/server/repositories/content-repository";
 
@@ -107,6 +108,17 @@ export async function createContentVersion(
   }
 }
 
+function withEmbeddedClaimRevision(
+  snapshot: unknown,
+  claimRevision: { flagged: string[]; remaining: string[] },
+) {
+  if (typeof snapshot !== "object" || snapshot === null) return snapshot;
+  const record = snapshot as Record<string, unknown>;
+  const provenance = record.provenance;
+  if (typeof provenance !== "object" || provenance === null) return snapshot;
+  return { ...record, provenance: { ...provenance, claimRevision } };
+}
+
 export async function saveManualContentVersion(input: {
   userId: string;
   itemId: string;
@@ -138,15 +150,24 @@ export async function saveManualContentVersion(input: {
       error: { code: "VALIDATION", message: "Check the content fields." },
     };
   }
+  // L6 B5: claim marks follow the edited text, in the stored provenance and
+  // in the copy the snapshot embeds for the editor.
+  const claimRevision = currentProvenance.data.claimRevision
+    ? claimRevisionAfterEdit(currentProvenance.data.claimRevision, parsed.data)
+    : undefined;
+  const snapshot = claimRevision
+    ? withEmbeddedClaimRevision(parsed.data, claimRevision)
+    : parsed.data;
   return createContentVersion(prisma, {
     itemId: item.id,
     expectedCurrentVersionId: input.expectedCurrentVersionId,
-    snapshot: parsed.data,
+    snapshot,
     source: "MANUAL_EDIT",
     brandProfileVersionId: item.currentVersion.brandProfileVersionId,
     provenance: {
       ...currentProvenance.data,
       generatedAt: new Date().toISOString(),
+      ...(claimRevision ? { claimRevision } : {}),
     },
     actorUserId: input.userId,
     mock: item.currentVersion.mock,

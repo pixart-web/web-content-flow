@@ -20,6 +20,7 @@ import {
 } from "@/features/content/content-actions";
 
 import { regenerateSocialAction } from "./social-actions";
+import { ClaimReviewNotice } from "@/features/content/claim-review-notice";
 
 type Version = {
   id: string;
@@ -274,6 +275,7 @@ export function SocialItemEditor({
             {message}
           </p>
         ) : null}
+        <ClaimReviewNotice provenance={snapshot.provenance} />
         <form
           className="space-y-4"
           onSubmit={(event) => {

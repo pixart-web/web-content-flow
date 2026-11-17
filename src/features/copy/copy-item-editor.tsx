@@ -18,6 +18,7 @@ import {
   saveContentAction,
 } from "@/features/content/content-actions";
 import { regenerateCopyAction } from "./copy-actions";
+import { ClaimReviewNotice } from "@/features/content/claim-review-notice";
 
 type Version = {
   id: string;
@@ -438,6 +439,7 @@ export function CopyItemEditor({
             {message}
           </p>
         ) : null}
+        <ClaimReviewNotice provenance={snapshot.provenance} />
         <div className="border-default bg-surface rounded-card space-y-4 border p-5">
           <StructuredFields
             editing={editing}

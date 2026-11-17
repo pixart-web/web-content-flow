@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  heldOutClaimHits,
   percentile,
   prohibitedWordHits,
   summarizeCase,
@@ -107,6 +108,66 @@ describe("evaluation metrics", () => {
       "flexible soles",
       "https://urbanstride.com/collections/city",
       "urbanstride.store",
+    ]);
+  });
+
+  it("flags Portuguese attributes and claims, in any gender and number", () => {
+    const context = {
+      clientKnowledge: [
+        {
+          text: "A malha é de poliéster reciclado e a sola de borracha natural.",
+        },
+      ],
+    };
+    const output = {
+      description:
+        "Sapatilhas recicladas, respiráveis e impermeáveis, com sola de borracha. Mais vendidas em 2026, com portes grátis e 5000 clientes satisfeitos.",
+      benefits: [
+        "Ergonómicas",
+        "Feitas à mão em Portugal",
+        "Garantia de 2 anos",
+        "Peso ultra-leve",
+      ],
+    };
+    expect(unsupportedClaimHits(output, context).sort()).toEqual([
+      "5000 clientes",
+      "Mais vendidas",
+      "ergonómicas",
+      "feitas à mão",
+      "garantia",
+      "impermeáveis",
+      "portes grátis",
+      "respiráveis",
+      "ultra-leve",
+    ]);
+  });
+
+  it("accepts a material phrase when the context states the material", () => {
+    const context = {
+      sheet:
+        "A sola exterior é de borracha natural. The outsole is natural rubber.",
+    };
+    const output = {
+      body: "Sola de borracha natural e rubber sole; gáspea em pele.",
+    };
+    expect(unsupportedClaimHits(output, context)).toEqual(["em pele"]);
+  });
+
+  it("does not flag Portuguese words inside other words or the verb leve", () => {
+    const output = {
+      body: "Leve o conforto consigo; a peleja diária acaba aqui. Recicladora não é atributo.",
+    };
+    expect(unsupportedClaimHits(output, {})).toEqual([]);
+  });
+
+  it("measures Portuguese held-out synonyms only when the context lacks them", () => {
+    const output = {
+      body: "Leveza duradoura, amiga do ambiente e muito macia.",
+    };
+    expect(heldOutClaimHits(output, { sheet: "Sola macia." }).sort()).toEqual([
+      "amiga do ambiente",
+      "duradoura",
+      "leveza",
     ]);
   });
 });

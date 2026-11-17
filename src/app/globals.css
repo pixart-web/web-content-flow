@@ -18,6 +18,9 @@
   --color-error: var(--color-status-error-text);
   --color-error-subtle: var(--color-status-error-surface);
   --color-border-error: var(--color-status-error-border);
+  --color-warning: var(--color-status-warning-text);
+  --color-warning-subtle: var(--color-status-warning-surface);
+  --color-border-warning: var(--color-status-warning-border);
   --font-interface: var(--font-loaded-interface), var(--font-interface);
   --font-display: var(--font-loaded-display), var(--font-display);
   --radius-card: var(--radius-card);
@@ -28,8 +31,11 @@
   --max-width-prose: var(--container-prose);
 }
 
-* {
-  border-color: var(--color-border-default);
+/* In the base layer so border colour utilities (border-error, ...) win. */
+@layer base {
+  * {
+    border-color: var(--color-border-default);
+  }
 }
 
 body {

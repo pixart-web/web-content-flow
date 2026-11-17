@@ -15,6 +15,7 @@ import {
 } from "@/features/content/content-actions";
 
 import { regenerateWebsitePageAction } from "./website-actions";
+import { ClaimReviewNotice } from "@/features/content/claim-review-notice";
 
 type Version = {
   id: string;
@@ -164,6 +165,7 @@ export function WebsitePageEditor({
             {message}
           </p>
         ) : null}
+        <ClaimReviewNotice provenance={snapshot.provenance} />
         <form
           className="space-y-4"
           onSubmit={(event) => {

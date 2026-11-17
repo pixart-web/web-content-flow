@@ -71,15 +71,43 @@ const heldOutAttributeTerms = [
   "premium",
 ];
 
+// Portuguese synonyms for the pt-PT suite, as regular expression sources
+// (gender and number). Ambiguous words ("leve", "vale a pena") stay out.
+const heldOutPortuguesePatterns = [
+  "leveza",
+  "amig[oa]s? do ambiente",
+  "planeta",
+  "pegada ecológica",
+  "duradour[oa]s?",
+  "resistentes?",
+  "feit[oa]s? para durar",
+  "arejad[oa]s?",
+  "ventilad[oa]s?",
+  "fof[oa]s?",
+  "maci[oa]s?",
+  "baixo impacto",
+  "impacto reduzido",
+  "materia(?:l|is) responsáve(?:l|is)",
+];
+
+const heldOutPatterns = [
+  ...heldOutAttributeTerms.map(escapeRegExp),
+  ...heldOutPortuguesePatterns,
+].map(
+  (source) =>
+    new RegExp(`(?<![\\p{L}\\p{N}])(?:${source})(?![\\p{L}\\p{N}])`, "iu"),
+);
+
 export function heldOutClaimHits(output: unknown, context: unknown) {
-  const lowered = generatedText(output).toLocaleLowerCase();
-  const contextText = JSON.stringify(context).toLocaleLowerCase();
-  return heldOutAttributeTerms.filter(
-    (term) =>
-      new RegExp(`(^|[^\\p{L}])${escapeRegExp(term)}($|[^\\p{L}])`, "u").test(
-        lowered,
-      ) && !contextText.includes(term),
-  );
+  const text = generatedText(output);
+  const contextText = JSON.stringify(context);
+  const hits = new Set<string>();
+  for (const pattern of heldOutPatterns) {
+    const match = text.match(pattern);
+    if (match && !pattern.test(contextText))
+      hits.add(match[0].toLocaleLowerCase());
+  }
+  return [...hits];
 }
 
 export type CaseSummary = Readonly<{

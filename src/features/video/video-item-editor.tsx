@@ -14,6 +14,7 @@ import {
   saveContentAction,
 } from "@/features/content/content-actions";
 import { regenerateVideoAction } from "./video-actions";
+import { ClaimReviewNotice } from "@/features/content/claim-review-notice";
 
 type Version = {
   id: string;
@@ -217,6 +218,7 @@ export function VideoItemEditor({
             {message}
           </p>
         ) : null}
+        <ClaimReviewNotice provenance={snapshot.provenance} />
         <fieldset className="border-default bg-surface rounded-card grid gap-4 border p-5 sm:grid-cols-2">
           <legend className="px-1 font-semibold">Plan identity</legend>
           {field(

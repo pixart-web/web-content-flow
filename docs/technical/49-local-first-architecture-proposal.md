@@ -415,4 +415,4 @@ Antes de qualquer alteração estrutural, são precisas estas decisões:
 |---|---|---|
 | 2026-11-14 | Arquitetura e ADRs L-1…L-7 aprovadas; arranque da L0 | Product owner |
 | 2026-11-14 | **L-2 Electron** e **L-3 PostgreSQL embutido** confirmados; PGlite rejeitado para a v1 | Resultados da L0 ([51](51-l0-spike-results.md)) |
-| 2026-11-14 | **L-8 Recuperação de acesso no modo local:** pela app desktop, depois da autenticação do macOS (Touch ID ou password da conta). Sem email nem código de recuperação. O invólucro usa um `DESKTOP_ADMIN_TOKEN` próprio, que nunca chega à janela | Product owner |
+| 2026-11-14 | **L-8 Recuperação de acesso no modo local:** pela app desktop, depois da autenticação do sistema (macOS: Touch ID ou password da conta; Windows: Windows Hello; Linux: polkit, desde a L8). Sem email nem código de recuperação. O invólucro usa um `DESKTOP_ADMIN_TOKEN` próprio, que nunca chega à janela | Product owner |

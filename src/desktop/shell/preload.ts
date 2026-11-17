@@ -6,6 +6,12 @@ import type { DesktopDownloadProgress, WcfDesktopApi } from "./desktop-api";
 // fixed calls, never ipcRenderer itself.
 
 const api: WcfDesktopApi = {
+  platform:
+    process.platform === "darwin" ||
+    process.platform === "win32" ||
+    process.platform === "linux"
+      ? process.platform
+      : "other",
   connectRemoteServer: (url) =>
     ipcRenderer.invoke("wcf:connect-remote-server", url),
   resetOwnerPassword: (password) =>

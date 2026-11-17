@@ -68,6 +68,21 @@ writeFileSync(
   join(deb, "usr", "share", "applications", `${name}.desktop`),
   `[Desktop Entry]\nName=${product}\nExec=/opt/${name}/${name} %U\nTerminal=false\nType=Application\nCategories=Office;\n`,
 );
+// L8: polkit action for the owner password reset (auth_self).
+mkdirSync(join(deb, "usr", "share", "polkit-1", "actions"), {
+  recursive: true,
+});
+cpSync(
+  join(root, "src", "desktop", "linux", "com.webcontentflow.desktop.policy"),
+  join(
+    deb,
+    "usr",
+    "share",
+    "polkit-1",
+    "actions",
+    "com.webcontentflow.desktop.policy",
+  ),
+);
 mkdirSync(join(deb, "DEBIAN"), { recursive: true });
 writeFileSync(
   join(deb, "DEBIAN", "control"),

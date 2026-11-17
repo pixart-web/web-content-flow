@@ -101,7 +101,10 @@ Diferenças por sistema encontradas e corrigidas no CI:
 
 ### O que falta
 
-- **Reposição da password em Windows e Linux:** o helper de confirmação só existe para macOS. Nos outros sistemas a reposição responde `unavailable`. Falta o equivalente com Windows Hello ou polkit.
+- **Reposição da password em Windows e Linux (L8, feito):** o sistema confirma o utilizador na sua própria janela antes de a password mudar, e a password do sistema nunca chega à app (`src/desktop/shell/os-auth.ts`).
+  - **Windows:** Windows Hello (PIN, rosto ou impressão digital), via Windows PowerShell e `UserConsentVerifier`, sem helper nativo. Sem Windows Hello configurado, a resposta é `unavailable` e a app explica como configurar um PIN.
+  - **Linux:** polkit, com a ação própria `com.webcontentflow.desktop.reset-owner-password` (`auth_self`: a password da própria conta, só na sessão ativa). O `.deb` instala a regra em `/usr/share/polkit-1/actions/`. O `.tar.gz` não a instala e responde `unavailable`; nunca se usa uma ação genérica de administrador.
+  - **Por confirmar por uma pessoa:** o diálogo real em Windows e Linux. O CI verifica que o script do Windows Hello carrega e lê a disponibilidade, e que o polkit aceita a regra.
 - **Hardware real:** o CI não tem GPU nem Ollama. A IA local em Windows e Linux (CUDA, CPU) ainda não foi testada.
 - **Assinatura:** um certificado de assinatura de código para Windows evita o aviso do SmartScreen. Linux não precisa.
 - **Instaladores:** um instalador NSIS ou MSI (atalhos, desinstalação) e um AppImage ficam para depois do `.zip` e do `.deb`.

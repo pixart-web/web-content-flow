@@ -49,7 +49,16 @@ jobs:
       # Electron 45 downloads its binary lazily; fetch it before launching.
       - run: node node_modules/electron/install.js
       - run: pnpm prisma:generate
-      - name: Embedded PostgreSQL runtime tests
+      # L8: register the password-reset polkit action, as the .deb does, so
+      # the desktop tests can check that polkit accepts it.
+      - name: Install the polkit action (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq polkitd pkexec > /dev/null || sudo apt-get install -y -qq policykit-1 > /dev/null
+          sudo install -m 644 src/desktop/linux/com.webcontentflow.desktop.policy /usr/share/polkit-1/actions/
+          echo "WCF_POLKIT_POLICY_INSTALLED=1" >> "$GITHUB_ENV"
+      - name: Embedded PostgreSQL and OS authentication tests
         run: pnpm test:desktop
       - name: Build the desktop app for this platform
         run: pnpm build:desktop
@@ -64,7 +73,9 @@ jobs:
         run: node scripts/desktop-smoke.mjs
       - name: Package (Linux)
         if: runner.os == 'Linux'
-        run: node scripts/package-linux.mjs
+        run: |
+          node scripts/package-linux.mjs
+          dpkg-deb -c dist/release/*.deb | grep -q "usr/share/polkit-1/actions/com.webcontentflow.desktop.policy"
       - name: Package (Windows)
         if: runner.os == 'Windows'
         run: node scripts/package-windows.mjs

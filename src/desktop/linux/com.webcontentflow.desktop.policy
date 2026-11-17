@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policyconfig PUBLIC "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
+  "http://www.freedesktop.org/standards/PolicyKit/1/policyconfig.dtd">
+<policyconfig>
+  <vendor>Web Content Flow</vendor>
+  <action id="com.webcontentflow.desktop.reset-owner-password">
+    <description>Reset the Web Content Flow password</description>
+    <description xml:lang="pt">Repor a password do Web Content Flow</description>
+    <message>Confirm it is you to reset the Web Content Flow password on this computer.</message>
+    <message xml:lang="pt">Confirme que é você para repor a password do Web Content Flow neste computador.</message>
+    <defaults>
+      <allow_any>no</allow_any>
+      <allow_inactive>no</allow_inactive>
+      <allow_active>auth_self</allow_active>
+    </defaults>
+  </action>
+</policyconfig>

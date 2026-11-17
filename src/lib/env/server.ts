@@ -119,7 +119,7 @@ export const serverEnvSchema = z
     ),
     // B5: use the client's passages in generation. Off until the measured
     // gain is confirmed (doc 53, R8).
-    KNOWLEDGE_IN_GENERATION_ENABLED: booleanFromEnv,
+    KNOWLEDGE_IN_GENERATION_ENABLED: enabledFromEnv,
     KNOWLEDGE_MAX_CONTEXT_TOKENS: integerFromEnv(200, 8_000, 1_500),
     AI_MAX_RETRIES: integerFromEnv(0, 3, 2),
     AI_MAX_CONCURRENT_REQUESTS: integerFromEnv(1, 16, 4),

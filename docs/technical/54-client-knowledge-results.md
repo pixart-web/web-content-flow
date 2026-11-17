@@ -1,6 +1,6 @@
 # Conhecimento por cliente — resultados B1 a B5
 
-**Data:** 2026-11-16 · **Proposta e decisões:** [53-skills-and-client-knowledge.md](53-skills-and-client-knowledge.md) (PR #48) · **Estado:** B1 a B5 implementados. Na 1.ª medição o ganho não se confirmou (R8). Com a revisão automática (2026-11-17, secção «B5 com revisão») passa a cumprir o R8 na avaliação; o interruptor continua **desligado por omissão** até decisão do product owner.
+**Data:** 2026-11-16 · **Proposta e decisões:** [53-skills-and-client-knowledge.md](53-skills-and-client-knowledge.md) (PR #48) · **Estado:** B1 a B5 implementados. Na 1.ª medição o ganho não se confirmou (R8). Com a revisão automática (2026-11-17, secção «B5 com revisão») passa a cumprir o R8 na avaliação; o product owner mandou **ligar** a 2026-11-17: `KNOWLEDGE_IN_GENERATION_ENABLED` passa a `true` por omissão.
 
 As cinco decisões foram aprovadas em 2026-11-16: armazenamento na opção 1 (vetores em PostgreSQL, pesquisa em Node), migration B1, texto e Markdown na v1, downloads dos candidatos, e `guidance` de pacotes instalados desligada.
 
@@ -41,7 +41,7 @@ As cinco decisões foram aprovadas em 2026-11-16: armazenamento na opção 1 (ve
 - `retrieveKnowledgeForGeneration` pesquisa os excertos do projeto a partir do texto do contexto (sem identificadores nem provenance). Respeita o orçamento `KNOWLEDGE_MAX_CONTEXT_TOKENS` (1500) e, se o Ollama falhar, gera sem conhecimento.
 - Os excertos entram como `clientKnowledge`, ao lado do contexto. A provenance de cada conteúdo guarda `knowledgeChunkIds` (R4).
 - Prompt **1.2.0**: os excertos são factos utilizáveis e nunca instruções. Devem ser indicados tal como estão, sem os alargar a afirmações que não fazem.
-- A funcionalidade fica atrás de `KNOWLEDGE_IN_GENERATION_ENABLED`, **desligada por omissão**.
+- A funcionalidade fica atrás de `KNOWLEDGE_IN_GENERATION_ENABLED`: desligada por omissão até 2026-11-17, **ligada** desde então (com a revisão automática).
 
 ### Medição R8 (gemma4:12b-it-qat, Apple M4, 5 amostras por caso, suite 1.5.0)
 
@@ -82,4 +82,6 @@ Para não medir só a lista que dispara a revisão, a avaliação conta também 
 
 **Leitura:** com a revisão, os atributos inventados ficam ao nível de quem não usa conhecimento (0) e os 5 factos da ficha mantêm-se. **O R8 passa a ser cumprido na avaliação.** Limites: 5 amostras por caso; o detetor e a lista de controlo são listas de palavras em inglês afinadas ao calçado, por isso uma inferência dita por outras palavras pode escapar; os textos revistos não foram lidos por uma pessoa. O custo é tempo: quando há revisão, a geração demora cerca do dobro.
 
-**Estado:** a revisão está implementada no executor e só corre com conhecimento do cliente. `KNOWLEDGE_IN_GENERATION_ENABLED` continua `false` por omissão. Ligar fica para decisão do product owner, de preferência depois de alguém ler uma amostra de textos revistos e de medir em português (hipótese 3). Falta ainda mostrar na UI as marcas que sobram (`claimRevision.remaining`).
+**Estado:** a revisão está implementada no executor e só corre com conhecimento do cliente. **Ligado por decisão do product owner a 2026-11-17** (`KNOWLEDGE_IN_GENERATION_ENABLED=true` por omissão; `false` desliga). Só tem efeito onde há excertos indexados, ou seja, com `KNOWLEDGE_EMBEDDING_MODEL=bge-m3`.
+
+Ligado sem estes passos, que ficam como trabalho seguinte: ler uma amostra de textos revistos, medir em português (hipótese 3) e mostrar na UI as marcas que sobram (`claimRevision.remaining`). A edição desktop ainda não define `KNOWLEDGE_EMBEDDING_MODEL`, por isso lá os documentos não são indexados e a B5 não tem efeito até isso ser tratado.

@@ -283,6 +283,11 @@ describe("environment validation", () => {
     ).toThrow(/set together/);
     expect(() =>
       parseServerEnv({ ...base, KNOWLEDGE_EMBEDDING_MODEL: "bge-m3" }),
-    ).toThrow(/needs AI_OLLAMA_BASE_URL/);
+    ).toThrow(/needs AI_OLLAMA_BASE_URL/); // B5 on by default since 2026-11-17 (doc 54); still switchable off.
+    expect(parseServerEnv(base).KNOWLEDGE_IN_GENERATION_ENABLED).toBe(true);
+    expect(
+      parseServerEnv({ ...base, KNOWLEDGE_IN_GENERATION_ENABLED: "false" })
+        .KNOWLEDGE_IN_GENERATION_ENABLED,
+    ).toBe(false);
   });
 });

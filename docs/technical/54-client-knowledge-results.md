@@ -124,5 +124,42 @@ As 2 marcas de *ultra-leve* que sobram vêm de o detetor da corrida não conhece
 
 **Leitura:** em português, a revisão faz o mesmo que em inglês. Desce as palavras da lista para perto de zero sem perder factos, ao custo de cerca do dobro do tempo na descrição de produto. Mas o «0» do R8 mede a lista, não a ausência de inferências. Os textos com conhecimento continuam a ter qualidades deduzidas com outras palavras, e a revisão não as vê. Por isso as marcas na UI são um aviso parcial: o texto continua a precisar de revisão humana, sobretudo nas descrições de produto. Isso já está dito no aviso fixo do editor («Review factual claims… before use»).
 
-**Seguinte (por decidir):** alargar a lista aos sinónimos frequentes (*leveza, duradouro, resistente*) passa a disparar a revisão, mas deixa de haver lista de controlo independente. A alternativa é testar uma revisão orientada pela ficha («cada qualidade tem de citar um facto dos excertos») em vez de uma lista. Ambas precisam de nova medição.
+**Seguinte:** alargar a lista aos sinónimos frequentes ou testar uma revisão orientada pela ficha. **Decidido a 2026-11-17: alargar a lista** (secção seguinte).
+
+## B5 com a lista alargada (2026-11-17)
+
+**Decisão do product owner:** os sinónimos que sobreviviam à revisão passam a dispará-la.
+
+- **Detetor:** a antiga lista de controlo passa para `unsupportedClaimHits`.
+  - Inglês: *featherlight, lightness, light on your feet, eco, planet, long-lasting, hard-wearing, built to last, airy, plush*…
+  - Português: *leveza, leves, leve como, duradouro, resistente, amigo do ambiente, planeta, arejado, macio, baixo impacto, impacto reduzido, materiais responsáveis*…
+  - *Leve* no singular continua de fora, porque é também forma do verbo levar.
+- **Nova lista de controlo, só de medição:** palavras que o detetor não conhece, para a medição continuar independente.
+  - Inglês: *weightless, barely there, conscious, kinder to, low-impact, rugged, sturdy, resilient, soft, premium*…
+  - Português: *levinho, sem peso, consciente, robusto, resistência, suave, nuvem, premium*.
+
+Aplicado aos textos guardados das corridas anteriores, o detetor alargado não marca factos da ficha. Há dois casos discutíveis: «caminhadas leves» (o adjetivo é das caminhadas) e «Eco-conscious shoppers» (público-alvo).
+
+**Medição** (gemma4:12b-it-qat, Apple M4, 5 amostras por caso, com conhecimento e revisão):
+
+| | pt-PT | en |
+|---|---|---|
+| Descrição de produto: marcas antes → depois da revisão | 17 → **0** (5 de 5 revistas) | 10 → **0** (5 de 5) |
+| Email | 1 → **0** (1 de 5) | 5 → **0** (4 de 5) |
+| FAQ | 3 → **0** (3 de 5) | 3 → **0** (3 de 5) |
+| Nova lista de controlo | 5 (*consciente, sem peso*) | 3 (*conscious*) |
+| Factos da ficha usados (de 5) | 5 | 5 |
+| JSON válido | 100% | 100% |
+| Latência p50 / p95, descrição | 130 / 165 s | 104 / 121 s |
+| Latência p50 / p95, email | 53 / 129 s | 83 / 103 s |
+| Latência p50 / p95, FAQ | 88 / 122 s | 78 / 93 s |
+
+**Leitura de textos revistos (pt-PT):** as edições ficam mais finas. «Peso ultra-leve de 280g» passa a «Peso de 280g», e «Conforto duradouro» a «Conforto». Ainda escapam:
+- *calçado leve* e *peso leve* (o singular está fora de propósito);
+- *reduz o impacto ambiental*;
+- *reduzir a fadiga*.
+
+Numa amostra, a revisão apagou benefícios inteiros em vez de tirar só a palavra.
+
+**Leitura:** com a lista alargada, as qualidades que sobreviviam já não passam. A nova lista de controlo apanha poucas fugas (3 a 5 em 15 amostras), e os factos mantêm-se. O custo é mais revisões. Em inglês, o email passa de 1 a 4 amostras revistas em 5, e o p50 do email e da FAQ sobe para 80–90 s. A descrição de produto, em que quase todas as amostras já eram revistas, fica igual. O «0» continua a medir listas: as inferências descritas por frases (*reduz o impacto ambiental*, *reduzir a fadiga*) só uma revisão orientada pela ficha as apanharia. O aviso fixo de revisão humana no editor mantém-se.
 

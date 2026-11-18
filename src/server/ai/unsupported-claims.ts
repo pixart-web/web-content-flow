@@ -74,11 +74,28 @@ const productAttributeTerms = [
   "free shipping",
   "free returns",
   "money-back",
+  // Synonyms that survived the revision in the 2026-11-17 measurement (the
+  // former held-out list, doc 54): the same qualities in other words.
+  "featherweight",
+  "featherlight",
+  "lightness",
+  "light on your feet",
+  "eco",
+  "environmentally friendly",
+  "planet-friendly",
+  "earth-friendly",
+  "planet",
+  "long-lasting",
+  "hard-wearing",
+  "built to last",
+  "airy",
+  "ventilated",
+  "plush",
 ];
 
 // Portuguese (pt-PT, with Brazilian spellings) equivalents, as regular
 // expression sources so gender and number variants match ("reciclado",
-// "recicladas"). "leve" stays out: it is also a common verb form.
+// "recicladas"). "leve" alone stays out: it is also a common verb form.
 const portugueseAttributePatterns = [
   "respir[aá]ve(?:l|is)",
   "imperme[aá]ve(?:l|is)",
@@ -115,6 +132,24 @@ const portugueseAttributePatterns = [
   "(?:portes|envios?|entregas?) (?:gr[aá]tis|gratuit[oa]s?)",
   "devoluç(?:ão|ões) (?:gr[aá]tis|gratuitas?)",
   "reembolso",
+  // Synonyms that survived the revision (former held-out list, doc 54).
+  // "leves" is the plural adjective; the singular stays out (verb form).
+  "leveza",
+  "leves",
+  "leve como",
+  "amig[oa]s? do ambiente",
+  "planeta",
+  "pegada ecológica",
+  "duradour[oa]s?",
+  "resistentes?",
+  "feit[oa]s? para durar",
+  "arejad[oa]s?",
+  "ventilad[oa]s?",
+  "fof[oa]s?",
+  "maci[oa]s?",
+  "baixo impacto",
+  "impacto reduzido",
+  "materia(?:l|is) responsáve(?:l|is)",
 ];
 
 const wordBounded = (source: string) =>

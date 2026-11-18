@@ -160,14 +160,31 @@ describe("evaluation metrics", () => {
     expect(unsupportedClaimHits(output, {})).toEqual([]);
   });
 
-  it("measures Portuguese held-out synonyms only when the context lacks them", () => {
+  it("flags the synonyms that used to survive the revision", () => {
     const output = {
-      body: "Leveza duradoura, amiga do ambiente e muito macia.",
+      body: "Leveza duradoura, amiga do ambiente e muito macia. Sapatos leves; leve-os já.",
+      en: "Featherlight, long-lasting and kind to the planet.",
     };
-    expect(heldOutClaimHits(output, { sheet: "Sola macia." }).sort()).toEqual([
+    expect(
+      unsupportedClaimHits(output, { sheet: "Sola macia." }).sort(),
+    ).toEqual([
       "amiga do ambiente",
       "duradoura",
+      "featherlight",
+      "leves",
       "leveza",
+      "long-lasting",
+      "planet",
     ]);
+  });
+
+  it("measures held-out synonyms the detector does not know", () => {
+    const output = {
+      body: "Levinhos, robustos e suaves. Sturdy and weightless.",
+    };
+    expect(
+      heldOutClaimHits(output, { sheet: "Palmilha suave." }).sort(),
+    ).toEqual(["levinhos", "robustos", "sturdy", "weightless"]);
+    expect(unsupportedClaimHits(output, {})).toEqual([]);
   });
 });

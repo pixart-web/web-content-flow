@@ -48,51 +48,44 @@ export function prohibitedWordHits(
 }
 
 // Measurement only, never used to trigger a revision: qualities a model may
-// infer from the client's facts with words outside productAttributeTerms
-// (synonyms of "lightweight", "sustainable", "durable", "breathable"). It
-// shows whether a revision removes the claim or only swaps the word.
+// infer from the client's facts with words the detector does not know. The
+// first list became part of the detector on 2026-11-17 (doc 54); these are
+// new words, so the measurement stays independent of what triggers revision.
 const heldOutAttributeTerms = [
-  "featherweight",
-  "featherlight",
-  "light as",
-  "lightness",
-  "light on your feet",
-  "eco",
-  "environmentally",
-  "planet",
-  "earth-friendly",
-  "green choice",
-  "long-lasting",
-  "hard-wearing",
-  "built to last",
-  "airy",
-  "ventilated",
-  "plush",
+  "weightless",
+  "barely there",
+  "conscious",
+  "kinder to",
+  "low-impact",
+  "low impact",
+  "greener",
+  "rugged",
+  "sturdy",
+  "tough",
+  "resilient",
+  "cloud-like",
+  "soft",
+  "springy",
   "premium",
 ];
 
-// Portuguese synonyms for the pt-PT suite, as regular expression sources
-// (gender and number). Ambiguous words ("leve", "vale a pena") stay out.
+// Portuguese, as regular expression sources (gender and number).
 const heldOutPortuguesePatterns = [
-  "leveza",
-  "amig[oa]s? do ambiente",
-  "planeta",
-  "pegada ecológica",
-  "duradour[oa]s?",
-  "resistentes?",
-  "feit[oa]s? para durar",
-  "arejad[oa]s?",
-  "ventilad[oa]s?",
-  "fof[oa]s?",
-  "maci[oa]s?",
-  "baixo impacto",
-  "impacto reduzido",
-  "materia(?:l|is) responsáve(?:l|is)",
+  "levinh[oa]s?",
+  "sem peso",
+  "conscientes?",
+  "robust[oa]s?",
+  "resistência",
+  "suaves?",
+  "nuvem",
+  "premium",
 ];
 
 const heldOutPatterns = [
-  ...heldOutAttributeTerms.map(escapeRegExp),
-  ...heldOutPortuguesePatterns,
+  ...new Set([
+    ...heldOutAttributeTerms.map(escapeRegExp),
+    ...heldOutPortuguesePatterns,
+  ]),
 ].map(
   (source) =>
     new RegExp(`(?<![\\p{L}\\p{N}])(?:${source})(?![\\p{L}\\p{N}])`, "iu"),

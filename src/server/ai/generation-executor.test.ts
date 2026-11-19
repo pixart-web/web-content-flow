@@ -355,6 +355,36 @@ describe("claim revision with client knowledge (L6 B5)", () => {
     });
   });
 
+  it("in grounded mode revises every output that used client knowledge", async () => {
+    Object.assign(env, { KNOWLEDGE_CLAIM_REVISION: "grounded" });
+    try {
+      generateStructured
+        .mockResolvedValueOnce(
+          providerResult("A 280 g shoe that reduces fatigue."),
+        )
+        .mockResolvedValueOnce(providerResult("A 280 g shoe."));
+      const result = await generateProductionSnapshot(prisma, input);
+      expect(generateStructured).toHaveBeenCalledTimes(2);
+      const revision = generateStructured.mock.calls[1]?.[0] as {
+        systemInstructions: string;
+        userMessage: string;
+      };
+      expect(revision.systemInstructions).toMatch(
+        /rewrite it to state the fact itself/,
+      );
+      expect(JSON.parse(revision.userMessage)).toMatchObject({
+        unsupportedTerms: [],
+      });
+      expect(result.snapshot).toEqual({ value: "A 280 g shoe." });
+      expect(result.provenance.claimRevision).toEqual({
+        flagged: [],
+        remaining: [],
+      });
+    } finally {
+      delete (env as Record<string, unknown>).KNOWLEDGE_CLAIM_REVISION;
+    }
+  });
+
   it("makes no extra request when nothing is flagged or there is no knowledge", async () => {
     generateStructured.mockResolvedValue(providerResult("A 280 g shoe."));
     await generateProductionSnapshot(prisma, input);

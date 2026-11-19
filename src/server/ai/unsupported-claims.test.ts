@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { claimRevisionAfterEdit } from "./unsupported-claims";
+import {
+  claimRevisionAfterEdit,
+  unsupportedClaimHits,
+} from "./unsupported-claims";
 
 describe("claimRevisionAfterEdit", () => {
   it("keeps only the remaining marks whose words are still in the text", () => {
@@ -16,5 +19,18 @@ describe("claimRevisionAfterEdit", () => {
       flagged: ["respiráveis", "garantia", "Mais vendidas"],
       remaining: ["Mais vendidas"],
     });
+  });
+
+  it("ignores identifiers when looking for claims", () => {
+    expect(
+      unsupportedClaimHits(
+        {
+          entries: [
+            { id: "urbanstride-materials-eco", answer: "Cork insole." },
+          ],
+        },
+        {},
+      ),
+    ).toEqual([]);
   });
 });

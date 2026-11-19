@@ -3,7 +3,8 @@ import "server-only";
 
 import {
   buildClaimRevisionMessage,
-  CLAIM_REVISION_INSTRUCTIONS,
+  claimRevisionInstructions,
+  type ClaimRevisionMode,
 } from "@/ai/prompts/claim-revision";
 import {
   buildStructuralRepairMessage,
@@ -45,6 +46,7 @@ export type EvaluationSampleRecord = Readonly<{
 export type EvaluationReport = Readonly<{
   suiteVersion: string;
   language: EvaluationLanguage;
+  claimRevisionMode: ClaimRevisionMode | null;
   generatedAt: string;
   runtimeKey: string;
   model: string;
@@ -73,7 +75,7 @@ async function runSample(
     model: string;
     timeoutMs: number;
     sample: number;
-    claimRevision?: boolean;
+    claimRevision?: ClaimRevisionMode;
     onSample?: (record: EvaluationSampleRecord) => void;
   },
 ): Promise<
@@ -164,7 +166,7 @@ async function runSample(
   if (output !== null && options.claimRevision && clientKnowledge) {
     const before = unsupportedClaimHits(output, testCase.context);
     flagsBeforeRevision = before.length;
-    if (before.length > 0) {
+    if (before.length > 0 || options.claimRevision === "grounded") {
       try {
         const revision = await adapter.generateStructured(
           {
@@ -172,11 +174,14 @@ async function runSample(
             requestId: `${requestId}-claims`,
             schemaName: `${base.schemaName}_claims`,
             input: {},
-            systemInstructions: CLAIM_REVISION_INSTRUCTIONS,
+            systemInstructions: claimRevisionInstructions(
+              options.claimRevision,
+            ),
             userMessage: buildClaimRevisionMessage({
               priorOutput: output,
               unsupportedTerms: before,
               clientKnowledge,
+              mode: options.claimRevision,
             }),
           },
           testCase.schema,
@@ -236,7 +241,7 @@ export async function runEvaluation(input: {
   timeoutMs: number;
   maxP95LatencyMs?: number;
   hardware?: string;
-  claimRevision?: boolean;
+  claimRevision?: ClaimRevisionMode;
   language?: EvaluationLanguage;
   onSample?: (record: EvaluationSampleRecord) => void;
   now?: () => Date;
@@ -250,7 +255,9 @@ export async function runEvaluation(input: {
           model: input.model,
           timeoutMs: input.timeoutMs,
           sample,
-          ...(input.claimRevision ? { claimRevision: true } : {}),
+          ...(input.claimRevision
+            ? { claimRevision: input.claimRevision }
+            : {}),
           ...(input.onSample ? { onSample: input.onSample } : {}),
         }),
       );
@@ -294,6 +301,7 @@ export async function runEvaluation(input: {
   return {
     suiteVersion: EVALUATION_SUITE_VERSION,
     language: input.language ?? "en",
+    claimRevisionMode: input.claimRevision ?? null,
     generatedAt: (input.now?.() ?? new Date()).toISOString(),
     runtimeKey: input.runtimeKey,
     model: input.model,
@@ -330,7 +338,7 @@ export function renderEvaluationMarkdown(report: EvaluationReport) {
     `# AI evaluation — ${report.runtimeKey}/${report.model}`,
     "",
     `- Result: **${report.passed ? "PASS" : "FAIL"}**`,
-    `- Suite ${report.suiteVersion} (${report.language}), ${report.samplesPerCase} samples per case, ${report.generatedAt}`,
+    `- Suite ${report.suiteVersion} (${report.language}${report.claimRevisionMode ? `, ${report.claimRevisionMode} claim revision` : ""}), ${report.samplesPerCase} samples per case, ${report.generatedAt}`,
     `- Hardware: ${report.hardware ?? "not recorded"}`,
     `- Thresholds: first-pass valid ≥ ${percent(report.thresholds.firstPassValidRate)}, valid after repair ≥ ${percent(report.thresholds.afterRepairValidRate)}, 0 prohibited words, 0 unsupported-claim flags${report.thresholds.maxP95LatencyMs === null ? "" : `, p95 ≤ ${report.thresholds.maxP95LatencyMs} ms`}`,
     "- Unsupported-claim flags are a heuristic (numbers, awards, rankings, URLs and product attributes absent from the context); review flagged outputs manually.",

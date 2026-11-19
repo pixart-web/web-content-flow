@@ -33,7 +33,7 @@ import {
 } from "@/ai/prompts/structural-repair";
 import {
   buildClaimRevisionMessage,
-  CLAIM_REVISION_INSTRUCTIONS,
+  claimRevisionInstructions,
 } from "@/ai/prompts/claim-revision";
 import { unsupportedClaimHits } from "@/server/ai/unsupported-claims";
 
@@ -337,7 +337,8 @@ export async function generateProductionSnapshot<TOutput>(
     const extraUsageIds: string[] = [];
     if (knowledge && !env.AI_FAKE_OPENAI_ENABLED) {
       const flagged = unsupportedClaimHits(data, generationContext);
-      if (flagged.length > 0) {
+      const mode = env.KNOWLEDGE_CLAIM_REVISION;
+      if (flagged.length > 0 || mode === "grounded") {
         const revisionStartedAt = performance.now();
         let revisionFailure: ProviderErrorCode | "UNKNOWN" | null = null;
         try {
@@ -353,11 +354,12 @@ export async function generateProductionSnapshot<TOutput>(
               promptVersion: input.promptVersion,
               schemaVersion: "1.0",
               schemaName: `${input.promptKey.replaceAll(".", "_")}_claims`,
-              systemInstructions: CLAIM_REVISION_INSTRUCTIONS,
+              systemInstructions: claimRevisionInstructions(mode),
               userMessage: buildClaimRevisionMessage({
                 priorOutput: data,
                 unsupportedTerms: flagged,
                 clientKnowledge: knowledge.excerpts,
+                mode,
               }),
               maximumOutputTokens,
               timeoutMs: requestTimeoutMs,

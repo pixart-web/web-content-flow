@@ -6,7 +6,8 @@
 // lists (a Brand Profile legitimately lists its words to avoid), editorial
 // `notes` and internal production notes / visual `avoid` lists (Video), where
 // models restate the rules ("avoid terms like 'magic'") rather than use the
-// words in deliverable copy. Applies at any depth.
+// words in deliverable copy, and `id` fields (identifiers, not copy).
+// Applies at any depth.
 const unscoredKeys = new Set([
   "provenance",
   "wordsToAvoid",
@@ -15,6 +16,8 @@ const unscoredKeys = new Set([
   "productionNotes",
   "editingNotes",
   "avoid",
+  // Stable identifiers ("urbanstride-materials-eco") are not copy.
+  "id",
 ]);
 
 export function generatedText(output: unknown) {

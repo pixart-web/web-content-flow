@@ -121,6 +121,13 @@ export const serverEnvSchema = z
     // gain is confirmed (doc 53, R8).
     KNOWLEDGE_IN_GENERATION_ENABLED: enabledFromEnv,
     KNOWLEDGE_MAX_CONTEXT_TOKENS: integerFromEnv(200, 8_000, 1_500),
+    // B5 revision (doc 54): "list" revises only outputs the claim detector
+    // flags; "grounded" revises every output that used client knowledge and
+    // asks for facts instead of inferences.
+    KNOWLEDGE_CLAIM_REVISION: z.preprocess(
+      (value) => (value === "" || value === undefined ? "list" : value),
+      z.enum(["list", "grounded"]),
+    ),
     AI_MAX_RETRIES: integerFromEnv(0, 3, 2),
     AI_MAX_CONCURRENT_REQUESTS: integerFromEnv(1, 16, 4),
     AI_MAX_ACTIVE_PROJECT_JOBS: integerFromEnv(1, 8, 2),
@@ -431,6 +438,7 @@ export function getServerEnv(): ServerEnv {
     KNOWLEDGE_IN_GENERATION_ENABLED:
       process.env.KNOWLEDGE_IN_GENERATION_ENABLED,
     KNOWLEDGE_MAX_CONTEXT_TOKENS: process.env.KNOWLEDGE_MAX_CONTEXT_TOKENS,
+    KNOWLEDGE_CLAIM_REVISION: process.env.KNOWLEDGE_CLAIM_REVISION,
     AI_MAX_RETRIES: process.env.AI_MAX_RETRIES,
     AI_MAX_CONCURRENT_REQUESTS: process.env.AI_MAX_CONCURRENT_REQUESTS,
     AI_MAX_ACTIVE_PROJECT_JOBS: process.env.AI_MAX_ACTIVE_PROJECT_JOBS,

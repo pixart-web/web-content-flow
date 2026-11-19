@@ -5,6 +5,7 @@ import { cpus, platform, totalmem } from "node:os";
 import { join } from "node:path";
 import { parseArgs } from "node:util";
 
+import type { ClaimRevisionMode } from "../src/ai/prompts/claim-revision";
 import { getServerEnv } from "../src/lib/env/server";
 import {
   buildEvaluationCases,
@@ -34,6 +35,9 @@ const { values } = parseArgs({
     "with-knowledge": { type: "boolean", default: false },
     // B5 hypothesis 1: revise outputs the claim detector flags (doc 54).
     "claim-revision": { type: "boolean", default: false },
+    // list (default: only flagged outputs) or grounded (every output with
+    // client knowledge; facts instead of inferences).
+    "claim-revision-mode": { type: "string", default: "list" },
     // Output language of the cases and the client sheet: en or pt-PT.
     language: { type: "string", default: "en" },
     // Write each sample's first and revised output next to the report, for
@@ -75,6 +79,12 @@ if (!model)
 if (values.language !== "en" && values.language !== "pt-PT")
   throw new Error("--language must be en or pt-PT.");
 const language: EvaluationLanguage = values.language;
+if (
+  values["claim-revision-mode"] !== "list" &&
+  values["claim-revision-mode"] !== "grounded"
+)
+  throw new Error("--claim-revision-mode must be list or grounded.");
+const revisionMode: ClaimRevisionMode = values["claim-revision-mode"];
 const samplesPerCase = Number(values.samples);
 if (!Number.isInteger(samplesPerCase) || samplesPerCase < 1)
   throw new Error("--samples must be a positive integer.");
@@ -131,7 +141,7 @@ async function main() {
       ? { maxP95LatencyMs: Number(values["max-p95-ms"]) }
       : {}),
     ...(hardware ? { hardware } : {}),
-    ...(values["claim-revision"] ? { claimRevision: true } : {}),
+    ...(values["claim-revision"] ? { claimRevision: revisionMode } : {}),
     language,
     ...(values["save-samples"]
       ? { onSample: (record: EvaluationSampleRecord) => samples.push(record) }

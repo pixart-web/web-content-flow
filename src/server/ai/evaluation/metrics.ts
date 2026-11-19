@@ -67,6 +67,11 @@ const heldOutAttributeTerms = [
   "soft",
   "springy",
   "premium",
+  // Inferences phrased as outcomes (read in the 2026-11-17 samples).
+  "fatigue",
+  "environmental impact",
+  "easy maintenance",
+  "low maintenance",
 ];
 
 // Portuguese, as regular expression sources (gender and number).
@@ -79,6 +84,10 @@ const heldOutPortuguesePatterns = [
   "suaves?",
   "nuvem",
   "premium",
+  "fadiga",
+  "impacto ambiental",
+  "fácil manutenção",
+  "manutenção fácil",
 ];
 
 const heldOutPatterns = [

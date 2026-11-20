@@ -125,3 +125,23 @@ Diferenças por sistema encontradas e corrigidas no CI:
 - **Hardware real:** o CI não tem GPU nem Ollama. A IA local em Windows e Linux (CUDA, CPU) ainda não foi testada.
 - **Assinatura:** um certificado de assinatura de código para Windows evita o aviso do SmartScreen. Linux não precisa.
 - **Instaladores:** um instalador NSIS ou MSI (atalhos, desinstalação) e um AppImage ficam para depois do `.zip` e do `.deb`.
+
+## Teste E2E da app desktop (LF-21, 2026-11-20)
+
+`pnpm test:desktop:e2e`, depois de `pnpm build:desktop`. O Playwright (já usado no E2E web; não instala browsers) abre o Electron com o mesmo `dist/desktop` que os pacotes levam, numa pasta de dados descartável (`playwright.desktop.config.ts`, `tests/desktop-e2e/`).
+
+O teste segue o percurso do dono em dois arranques:
+
+1. **1.º arranque:** "Set up this computer" → onboarding → projeto → Brand Profile e copy de base gerados pelo worker (fornecedor mock) → Library → exportação do pacote de workspace (espera que os jobs acabem; antes disso a rota responde 409, como deve).
+2. **2.º arranque:** os segredos são lidos, não há migrations por aplicar, a sessão ou o login levam ao projeto, e a app pára de forma limpa nas duas vezes.
+
+**Sem rede:** com `WCF_DESKTOP_OFFLINE_GUARD` (só em builds de desenvolvimento; ignorada na app empacotada, como os outros ganchos de teste do `main.ts`), o invólucro:
+
+- carrega um guarda CommonJS no processo principal e, por `NODE_OPTIONS`, no servidor, no worker e na manutenção (o `utilityProcess` ignora `--require` em `execArgv`). O guarda recusa e regista qualquer ligação TCP ou pesquisa DNS que não seja para `127.0.0.1`, `::1` ou `localhost`;
+- cancela e regista os pedidos da janela que não sejam para este computador (`src/desktop/shell/offline.ts`).
+
+O teste falha se houver uma única ligação recusada fora das sondas que ele próprio faz. Para não confundir "zero ligações" com "o guarda não correu", verifica também que os quatro processos carregaram o guarda e que as sondas (fetch na página, fetch no processo principal e navegação numa janela escondida) são recusadas e registadas.
+
+- **macOS:** o teste usa `--use-mock-keychain`. Com o Porta-chaves real, o sistema pede autorização a quem está ao computador e o arranque fica parado.
+- **CI:** corre no workflow Desktop em Linux (xvfb + gnome-keyring), Windows e macOS, a seguir ao smoke. O trace do Playwright fica como artefacto quando falha.
+- **Ainda não coberto:** a rede física desligada (o guarda substitui-a ao nível dos processos da app; ligações do próprio Chromium fora da sessão, como verificações de componentes, não passam por ele), a app empacotada assinada (os ganchos de teste estão desligados nela de propósito), a IA local com Ollama (o CI não tem modelo; o teste usa o mock), e fechar a app a meio de um job.

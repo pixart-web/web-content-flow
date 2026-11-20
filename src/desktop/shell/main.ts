@@ -1,4 +1,5 @@
 import { appendFileSync, mkdirSync } from "node:fs";
+import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -18,6 +19,7 @@ import { portIsFree } from "@/desktop/postgres-supervisor";
 import { readMigrations } from "@/server/db/migration-runner";
 
 import { registerAiIpc } from "./ai-ipc";
+import { isLoopbackUrl } from "./offline";
 import { registerOwnerIpc } from "./owner-ipc";
 import { registerRemoteServerIpc, startRemote } from "./remote-server";
 import {
@@ -62,9 +64,39 @@ let maintenanceTimer: NodeJS.Timeout | null = null;
 let stopDatabase: (() => Promise<void>) | null = null;
 let quitting = false;
 
+// LF-21 offline check, development builds only (never in the packaged app):
+// a CommonJS guard that refuses and records every connection that does not go
+// to this computer. It is loaded into the main process and every child, and
+// the window's requests are filtered the same way (see installOfflineGuard).
+const offlineGuard = app.isPackaged
+  ? undefined
+  : process.env.WCF_DESKTOP_OFFLINE_GUARD;
+if (offlineGuard) {
+  createRequire(import.meta.url)(offlineGuard);
+  log(`Offline guard active: ${offlineGuard}`);
+}
+
+function installOfflineGuard() {
+  session.defaultSession.webRequest.onBeforeRequest((details, callback) => {
+    const allowed =
+      isLoopbackUrl(details.url) || /^(data|devtools|blob):/.test(details.url);
+    if (!allowed) log(`Offline guard blocked (window): ${details.url}`);
+    callback({ cancel: !allowed });
+  });
+}
+
 function fork(entry: string, env: Record<string, string>, name: string) {
   const child = utilityProcess.fork(join(here, entry), [], {
-    env: withSystemEnv(env),
+    // utilityProcess ignores --require in execArgv; NODE_OPTIONS is honoured.
+    env: withSystemEnv(
+      offlineGuard
+        ? {
+            ...env,
+            NODE_OPTIONS: `--require "${offlineGuard.replaceAll("\\", "/")}"`,
+            WCF_OFFLINE_GUARD_PROCESS: name,
+          }
+        : env,
+    ),
     serviceName: name,
     stdio: "pipe",
   });
@@ -144,6 +176,7 @@ async function start() {
       preload: join(here, "preload.cjs"),
     },
   });
+  if (offlineGuard) installOfflineGuard();
   await window.loadURL(loadingPage);
 
   const { secrets, created } = await loadOrCreateSecrets(

@@ -9,6 +9,10 @@ const nextConfig: NextConfig = {
   ...(process.env.NEXT_OUTPUT === "standalone"
     ? { output: "standalone" as const }
     : {}),
+  // With a proxy (src/proxy.ts) Next buffers request bodies and truncates them
+  // at 10 MB. Workspace packages (doc 52) can be larger; the import route
+  // refuses anything over WORKSPACE_PACKAGE_MAX_UPLOAD_BYTES itself.
+  experimental: { proxyClientMaxBodySize: "64mb" },
   poweredByHeader: false,
   reactStrictMode: true,
   async headers() {

@@ -30,6 +30,7 @@ export default async function SettingsPage() {
           ["Security", "/app/settings/security"],
           ["Usage", "/app/settings/usage"],
           ["Privacy", "/app/settings/privacy"],
+          ["Workspace", "/app/settings/workspace"],
           ...(localMode
             ? [
                 ["Local AI", "/app/settings/local-ai"],

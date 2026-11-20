@@ -163,3 +163,33 @@ Numa amostra, a revisão apagou benefícios inteiros em vez de tirar só a palav
 
 **Leitura:** com a lista alargada, as qualidades que sobreviviam já não passam. A nova lista de controlo apanha poucas fugas (3 a 5 em 15 amostras), e os factos mantêm-se. O custo é mais revisões. Em inglês, o email passa de 1 a 4 amostras revistas em 5, e o p50 do email e da FAQ sobe para 80–90 s. A descrição de produto, em que quase todas as amostras já eram revistas, fica igual. O «0» continua a medir listas: as inferências descritas por frases (*reduz o impacto ambiental*, *reduzir a fadiga*) só uma revisão orientada pela ficha as apanharia. O aviso fixo de revisão humana no editor mantém-se.
 
+## B5: revisão orientada pela ficha (2026-11-19)
+
+A revisão por lista só vê palavras. A **revisão orientada pela ficha** (`KNOWLEDGE_CLAIM_REVISION=grounded`; no eval, `--claim-revision-mode grounded`) corre sobre todos os resultados que usaram conhecimento do cliente, mesmo sem marcas do detetor. Pede que cada qualidade, benefício ou resultado atribuído ao produto esteja no contexto ou num excerto. Quando é só uma inferência, deve ser reescrita como o próprio facto («280 gramas no tamanho 42» em vez de «leve»). O modo `list` continua a ser o padrão.
+
+Também nesta mudança:
+- O detetor deixa de ler campos `id`: um identificador `urbanstride-materials-eco` era marcado como «eco».
+- A lista de controlo ganha inferências em forma de frase, lidas nas amostras: *fatigue/fadiga, environmental impact/impacto ambiental, easy maintenance/fácil manutenção*.
+
+**Medição** (gemma4:12b-it-qat, Apple M4, 5 amostras por caso, casos de copy com conhecimento). A coluna «lista» volta a pontuar as amostras guardadas de 2026-11-17 com a lista de controlo atual. A versão 1 do prompt cortava perguntas inteiras às FAQ; a versão 2 diz que o que o brief afirma está suportado e pede para reescrever em vez de apagar.
+
+| | Lista pt-PT | Ficha v1 pt-PT | Ficha v2 pt-PT | Lista en | Ficha v1 en | Ficha v2 en |
+|---|---|---|---|---|---|---|
+| Marcas do detetor no fim | 0 | 0* | 0 | 0 | 0 | 0 |
+| Inferências na lista de controlo (15 amostras) | 11 | 0 | 2 | 10 | 3 | 2 |
+| Factos da ficha (mínimo por amostra, de 5) | 5 | 5 | 5 | 5 | 5 | 5 |
+| Texto que fica depois da revisão, descrição / FAQ | 95% / 95% | 83% / 60% | 92% / 89% | 98% / 97% | 81% / 79% | 84% / 94% |
+| Itens de listas na descrição, antes → depois | 98 → 88 | 87 → 73 | 94 → 83 | 87 → 84 | 88 → 76 | 87 → 76 |
+| Menções a conforto, antes → depois | 87 → 83 | — | **88 → 48** | 77 → 76 | — | **78 → 49** |
+| Amostras revistas | 9 de 15 | 15 de 15 | 15 de 15 | 12 de 15 | 15 de 15 | 15 de 15 |
+| Latência p50 email / descrição / FAQ | 53 / 130 / 88 s | 110 / 126 / 96 s | 114 / 136 / 106 s | 83 / 104 / 78 s | 84 / 103 / 88 s | 86 / 104 / 88 s |
+
+\* A marca «eco» da FAQ vinha de um campo `id`, que o detetor já não lê.
+
+**Leitura dos textos revistos (pt-PT, versão 2):**
+- **O que melhora:** as inferências passam a factos. «Peso reduzido de 280g» fica «Peso de 280 gramas no tamanho 42», e os tamanhos ganham «sem meios números».
+- **O que se perde:** o modelo também tira o conforto, que o brief promete («Comfortable walking shoes», «all-day comfort»). «Conforto e Design para a Cidade» passa a «Design para a Cidade» no título, no título SEO e na meta descrição. «Pessoas que procuram calçado confortável» passa a «Pessoas que procuram calçado». Isto acontece mesmo com o prompt a dar o conforto como exemplo de afirmação suportada pelo brief.
+- **Em inglês** acontece o mesmo («comfort» 78 → 49).
+
+**Conclusão:** com o gemma4, a revisão orientada pela ficha apanha as inferências que a lista não vê (11 → 2 e 10 → 2), mas corta cerca de 40% da promessa central da marca e revê todos os textos. O email em português passa de 53 para 114 s. É uma troca pior do que a da lista. **O padrão fica `list`.** O modo `grounded` fica disponível para voltar a medir com um modelo de texto mais forte. O aviso fixo de revisão humana no editor continua a ser a defesa contra inferências por frase.
+

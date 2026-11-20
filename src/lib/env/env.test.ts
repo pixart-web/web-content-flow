@@ -289,5 +289,13 @@ describe("environment validation", () => {
       parseServerEnv({ ...base, KNOWLEDGE_IN_GENERATION_ENABLED: "false" })
         .KNOWLEDGE_IN_GENERATION_ENABLED,
     ).toBe(false);
+    expect(parseServerEnv(base).KNOWLEDGE_CLAIM_REVISION).toBe("list");
+    expect(
+      parseServerEnv({ ...base, KNOWLEDGE_CLAIM_REVISION: "grounded" })
+        .KNOWLEDGE_CLAIM_REVISION,
+    ).toBe("grounded");
+    expect(() =>
+      parseServerEnv({ ...base, KNOWLEDGE_CLAIM_REVISION: "always" }),
+    ).toThrow();
   });
 });

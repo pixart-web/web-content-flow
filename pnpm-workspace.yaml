@@ -16,6 +16,7 @@ overrides:
   baseline-browser-mapping: 2.11.28
   browserslist: 4.29.3
   deepmerge-ts: 8.0.2
+  effect: 3.22.4
   fast-uri: 3.1.9
   find-my-way: 9.7.0
   mysql2: 3.24.5

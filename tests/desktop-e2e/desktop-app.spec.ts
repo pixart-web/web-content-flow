@@ -138,11 +138,22 @@ test("desktop edition works end to end without leaving this computer", async () 
         window.getByRole("heading", { level: 2, name: "This computer" }),
       ).toBeVisible();
       // The app shell's logo is a static file the local-mode proxy must serve.
+      const logo = window.locator(".app-brand img");
+      const served = await logo.evaluate(async (image: HTMLImageElement) => {
+        const response = await fetch(image.currentSrc || image.src);
+        return {
+          src: image.currentSrc || image.src,
+          status: response.status,
+          type: response.headers.get("content-type"),
+          start: (await response.text()).slice(0, 80),
+        };
+      });
+      expect(served.status, JSON.stringify(served)).toBe(200);
+      expect(served.type, JSON.stringify(served)).toContain("image/svg+xml");
       await expect
-        .poll(() =>
-          window
-            .locator(".app-brand img")
-            .evaluate((image: HTMLImageElement) => image.naturalWidth),
+        .poll(
+          () => logo.evaluate((image: HTMLImageElement) => image.naturalWidth),
+          { message: JSON.stringify(served), timeout: 15_000 },
         )
         .toBeGreaterThan(0);
       await expect(

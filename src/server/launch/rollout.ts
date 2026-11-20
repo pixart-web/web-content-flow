@@ -21,6 +21,9 @@ export function getRolloutPolicy() {
     exportsEnabled: env.EXPORTS_ENABLED && !maintenance,
     projectPackageExportEnabled:
       env.PROJECT_PACKAGE_EXPORT_ENABLED && !maintenance,
+    // Workspace package export and import (doc 52, LF-12).
+    workspacePackageEnabled:
+      env.EXPORTS_ENABLED && env.PROJECT_PACKAGE_EXPORT_ENABLED && !maintenance,
     publicPricing: env.PUBLIC_PRICING_ENABLED,
   } as const;
 }

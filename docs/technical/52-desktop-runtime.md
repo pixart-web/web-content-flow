@@ -42,9 +42,26 @@ Depois disto, o invólucro arranca o servidor web e o worker do `pnpm build:desk
 
 ## Limitações conhecidas (para fases seguintes)
 
-- **Sem `pg_dump`** nos binários. Os snapshots servem para a mesma plataforma e a mesma versão major. Mudar um workspace de SO, ou para um servidor privado, precisa de uma exportação lógica (pacote de workspace), ainda por fazer.
+- **Sem `pg_dump`** nos binários. Os snapshots servem para a mesma plataforma e a mesma versão major. Para mudar de SO ou para um servidor privado usa-se o pacote de workspace (secção seguinte).
 - **Tamanho:** um workspace vazio e migrado ocupa cerca de 70 MB por snapshot. Compressão e agendamento ficam para a L4 (UI de backups).
 - **Credenciais:** a password do PostgreSQL local, o `AUTH_SECRET`, o `RATE_LIMIT_SECRET` e os tokens do desktop são gerados no primeiro arranque e guardados no keychain pelo invólucro (L4). Este código recebe-os como parâmetros.
+
+## Pacote de workspace (LF-12, 2026-11-20)
+
+Exportação lógica de todos os projetos do dono, independente do SO, da versão do PostgreSQL e da instalação. Em **Settings → Workspace** (web, desktop e servidor privado).
+
+- **Formato:** um ficheiro `web-content-flow-workspace-AAAA-MM-DD.json.gz`, JSON comprimido com gzip. Cabeçalho `format: "web-content-flow.workspace"`, `formatVersion: 1`, `appRelease`, `databaseMigration`. Schema em `src/server/workspace/workspace-package-schema.ts`.
+- **Inclui, por projeto:** projeto, módulos, Brief, Brand Profile com todas as versões, conteúdos com todas as versões, histórico de jobs (com passos) e registos de uso, documentos de conhecimento com os excertos e os embeddings (Float32 em base64). Não é preciso reindexar.
+- **Não inclui:** conta, password, sessões, tokens, contas OAuth, rate limits, exportações, reservas de uso, heartbeats, inscrições beta. O email do dono e o seu ID também não entram: as autorias passam a `byOwner`.
+- **Exportação:** recusada enquanto houver gerações em curso (estados não terminais), para não levar jobs a meio. Os campos de lease nunca viajam.
+- **Importação:** valida o ficheiro inteiro antes de escrever: zod estrito, todas as referências internas apontam para registos do mesmo projeto, IDs sem duplicados, no máximo 512 MB descomprimidos (contra bombas gzip) e 64 MB de upload. Depois cria **projetos novos com IDs novos**, numa única transação. Nada do que já existe é alterado; importar no mesmo workspace cria uma cópia. Se algo falhar, nada fica escrito.
+  - Os IDs de excertos em `provenance.knowledgeChunkIds` e o `scopeId` dos jobs são reescritos para os novos IDs. O `request` dos jobs antigos fica como estava (é só histórico).
+  - Conta para o limite de projetos do plano.
+  - Um pacote de uma versão mais nova da app é recusado com uma mensagem própria.
+- **Rotas:** `POST /api/workspace/package` (descarrega) e `POST /api/workspace/package/import` (corpo = o ficheiro). A importação exige `Origin` igual ao da app. Ambas: sessão, 5 pedidos por minuto, flag `workspacePackageEnabled` (`EXPORTS_ENABLED` e `PROJECT_PACKAGE_EXPORT_ENABLED`, fora de manutenção).
+- **Next:** com o proxy (`src/proxy.ts`), o Next corta os corpos aos 10 MB. `proxyClientMaxBodySize` passou a 64 MB em `next.config.ts`.
+- **Testes:** `tests/integration/workspace-package.integration.test.ts` (ida e volta para outro dono, cópia no mesmo dono, ficheiros danificados/estranhos/mais novos, limite do plano, recusa com job em curso). Verificado no browser com os dados demo: 1 projeto, 32 conteúdos, 45 versões, 13 jobs; os editores abrem a cópia com o histórico.
+- **Ainda não:** importar seletivamente um projeto, e um teste de ida e volta entre SOs diferentes no CI (o formato não depende do SO, mas não está provado lá).
 
 ## Invólucro Electron (L4a)
 

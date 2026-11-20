@@ -137,7 +137,10 @@ test("desktop edition works end to end without leaving this computer", async () 
       await expect(
         window.getByRole("heading", { level: 2, name: "This computer" }),
       ).toBeVisible();
-      // The app shell's logo is a static file the local-mode proxy must serve.
+      // The app shell's logo is a static file the local-mode proxy must serve
+      // (it used to answer with the /app page). Its rendered size is not
+      // checked: next/image loads it lazily, and a CI window that does not
+      // count as visible (Windows runners) never loads it.
       const logo = window.locator(".app-brand img");
       const served = await logo.evaluate(async (image: HTMLImageElement) => {
         const response = await fetch(image.currentSrc || image.src);
@@ -150,12 +153,6 @@ test("desktop edition works end to end without leaving this computer", async () 
       });
       expect(served.status, JSON.stringify(served)).toBe(200);
       expect(served.type, JSON.stringify(served)).toContain("image/svg+xml");
-      await expect
-        .poll(
-          () => logo.evaluate((image: HTMLImageElement) => image.naturalWidth),
-          { message: JSON.stringify(served), timeout: 15_000 },
-        )
-        .toBeGreaterThan(0);
       await expect(
         window.getByText("Projects are stored only on this computer."),
       ).toBeVisible();

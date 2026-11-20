@@ -49,9 +49,17 @@ describe("local mode request policy (L1)", () => {
       "/health/ready",
       "/legal/terms",
       "/help",
+      "/brand/symbol/flow-mark.svg",
     ])
       expect(isLocalModePath(path)).toBe(true);
-    for (const path of ["/", "/pricing", "/product/website", "/applications"])
+    for (const path of [
+      "/",
+      "/pricing",
+      "/product/website",
+      "/applications",
+      "/branding",
+      "/marketing/hero.png",
+    ])
       expect(isLocalModePath(path)).toBe(false);
     expect(
       localModeDecision({

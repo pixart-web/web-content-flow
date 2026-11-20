@@ -21,6 +21,8 @@ const LOCAL_MODE_PATHS = [
   "/terms",
   "/cookies",
   "/help",
+  // Static brand assets the app shell uses (logo). Marketing images stay out.
+  "/brand",
 ] as const;
 
 function underPath(pathname: string, prefix: string) {

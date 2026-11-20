@@ -133,6 +133,41 @@ test("desktop edition works end to end without leaving this computer", async () 
     await window.getByRole("button", { name: "Create account" }).click();
     await expect(window).toHaveURL(/\/app\/onboarding$/);
 
+    await test.step("first-run step: this computer and local AI", async () => {
+      await expect(
+        window.getByRole("heading", { level: 2, name: "This computer" }),
+      ).toBeVisible();
+      // The app shell's logo is a static file the local-mode proxy must serve.
+      await expect
+        .poll(() =>
+          window
+            .locator(".app-brand img")
+            .evaluate((image: HTMLImageElement) => image.naturalWidth),
+        )
+        .toBeGreaterThan(0);
+      await expect(
+        window.getByText("Projects are stored only on this computer."),
+      ).toBeVisible();
+      // CI runners differ in memory: either the setup is offered or the app
+      // explains why it stays in mock mode. Never a stuck "Checking…".
+      const setup = window.getByRole("link", { name: "Set up local AI" });
+      const unsupported = window.getByText(/less than local models need/);
+      await expect(setup.or(unsupported)).toBeVisible({ timeout: 30_000 });
+      if (await setup.isVisible()) {
+        await setup.click();
+        await expect(
+          window.getByRole("heading", { level: 1, name: "Local AI" }),
+        ).toBeVisible();
+        await window
+          .getByRole("link", { name: "← Back to first project setup" })
+          .click();
+        await expect(window).toHaveURL(/\/app\/onboarding$/);
+      }
+      await expect(
+        window.getByText(/Nothing is sent to an external AI provider/),
+      ).toBeVisible();
+    });
+
     await test.step("project and mock generation through the worker", async () => {
       await createProject(window);
       await expect(window).toHaveURL(/\/app\/projects\/[^/]+$/);

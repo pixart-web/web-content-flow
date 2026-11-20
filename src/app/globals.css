@@ -1330,8 +1330,8 @@ body {
 /* Authenticated application shell */
 .app-shell {
   min-height: 100svh;
-  background: #f7f9fc;
-  color: #172033;
+  background: var(--color-app-canvas);
+  color: var(--color-app-text);
 }
 .app-sidebar {
   position: fixed;
@@ -1340,8 +1340,8 @@ body {
   display: none;
   width: 240px;
   flex-direction: column;
-  border-right: 1px solid #e7ebf2;
-  background: #fff;
+  border-right: 1px solid var(--color-app-border);
+  background: var(--color-app-surface);
   padding: 1rem 0.85rem;
 }
 .app-brand {
@@ -1350,7 +1350,7 @@ body {
   align-items: center;
   gap: 0.65rem;
   padding: 0 0.65rem;
-  color: #172033;
+  color: var(--color-app-text);
   font-family: var(--font-loaded-display), var(--font-display);
   font-size: 0.9rem;
   font-weight: 600;
@@ -1371,7 +1371,7 @@ body {
   gap: 0.75rem;
   border-radius: 9px;
   padding: 0 0.75rem;
-  color: #657187;
+  color: var(--color-app-text-secondary);
   font-size: 0.82rem;
   font-weight: 600;
   text-decoration: none;
@@ -1380,12 +1380,12 @@ body {
     color 140ms;
 }
 .app-navigation-item:hover {
-  background: #f5f7fb;
-  color: #172033;
+  background: var(--color-app-surface-hover);
+  color: var(--color-app-text);
 }
 .app-navigation-item.is-active {
-  background: #eef1ff;
-  color: #315cff;
+  background: var(--color-app-accent-surface);
+  color: var(--color-app-accent);
 }
 .app-account {
   display: flex;
@@ -1393,7 +1393,7 @@ body {
   align-items: center;
   gap: 0.65rem;
   margin-top: auto;
-  border-top: 1px solid #e7ebf2;
+  border-top: 1px solid var(--color-app-border);
   padding: 0.9rem 0.45rem 0;
 }
 .app-account strong,
@@ -1408,7 +1408,7 @@ body {
 }
 .app-account small {
   margin-top: 0.15rem;
-  color: #748094;
+  color: var(--color-app-text-muted);
   font-size: 0.64rem;
 }
 .app-avatar {
@@ -1417,10 +1417,10 @@ body {
   height: 34px;
   flex: 0 0 auto;
   place-items: center;
-  border: 1px solid #d9dcff;
+  border: 1px solid var(--color-app-avatar-border);
   border-radius: 50%;
-  background: #ece9ff;
-  color: #5544c9;
+  background: var(--color-app-avatar-surface);
+  color: var(--color-app-avatar-text);
   font-size: 0.7rem;
   font-weight: 700;
 }
@@ -1432,12 +1432,12 @@ body {
   border: 0;
   border-radius: 9px;
   background: transparent;
-  color: #657187;
+  color: var(--color-app-text-secondary);
   cursor: pointer;
 }
 .app-icon-button:hover {
-  background: #f1f4f9;
-  color: #172033;
+  background: var(--color-app-control-hover);
+  color: var(--color-app-text);
 }
 .app-topbar {
   position: fixed;
@@ -1446,7 +1446,7 @@ body {
   display: flex;
   height: 56px;
   align-items: center;
-  border-bottom: 1px solid #e7ebf2;
+  border-bottom: 1px solid var(--color-app-border);
   background: rgb(255 255 255 / 92%);
   padding: 0 1rem;
   backdrop-filter: blur(16px);
@@ -1463,7 +1463,7 @@ body {
   width: min(20rem, 88vw);
   height: 100%;
   flex-direction: column;
-  background: #fff;
+  background: var(--color-app-surface);
   padding: 1rem;
   box-shadow: var(--shadow-overlay);
 }
@@ -1497,12 +1497,12 @@ body {
 .dashboard-heading > div > p:last-child,
 .dashboard-section-heading p {
   margin: 0.35rem 0 0;
-  color: #748094;
+  color: var(--color-app-text-muted);
   font-size: 0.84rem;
 }
 .dashboard-kicker {
   margin: 0;
-  color: #315cff;
+  color: var(--color-app-accent);
   font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -1515,8 +1515,8 @@ body {
   justify-content: center;
   gap: 0.45rem;
   border-radius: 9px;
-  background: #111827;
-  color: #fff;
+  background: var(--color-app-action);
+  color: var(--color-app-action-text);
   padding: 0.65rem 1rem;
   font-size: 0.8rem;
   font-weight: 650;
@@ -1524,7 +1524,7 @@ body {
   white-space: nowrap;
 }
 .dashboard-primary-action:hover {
-  background: #315cff;
+  background: var(--color-app-accent);
 }
 .dashboard-section-heading,
 .dashboard-panel-heading {
@@ -1549,7 +1549,7 @@ body {
   min-height: 44px;
   align-items: center;
   gap: 0.35rem;
-  color: #315cff;
+  color: var(--color-app-accent);
   font-size: 0.76rem;
   font-weight: 650;
   text-decoration: none;
@@ -1565,10 +1565,10 @@ body {
   min-height: 148px;
   grid-template-columns: auto 1fr;
   gap: 0.75rem;
-  border: 1px solid #e2e6f0;
+  border: 1px solid var(--color-app-card-border);
   border-radius: 13px;
   padding: 1rem;
-  color: #172033;
+  color: var(--color-app-text);
   text-decoration: none;
   overflow: hidden;
   transition:
@@ -1578,7 +1578,7 @@ body {
 }
 .dashboard-module-card:hover {
   transform: translateY(-2px);
-  border-color: #c7cff5;
+  border-color: var(--color-app-card-border-hover);
   box-shadow: 0 12px 30px rgb(34 52 84 / 8%);
 }
 .dashboard-module-card > span:nth-child(2) {
@@ -1590,7 +1590,7 @@ body {
 }
 .dashboard-module-card small {
   margin-top: 0.25rem;
-  color: #748094;
+  color: var(--color-app-text-muted);
   font-size: 0.68rem;
   line-height: 1.45;
 }
@@ -1608,37 +1608,53 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  color: #315cff;
+  color: var(--color-app-accent);
   font-size: 0.7rem;
   font-weight: 700;
 }
 .tone-indigo {
-  background: linear-gradient(135deg, #f0f2ff, #f7f7ff);
+  background: linear-gradient(
+    135deg,
+    var(--color-app-tone-indigo-from),
+    var(--color-app-tone-indigo-to)
+  );
 }
 .tone-indigo .module-icon {
-  background: #dfe4ff;
-  color: #4f46e5;
+  background: var(--color-app-tone-indigo-icon-surface);
+  color: var(--color-app-tone-indigo-icon);
 }
 .tone-blue {
-  background: linear-gradient(135deg, #edf6ff, #f5faff);
+  background: linear-gradient(
+    135deg,
+    var(--color-app-tone-blue-from),
+    var(--color-app-tone-blue-to)
+  );
 }
 .tone-blue .module-icon {
-  background: #d8ecff;
-  color: #2774df;
+  background: var(--color-app-tone-blue-icon-surface);
+  color: var(--color-app-tone-blue-icon);
 }
 .tone-purple {
-  background: linear-gradient(135deg, #f4efff, #faf7ff);
+  background: linear-gradient(
+    135deg,
+    var(--color-app-tone-purple-from),
+    var(--color-app-tone-purple-to)
+  );
 }
 .tone-purple .module-icon {
-  background: #e7dcff;
-  color: #7958f5;
+  background: var(--color-app-tone-purple-icon-surface);
+  color: var(--color-app-tone-purple-icon);
 }
 .tone-orange {
-  background: linear-gradient(135deg, #fff3ea, #fff9f5);
+  background: linear-gradient(
+    135deg,
+    var(--color-app-tone-orange-from),
+    var(--color-app-tone-orange-to)
+  );
 }
 .tone-orange .module-icon {
-  background: #ffe1cc;
-  color: #e76722;
+  background: var(--color-app-tone-orange-icon-surface);
+  color: var(--color-app-tone-orange-icon);
 }
 .dashboard-data-grid {
   display: grid;
@@ -1646,9 +1662,9 @@ body {
   gap: 0.9rem;
 }
 .dashboard-panel {
-  border: 1px solid #e7ebf2;
+  border: 1px solid var(--color-app-border);
   border-radius: 13px;
-  background: #fff;
+  background: var(--color-app-surface);
   padding: 1rem;
   box-shadow: 0 1px 2px rgb(23 32 51 / 3%);
 }
@@ -1663,12 +1679,12 @@ body {
   grid-template-columns: auto minmax(130px, 1fr) auto auto auto;
   align-items: center;
   gap: 0.7rem;
-  border-top: 1px solid #edf0f5;
+  border-top: 1px solid var(--color-app-row-border);
   font-size: 0.72rem;
 }
 .recent-content-list a {
   overflow: hidden;
-  color: #263249;
+  color: var(--color-app-text-strong);
   font-weight: 600;
   text-decoration: none;
   text-overflow: ellipsis;
@@ -1680,13 +1696,13 @@ body {
   height: 28px;
   place-items: center;
   border-radius: 7px;
-  background: #f1f4fb;
-  color: #536079;
+  background: var(--color-app-type-icon-surface);
+  color: var(--color-app-type-icon);
 }
 .recent-module {
   border-radius: 999px;
-  background: #efedff;
-  color: #6254c9;
+  background: var(--color-app-module-tag-surface);
+  color: var(--color-app-module-tag-text);
   padding: 0.25rem 0.55rem;
   font-size: 0.62rem;
   font-weight: 650;
@@ -1694,21 +1710,21 @@ body {
 .content-status {
   border-radius: 999px;
   padding: 0.25rem 0.55rem;
-  background: #f0f3f7;
-  color: #667287;
+  background: var(--color-app-status-surface);
+  color: var(--color-app-status-text);
   font-size: 0.62rem;
 }
 .status-approved,
 .status-published {
-  background: #e8f7f0;
-  color: #157a51;
+  background: var(--color-app-status-published-surface);
+  color: var(--color-app-status-published-text);
 }
 .status-scheduled {
-  background: #eaf2ff;
-  color: #2762bb;
+  background: var(--color-app-status-scheduled-surface);
+  color: var(--color-app-status-scheduled-text);
 }
 .recent-content-list time {
-  color: #8993a5;
+  color: var(--color-app-timestamp);
   white-space: nowrap;
 }
 .calendar-summary-date {
@@ -1717,20 +1733,20 @@ body {
   gap: 0.65rem;
   margin-top: 0.75rem;
   border-radius: 10px;
-  background: #f6f7ff;
+  background: var(--color-app-date-surface);
   padding: 0.8rem;
-  color: #4f46e5;
+  color: var(--color-app-accent-strong);
 }
 .calendar-summary-date span {
   display: grid;
 }
 .calendar-summary-date strong {
-  color: #2b3650;
+  color: var(--color-app-date-strong);
   font-size: 0.76rem;
 }
 .calendar-summary-date small {
   margin-top: 0.15rem;
-  color: #7b869a;
+  color: var(--color-app-date-muted);
   font-size: 0.64rem;
 }
 .calendar-summary ul {
@@ -1749,16 +1765,16 @@ body {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #7958f5;
+  background: var(--color-app-calendar-marker);
 }
 .calendar-summary li a {
-  color: #344057;
+  color: var(--color-app-calendar-link);
   font-size: 0.7rem;
   font-weight: 600;
   text-decoration: none;
 }
 .calendar-summary li small {
-  color: #7d889b;
+  color: var(--color-app-calendar-meta);
   font-size: 0.6rem;
 }
 .panel-empty {
@@ -1767,7 +1783,7 @@ body {
   align-items: center;
   justify-content: center;
   gap: 0.7rem;
-  color: #7a8598;
+  color: var(--color-app-empty-text);
   font-size: 0.75rem;
   text-align: center;
 }
@@ -1776,7 +1792,7 @@ body {
   flex-direction: column;
 }
 .panel-empty a {
-  color: #315cff;
+  color: var(--color-app-accent);
   font-weight: 650;
   text-decoration: none;
 }
@@ -1790,9 +1806,9 @@ body {
   max-width: 900px;
   justify-items: center;
   margin: 3rem auto;
-  border: 1px solid #e4e8f2;
+  border: 1px solid var(--color-app-empty-border);
   border-radius: 18px;
-  background: #fff;
+  background: var(--color-app-surface);
   padding: clamp(2rem, 6vw, 4rem);
   text-align: center;
 }
@@ -1802,8 +1818,8 @@ body {
   height: 50px;
   place-items: center;
   border-radius: 14px;
-  background: #eef1ff;
-  color: #4f46e5;
+  background: var(--color-app-accent-surface);
+  color: var(--color-app-accent-strong);
 }
 .dashboard-empty h2 {
   margin: 1rem 0 0;
@@ -1811,7 +1827,7 @@ body {
 }
 .dashboard-empty > p {
   max-width: 55ch;
-  color: #748094;
+  color: var(--color-app-text-muted);
 }
 .dashboard-empty ol {
   display: grid;
@@ -1827,13 +1843,13 @@ body {
   min-height: 70px;
   align-items: center;
   gap: 0.55rem;
-  border: 1px solid #e7ebf2;
+  border: 1px solid var(--color-app-border);
   border-radius: 11px;
   padding: 0.75rem;
   text-align: left;
 }
 .dashboard-empty li > span {
-  color: #9aa4b5;
+  color: var(--color-app-empty-step);
   font-size: 0.65rem;
 }
 .project-workspace {
@@ -1848,7 +1864,7 @@ body {
 }
 .project-heading p {
   margin: 0;
-  color: #748094;
+  color: var(--color-app-text-muted);
   font-size: 0.75rem;
 }
 .project-heading h1 {
@@ -1859,11 +1875,11 @@ body {
   letter-spacing: -0.025em;
 }
 .project-heading > span {
-  border: 1px solid #dce2ec;
+  border: 1px solid var(--color-app-chip-border);
   border-radius: 999px;
-  background: #fff;
+  background: var(--color-app-surface);
   padding: 0.35rem 0.7rem;
-  color: #657187;
+  color: var(--color-app-text-secondary);
   font-size: 0.65rem;
   font-weight: 650;
 }
@@ -1871,7 +1887,7 @@ body {
   display: flex;
   gap: 0.25rem;
   overflow-x: auto;
-  border-bottom: 1px solid #e3e8f0;
+  border-bottom: 1px solid var(--color-app-tabs-border);
   scrollbar-width: thin;
 }
 .project-navigation a {
@@ -1882,17 +1898,17 @@ body {
   gap: 0.45rem;
   border-bottom: 2px solid transparent;
   padding: 0 0.7rem;
-  color: #758096;
+  color: var(--color-app-tab-text);
   font-size: 0.72rem;
   font-weight: 650;
   text-decoration: none;
 }
 .project-navigation a:hover {
-  color: #263249;
+  color: var(--color-app-text-strong);
 }
 .project-navigation a.is-active {
-  border-bottom-color: #315cff;
-  color: #315cff;
+  border-bottom-color: var(--color-app-accent);
+  color: var(--color-app-accent);
 }
 
 @media (min-width: 1024px) {

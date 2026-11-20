@@ -1,6 +1,6 @@
 # Creative AI Workspace — proposta de nova direção UX/UI
 
-**Data:** 2026-11-20 · **Estado:** proposta e protótipo, à espera de aprovação · **Protótipo:** `/app/studio` (não substitui nada)
+**Data:** 2026-11-20 · **Estado:** direção aprovada a 2026-11-20 (com as propostas da secção 6: inglês, tema claro mantido, SEO dentro de Website). S0 e S1 feitas · **Protótipo:** `/app/studio` (não substitui nada)
 
 Objetivo: o Web Content Flow deixa de parecer um dashboard SaaS administrativo e passa a ter identidade própria de *Creative AI Workspace*: escuro, premium e cinematográfico, com a criação no centro. Mantém-se a arquitetura, a lógica de negócio e todos os módulos.
 
@@ -121,7 +121,7 @@ Cada etapa é um PR com CI verde, sem migrations nem mudanças de API ou de lóg
 | Etapa | Conteúdo | Critério de saída |
 |---|---|---|
 | **S0** (este PR) | Proposta, protótipo `/app/studio`, tokens com âmbito | Aprovação da direção |
-| **S1** Fundações | Tokens Studio em `design-tokens/` (tema `studio`), `globals.css` passa a consumir tokens, hex soltos migrados | Mesma interface visual, zero hex fora dos tokens, testes visuais iguais |
+| **S1** Fundações ✅ | Paleta Studio em `design-tokens/` (`--color-studio-*`). As 87 cores soltas da app em `globals.css` passaram a 59 tokens de papel (`--color-app-*`) com os valores exatos. O CSS do marketing fica de fora (direção própria, doc 15). O protótipo usa os tokens | Feito: 23 ecrãs iguais píxel a píxel (1440 e 390 px), zero hex no CSS da app |
 | **S2** Shell + Command Bar | Shell Studio para todas as rotas `/app` (no layout, sem depender do pathname), Command Bar global, Local AI na navegação | E2E e axe verdes, sem regressão móvel |
 | **S3** Home | O protótipo passa a ser `/app`. O dashboard antigo fica acessível durante uma versão | E2E de criação e navegação |
 | **S4** Projeto e módulos | Overview e os 6 workspaces no tema | Todos os E2E de fase 2–4 verdes |

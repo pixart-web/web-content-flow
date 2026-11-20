@@ -1,29 +1,30 @@
 /*
  * Studio prototype: the "Creative AI Workspace" direction (proposal doc 55).
- * Tokens are scoped to .studio so the existing interface is unchanged.
+ * The palette comes from design-tokens (--color-studio-*); the --st-* names
+ * are this module's short aliases, scoped to .studio.
  * Contrast (on --st-canvas): text 17.8:1, text-2 10:1, text-3 6:1,
  * lavender 10.7:1, coral 9.2:1; white on violet 5.2:1 (hover darker, 6.4:1). Motion is transform/opacity only and stops
  * under prefers-reduced-motion.
  */
 .studio {
   /* Color: deep violet field, lavender for emphasis, coral for warmth. */
-  --st-canvas: #0c0816;
-  --st-surface: #141022;
-  --st-surface-raised: #1b152d;
-  --st-surface-hover: #221a39;
-  --st-border: rgb(196 181 253 / 12%);
-  --st-border-strong: rgb(196 181 253 / 26%);
-  --st-text: #f5f1ff;
-  --st-text-2: #bdb3da;
-  --st-text-3: #9187b3;
-  --st-violet: #6d4aff;
-  --st-violet-hover: #5b3bea;
-  --st-lavender: #c4b5fd;
-  --st-lavender-strong: #a78bfa;
-  --st-coral: #ff9474;
-  --st-success: #6ee7b7;
-  --st-warning: #fcd34d;
-  --st-focus: #d8ccff;
+  --st-canvas: var(--color-studio-canvas);
+  --st-surface: var(--color-studio-surface);
+  --st-surface-raised: var(--color-studio-surface-raised);
+  --st-surface-hover: var(--color-studio-surface-hover);
+  --st-border: var(--color-studio-border);
+  --st-border-strong: var(--color-studio-border-strong);
+  --st-text: var(--color-studio-text);
+  --st-text-2: var(--color-studio-text-secondary);
+  --st-text-3: var(--color-studio-text-muted);
+  --st-violet: var(--color-studio-violet);
+  --st-violet-hover: var(--color-studio-violet-hover);
+  --st-lavender: var(--color-studio-lavender);
+  --st-lavender-strong: var(--color-studio-lavender-strong);
+  --st-coral: var(--color-studio-coral);
+  --st-success: var(--color-studio-success);
+  --st-warning: var(--color-studio-warning);
+  --st-focus: var(--color-studio-focus);
   /* Shape and space. */
   --st-radius-s: 10px;
   --st-radius-m: 16px;

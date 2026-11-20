@@ -206,6 +206,94 @@
   --shadow-focus: 0 0 0 2px #0f172a, 0 0 0 4px #60a5fa;
 }
 
+/* Application surfaces (S1, doc 55): the authenticated app's colours as
+ * roles. Exact values of the current light interface; the Studio theme
+ * (S2) redefines them under [data-theme="studio"]. */
+:root {
+  --color-app-canvas: #f7f9fc;
+  --color-app-surface: #fff;
+  --color-app-surface-hover: #f5f7fb;
+  --color-app-control-hover: #f1f4f9;
+  --color-app-border: #e7ebf2;
+  --color-app-row-border: #edf0f5;
+  --color-app-card-border: #e2e6f0;
+  --color-app-card-border-hover: #c7cff5;
+  --color-app-empty-border: #e4e8f2;
+  --color-app-chip-border: #dce2ec;
+  --color-app-tabs-border: #e3e8f0;
+  --color-app-text: #172033;
+  --color-app-text-strong: #263249;
+  --color-app-text-secondary: #657187;
+  --color-app-text-muted: #748094;
+  --color-app-tab-text: #758096;
+  --color-app-timestamp: #8993a5;
+  --color-app-empty-text: #7a8598;
+  --color-app-empty-step: #9aa4b5;
+  --color-app-accent: #315cff;
+  --color-app-accent-surface: #eef1ff;
+  --color-app-accent-strong: #4f46e5;
+  --color-app-action: #111827;
+  --color-app-action-text: #fff;
+  --color-app-avatar-border: #d9dcff;
+  --color-app-avatar-surface: #ece9ff;
+  --color-app-avatar-text: #5544c9;
+  --color-app-tone-indigo-from: #f0f2ff;
+  --color-app-tone-indigo-to: #f7f7ff;
+  --color-app-tone-indigo-icon-surface: #dfe4ff;
+  --color-app-tone-indigo-icon: #4f46e5;
+  --color-app-tone-blue-from: #edf6ff;
+  --color-app-tone-blue-to: #f5faff;
+  --color-app-tone-blue-icon-surface: #d8ecff;
+  --color-app-tone-blue-icon: #2774df;
+  --color-app-tone-purple-from: #f4efff;
+  --color-app-tone-purple-to: #faf7ff;
+  --color-app-tone-purple-icon-surface: #e7dcff;
+  --color-app-tone-purple-icon: #7958f5;
+  --color-app-tone-orange-from: #fff3ea;
+  --color-app-tone-orange-to: #fff9f5;
+  --color-app-tone-orange-icon-surface: #ffe1cc;
+  --color-app-tone-orange-icon: #e76722;
+  --color-app-type-icon-surface: #f1f4fb;
+  --color-app-type-icon: #536079;
+  --color-app-module-tag-surface: #efedff;
+  --color-app-module-tag-text: #6254c9;
+  --color-app-status-surface: #f0f3f7;
+  --color-app-status-text: #667287;
+  --color-app-status-published-surface: #e8f7f0;
+  --color-app-status-published-text: #157a51;
+  --color-app-status-scheduled-surface: #eaf2ff;
+  --color-app-status-scheduled-text: #2762bb;
+  --color-app-date-surface: #f6f7ff;
+  --color-app-date-strong: #2b3650;
+  --color-app-date-muted: #7b869a;
+  --color-app-calendar-marker: #7958f5;
+  --color-app-calendar-link: #344057;
+  --color-app-calendar-meta: #7d889b;
+}
+
+/* Studio palette (doc 55): the Creative AI Workspace direction. Contrast on
+ * canvas: text 17.8:1, text-secondary 10:1, text-muted 6:1, lavender 10.7:1,
+ * coral 9.2:1; white on violet 5.2:1, on violet-hover 6.4:1. */
+:root {
+  --color-studio-canvas: #0c0816;
+  --color-studio-surface: #141022;
+  --color-studio-surface-raised: #1b152d;
+  --color-studio-surface-hover: #221a39;
+  --color-studio-border: rgb(196 181 253 / 12%);
+  --color-studio-border-strong: rgb(196 181 253 / 26%);
+  --color-studio-text: #f5f1ff;
+  --color-studio-text-secondary: #bdb3da;
+  --color-studio-text-muted: #9187b3;
+  --color-studio-violet: #6d4aff;
+  --color-studio-violet-hover: #5b3bea;
+  --color-studio-lavender: #c4b5fd;
+  --color-studio-lavender-strong: #a78bfa;
+  --color-studio-coral: #ff9474;
+  --color-studio-success: #6ee7b7;
+  --color-studio-warning: #fcd34d;
+  --color-studio-focus: #d8ccff;
+}
+
 @media (prefers-reduced-motion: reduce) {
   :root {
     --motion-duration-fast: 0ms;

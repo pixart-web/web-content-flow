@@ -12,6 +12,8 @@ on:
       - "scripts/desktop-smoke.mjs"
       - "scripts/package-*.mjs"
       - "tests/desktop/**"
+      - "tests/desktop-e2e/**"
+      - "playwright.desktop.config.ts"
       - ".github/workflows/desktop.yml"
       - "package.json"
       - "pnpm-lock.yaml"
@@ -71,6 +73,24 @@ jobs:
       - name: Launch the desktop app
         if: runner.os != 'Linux'
         run: node scripts/desktop-smoke.mjs
+      # LF-21: owner journey across two launches with an offline guard that
+      # refuses every connection leaving the machine (Playwright + Electron).
+      - name: Desktop end-to-end test (Linux, virtual display)
+        if: runner.os == 'Linux'
+        env:
+          WCF_DESKTOP_E2E_ARGS: --no-sandbox --disable-gpu
+        run: dbus-run-session -- bash -c 'echo "" | gnome-keyring-daemon --unlock --components=secrets > /dev/null && xvfb-run -a pnpm test:desktop:e2e'
+      - name: Desktop end-to-end test
+        if: runner.os != 'Linux'
+        run: pnpm test:desktop:e2e
+      - name: Upload the end-to-end trace
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: desktop-e2e-trace-${{ runner.os }}
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Package (Linux)
         if: runner.os == 'Linux'
         run: |

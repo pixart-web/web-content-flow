@@ -4,7 +4,7 @@ import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 
-import styles from "./studio.module.css";
+import styles from "./command-bar.module.css";
 
 export type StudioCommand = {
   id: string;
@@ -88,13 +88,15 @@ export function CommandBar({ commands }: { commands: StudioCommand[] }) {
     <>
       <button
         aria-haspopup="dialog"
-        className={styles.commandTrigger}
+        className={styles.trigger}
         onClick={() => setOpen(true)}
         ref={triggerRef}
         type="button"
       >
         <Search aria-hidden size={18} />
-        <span>Search projects, modules and settings</span>
+        <span className={styles.label}>
+          Search projects, modules and settings
+        </span>
         <span aria-hidden className={styles.kbd}>
           ⌘K
         </span>
@@ -123,7 +125,7 @@ export function CommandBar({ commands }: { commands: StudioCommand[] }) {
               aria-controls={listId}
               aria-expanded="true"
               aria-label="Search commands"
-              className={styles.paletteInput}
+              className={styles.input}
               onChange={(event) => {
                 setQuery(event.target.value);
                 setActive(0);
@@ -134,7 +136,7 @@ export function CommandBar({ commands }: { commands: StudioCommand[] }) {
               role="combobox"
               value={query}
             />
-            <ul className={styles.paletteList} id={listId} role="listbox">
+            <ul className={styles.list} id={listId} role="listbox">
               {results.map((command, index) => {
                 const heading =
                   results[index - 1]?.group !== command.group
@@ -143,13 +145,13 @@ export function CommandBar({ commands }: { commands: StudioCommand[] }) {
                 return (
                   <li key={command.id} role="presentation">
                     {heading ? (
-                      <div aria-hidden className={styles.paletteGroup}>
+                      <div aria-hidden className={styles.group}>
                         {heading}
                       </div>
                     ) : null}
                     <div
                       aria-selected={index === active}
-                      className={`${styles.paletteOption} ${index === active ? styles.paletteOptionActive : ""}`}
+                      className={`${styles.option} ${index === active ? styles.optionActive : ""}`}
                       id={`${listId}-${command.id}`}
                       onClick={() => run(command)}
                       onMouseMove={() => setActive(index)}
@@ -157,9 +159,7 @@ export function CommandBar({ commands }: { commands: StudioCommand[] }) {
                     >
                       <span>{command.label}</span>
                       {command.detail ? (
-                        <span className={styles.sectionMeta}>
-                          {command.detail}
-                        </span>
+                        <span className={styles.detail}>{command.detail}</span>
                       ) : null}
                     </div>
                   </li>
@@ -167,11 +167,11 @@ export function CommandBar({ commands }: { commands: StudioCommand[] }) {
               })}
             </ul>
             {!results.length ? (
-              <p className={styles.paletteFoot} role="status">
+              <p className={styles.foot} role="status">
                 Nothing matches “{query}”.
               </p>
             ) : (
-              <p className={styles.paletteFoot}>
+              <p className={styles.foot}>
                 ↑↓ to move · Enter to open · Esc to close. Asking the local AI
                 for a task from here is a later stage.
               </p>

@@ -73,6 +73,8 @@ Related: [Color System](04-color-system.md), [Typography](05-typography.md), and
 
 The authenticated application's CSS (`src/app/globals.css`, from the app shell onwards) no longer contains raw colours. Each one is a role token, `--color-app-*` (`color.app.*` in `tokens.json`): canvas, surfaces, borders, text levels, accent, module tones, content statuses, calendar. The values are the exact light values they replaced, so the interface is unchanged (verified pixel for pixel on 23 screens at 1440 px and 390 px).
 
-`--color-studio-*` (`color.studio.*`) is the palette of the Creative AI Workspace direction ([doc 55](../technical/55-creative-ai-workspace-proposal.md)). The Studio prototype consumes it. In S2, `[data-theme="studio"]` gives the `--color-app-*` roles Studio values, so the existing screens change theme without touching their CSS.
+`--color-studio-*` (`color.studio.*`) is the palette of the Creative AI Workspace direction ([doc 55](../technical/55-creative-ai-workspace-proposal.md)).
+
+**Studio theme (S2):** `[data-theme="studio"]` (`color.studioTheme` in `tokens.json`) redefines the semantic tokens and every `--color-app-*` role. The app shell sets the attribute from the `wcf-theme` cookie. Studio is the default, and light remains available through the shell's theme button. Every text/background pair is at least 4.5:1. The light muted text roles were raised to `#636E82` (5.1:1) after an axe audit found them below AA.
 
 The marketing site keeps its own `--marketing-*` variables (doc 15) and is out of scope.

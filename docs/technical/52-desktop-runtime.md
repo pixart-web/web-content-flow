@@ -145,3 +145,19 @@ O teste falha se houver uma única ligação recusada fora das sondas que ele pr
 - **macOS:** o teste usa `--use-mock-keychain`. Com o Porta-chaves real, o sistema pede autorização a quem está ao computador e o arranque fica parado.
 - **CI:** corre no workflow Desktop em Linux (xvfb + gnome-keyring), Windows e macOS, a seguir ao smoke. O trace do Playwright fica como artefacto quando falha.
 - **Ainda não coberto:** a rede física desligada (o guarda substitui-a ao nível dos processos da app; ligações do próprio Chromium fora da sessão, como verificações de componentes, não passam por ele), a app empacotada assinada (os ganchos de teste estão desligados nela de propósito), a IA local com Ollama (o CI não tem modelo; o teste usa o mock), e fechar a app a meio de um job.
+
+## Primeiro arranque (LF-20, 2026-11-20)
+
+Depois de "Set up this computer" (perfil de dono, LF-06), o onboarding em modo `local` mostra o bloco **This computer** antes do primeiro projeto:
+
+- **Os teus dados:** ficam só neste computador, há snapshot antes de cada atualização, e o pacote de workspace está em Settings → Workspace.
+- **IA local** (`src/features/desktop/first-run-ai-step.tsx`, lógica em `first-run-ai.ts`): lê o mesmo `aiOverview()` do ecrã Local AI e mostra um de três estados:
+  - modelo ativo ("pronto");
+  - computador abaixo dos 16 GB: fica em mock, ou liga-se a um servidor privado;
+  - modelo recomendado que cabe no disco, com tamanho e licença, se o Ollama já está instalado, e "Set up local AI".
+
+  O link abre Settings → Local AI com `?from=onboarding`, que mostra "← Back to first project setup". O projeto nunca espera pela IA: sem modelo ativo, a geração fica em mock.
+- O aviso sobre geração deixa de dizer, em modo `local`, que o contexto vai para um fornecedor externo.
+- **Correção:** o proxy do modo `local` redirecionava `/brand/*` para `/app`, e o logótipo da app nunca aparecia na edição desktop. `/brand` passou à lista de caminhos servidos (continua a exigir o token).
+- O E2E desktop (LF-21) verifica o bloco, a ida e a volta ao ecrã Local AI quando a máquina o suporta, o aviso e o logótipo, sempre com o guarda sem rede.
+- **Ainda não feito no LF-20:** auto-update, assinatura e notarização (dependem da conta Apple Developer).

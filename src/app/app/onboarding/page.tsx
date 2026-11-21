@@ -1,9 +1,12 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { FirstRunAiStep } from "@/features/desktop/first-run-ai-step";
 import {
   continueOnboardingAction,
   skipCompletedOnboardingAction,
 } from "@/features/onboarding/onboarding-actions";
+import { getServerEnv } from "@/lib/env/server";
 import { requireUser } from "@/server/auth/require-user";
 import { getPrisma } from "@/server/db/prisma";
 
@@ -18,6 +21,8 @@ export default async function OnboardingPage() {
     },
   });
   if (record.onboardingCompletedAt) redirect("/app");
+  // LF-20: the desktop edition adds a "this computer" step before the Brief.
+  const localMode = getServerEnv().APP_MODE === "local";
 
   return (
     <main className="mx-auto max-w-3xl">
@@ -34,6 +39,40 @@ export default async function OnboardingPage() {
           every selected module.
         </p>
       </header>
+
+      {localMode ? (
+        <section
+          aria-labelledby="this-computer"
+          className="border-default bg-surface rounded-panel mt-8 border p-6"
+        >
+          <h2 className="font-display text-xl font-semibold" id="this-computer">
+            This computer
+          </h2>
+          <div className="mt-5 grid gap-6 sm:grid-cols-2">
+            <div>
+              <h3 className="font-semibold">Your data</h3>
+              <p className="text-secondary mt-1 text-sm">
+                Projects are stored only on this computer. The app takes a
+                snapshot before each update, and you can export everything as a
+                workspace package at any time in{" "}
+                <Link
+                  className="text-link underline"
+                  href="/app/settings/workspace"
+                >
+                  Settings → Workspace
+                </Link>
+                .
+              </p>
+            </div>
+            <div>
+              <h3 className="font-semibold">Local AI</h3>
+              <div className="mt-1">
+                <FirstRunAiStep />
+              </div>
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       <section className="border-default bg-surface rounded-panel mt-8 border p-6">
         <h2 className="font-display text-xl font-semibold">
@@ -60,9 +99,9 @@ export default async function OnboardingPage() {
           </li>
         </ol>
         <div className="border-default bg-surface-subtle rounded-control mt-6 border p-4 text-sm">
-          Real generation sends the necessary project context to the configured
-          AI provider. Mock mode makes no external AI request. Generated claims
-          still require your factual review.
+          {localMode
+            ? "Generation runs with the local model on this computer, or in mock mode until one is active. Nothing is sent to an external AI provider. Generated claims still require your factual review."
+            : "Real generation sends the necessary project context to the configured AI provider. Mock mode makes no external AI request. Generated claims still require your factual review."}
         </div>
         <form action={continueOnboardingAction} className="mt-6">
           <button className="bg-action-primary text-inverse rounded-control min-h-11 px-5 font-semibold">

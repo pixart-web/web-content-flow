@@ -133,6 +133,49 @@ test("desktop edition works end to end without leaving this computer", async () 
     await window.getByRole("button", { name: "Create account" }).click();
     await expect(window).toHaveURL(/\/app\/onboarding$/);
 
+    await test.step("first-run step: this computer and local AI", async () => {
+      await expect(
+        window.getByRole("heading", { level: 2, name: "This computer" }),
+      ).toBeVisible();
+      // The app shell's logo is a static file the local-mode proxy must serve
+      // (it used to answer with the /app page). Its rendered size is not
+      // checked: next/image loads it lazily, and a CI window that does not
+      // count as visible (Windows runners) never loads it.
+      const logo = window.locator(".app-brand img");
+      const served = await logo.evaluate(async (image: HTMLImageElement) => {
+        const response = await fetch(image.currentSrc || image.src);
+        return {
+          src: image.currentSrc || image.src,
+          status: response.status,
+          type: response.headers.get("content-type"),
+          start: (await response.text()).slice(0, 80),
+        };
+      });
+      expect(served.status, JSON.stringify(served)).toBe(200);
+      expect(served.type, JSON.stringify(served)).toContain("image/svg+xml");
+      await expect(
+        window.getByText("Projects are stored only on this computer."),
+      ).toBeVisible();
+      // CI runners differ in memory: either the setup is offered or the app
+      // explains why it stays in mock mode. Never a stuck "Checking…".
+      const setup = window.getByRole("link", { name: "Set up local AI" });
+      const unsupported = window.getByText(/less than local models need/);
+      await expect(setup.or(unsupported)).toBeVisible({ timeout: 30_000 });
+      if (await setup.isVisible()) {
+        await setup.click();
+        await expect(
+          window.getByRole("heading", { level: 1, name: "Local AI" }),
+        ).toBeVisible();
+        await window
+          .getByRole("link", { name: "← Back to first project setup" })
+          .click();
+        await expect(window).toHaveURL(/\/app\/onboarding$/);
+      }
+      await expect(
+        window.getByText(/Nothing is sent to an external AI provider/),
+      ).toBeVisible();
+    });
+
     await test.step("project and mock generation through the worker", async () => {
       await createProject(window);
       await expect(window).toHaveURL(/\/app\/projects\/[^/]+$/);

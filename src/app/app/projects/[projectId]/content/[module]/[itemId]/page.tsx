@@ -93,7 +93,7 @@ export default async function ContentItemPage({
       <div className="space-y-6">
         <nav aria-label="Breadcrumb" className="text-secondary text-sm">
           <Link
-            className="text-link"
+            className="text-link underline underline-offset-2"
             href={`/app/projects/${projectId}/content/calendar`}
           >
             Content Calendar
@@ -166,7 +166,7 @@ export default async function ContentItemPage({
       <div className="space-y-6">
         <nav aria-label="Breadcrumb" className="text-secondary text-sm">
           <Link
-            className="text-link"
+            className="text-link underline underline-offset-2"
             href={`/app/projects/${projectId}/content/video`}
           >
             Video &amp; Reels
@@ -231,7 +231,7 @@ export default async function ContentItemPage({
       <div className="space-y-6">
         <nav aria-label="Breadcrumb" className="text-secondary text-sm">
           <Link
-            className="text-link"
+            className="text-link underline underline-offset-2"
             href={`/app/projects/${projectId}/content/ads`}
           >
             Ads &amp; Creative
@@ -308,7 +308,7 @@ export default async function ContentItemPage({
       <div className="space-y-6">
         <nav aria-label="Breadcrumb" className="text-secondary text-sm">
           <Link
-            className="text-link"
+            className="text-link underline underline-offset-2"
             href={`/app/projects/${projectId}/content/social`}
           >
             Social
@@ -369,7 +369,7 @@ export default async function ContentItemPage({
       <div className="space-y-6">
         <nav aria-label="Breadcrumb" className="text-secondary text-sm">
           <Link
-            className="text-link"
+            className="text-link underline underline-offset-2"
             href={`/app/projects/${projectId}/content/website`}
           >
             Website
@@ -431,7 +431,7 @@ export default async function ContentItemPage({
       <div className="space-y-6">
         <nav aria-label="Breadcrumb" className="text-secondary text-sm">
           <Link
-            className="text-link"
+            className="text-link underline underline-offset-2"
             href={`/app/projects/${projectId}/content/copy`}
           >
             General Copy
@@ -506,7 +506,10 @@ export default async function ContentItemPage({
   return (
     <div className="space-y-6">
       <nav aria-label="Breadcrumb" className="text-secondary text-sm">
-        <Link className="text-link" href={`/app/projects/${projectId}/library`}>
+        <Link
+          className="text-link underline underline-offset-2"
+          href={`/app/projects/${projectId}/library`}
+        >
           Library
         </Link>{" "}
         / {item.title}

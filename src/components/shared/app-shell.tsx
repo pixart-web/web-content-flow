@@ -2,11 +2,14 @@
 
 import {
   ChevronRight,
+  Cpu,
   FolderKanban,
   LayoutDashboard,
   LogOut,
   Menu,
+  Moon,
   Settings,
+  Sun,
   X,
 } from "lucide-react";
 import Image from "next/image";
@@ -15,26 +18,68 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { signOutAction } from "@/features/auth/auth-actions";
+import { CommandBar, type StudioCommand } from "@/features/studio/command-bar";
+import { setThemeAction } from "@/features/theme/theme-actions";
+import type { AppTheme } from "@/features/theme/theme";
 
-const items = [
-  { href: "/app", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  {
-    href: "/app/projects",
-    label: "Projects",
-    icon: FolderKanban,
-    exact: false,
-  },
-  { href: "/app/settings", label: "Settings", icon: Settings, exact: false },
-] as const;
+const LOCAL_AI = "/app/settings/local-ai";
 
-function Navigation({ onNavigate }: { onNavigate?: () => void }) {
+function navigationItems(localMode: boolean) {
+  return [
+    { href: "/app", label: "Dashboard", icon: LayoutDashboard, exact: true },
+    {
+      href: "/app/projects",
+      label: "Projects",
+      icon: FolderKanban,
+      exact: false,
+    },
+    // Desktop edition: the local model is a first-class part of the app.
+    ...(localMode
+      ? [{ href: LOCAL_AI, label: "Local AI", icon: Cpu, exact: false }]
+      : []),
+    { href: "/app/settings", label: "Settings", icon: Settings, exact: false },
+  ];
+}
+
+function ThemeToggle({ theme }: { theme: AppTheme }) {
+  const next = theme === "studio" ? "light" : "studio";
+  const label =
+    next === "light"
+      ? "Switch to the light theme"
+      : "Switch to the Studio theme";
+  return (
+    <form action={setThemeAction}>
+      <input name="theme" type="hidden" value={next} />
+      <button aria-label={label} className="app-icon-button" title={label}>
+        {next === "light" ? (
+          <Sun aria-hidden size={18} />
+        ) : (
+          <Moon aria-hidden size={18} />
+        )}
+      </button>
+    </form>
+  );
+}
+
+function Navigation({
+  localMode,
+  onNavigate,
+}: {
+  localMode: boolean;
+  onNavigate?: () => void;
+}) {
   const pathname = usePathname();
   return (
     <nav aria-label="Application navigation" className="app-navigation">
-      {items.map((item) => {
+      {navigationItems(localMode).map((item) => {
         const active = item.exact
           ? pathname === item.href
-          : pathname.startsWith(item.href);
+          : pathname.startsWith(item.href) &&
+            !(
+              item.href === "/app/settings" &&
+              localMode &&
+              pathname.startsWith(LOCAL_AI)
+            );
         const Icon = item.icon;
         return (
           <Link
@@ -62,9 +107,15 @@ function Navigation({ onNavigate }: { onNavigate?: () => void }) {
 
 export function AppShell({
   children,
+  commands,
+  localMode,
+  theme,
   user,
 }: {
   children: React.ReactNode;
+  commands: StudioCommand[];
+  localMode: boolean;
+  theme: AppTheme;
   user: { name: string | null; email: string };
 }) {
   const [open, setOpen] = useState(false);
@@ -95,7 +146,7 @@ export function AppShell({
   }
 
   return (
-    <div className="app-shell">
+    <div className="app-shell" data-theme={theme}>
       <aside className="app-sidebar">
         <Link className="app-brand" href="/app">
           <Image
@@ -108,7 +159,7 @@ export function AppShell({
           <span>Web Content Flow</span>
         </Link>
         <div className="app-sidebar-nav">
-          <Navigation />
+          <Navigation localMode={localMode} />
         </div>
         <div className="app-account">
           <span className="app-avatar" aria-hidden>
@@ -118,6 +169,7 @@ export function AppShell({
             <strong>{user.name ?? "Account"}</strong>
             <small>{user.email}</small>
           </span>
+          <ThemeToggle theme={theme} />
           <form action={signOutAction}>
             <button aria-label="Sign out" className="app-icon-button">
               <LogOut aria-hidden size={18} />
@@ -130,18 +182,16 @@ export function AppShell({
         <button
           aria-expanded={open}
           aria-label="Open navigation"
-          className="app-icon-button lg:hidden"
+          className="app-icon-button app-menu-button lg:hidden"
           onClick={() => setOpen(true)}
           ref={menuButtonRef}
         >
           <Menu aria-hidden="true" />
         </button>
-        <div className="app-topbar-title">
-          <span className="lg:hidden">Web Content Flow</span>
-          <span className="hidden lg:inline">{pageLabel}</span>
-        </div>
+        <div className="app-topbar-title hidden lg:block">{pageLabel}</div>
+        <CommandBar commands={commands} />
         <span
-          className="app-avatar ml-auto"
+          className="app-avatar ml-auto shrink-0"
           aria-label={`Signed in as ${user.name ?? user.email}`}
         >
           {initials || "A"}
@@ -202,7 +252,7 @@ export function AppShell({
               </button>
             </div>
             <div className="app-sidebar-nav mt-5">
-              <Navigation onNavigate={closeDrawer} />
+              <Navigation localMode={localMode} onNavigate={closeDrawer} />
             </div>
             <div className="app-account mt-auto">
               <span className="app-avatar" aria-hidden>
@@ -212,6 +262,7 @@ export function AppShell({
                 <strong>{user.name ?? "Account"}</strong>
                 <small>{user.email}</small>
               </span>
+              <ThemeToggle theme={theme} />
               <form action={signOutAction}>
                 <button aria-label="Sign out" className="app-icon-button">
                   <LogOut aria-hidden size={18} />

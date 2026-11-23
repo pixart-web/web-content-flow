@@ -46,7 +46,7 @@ export type StudioData = {
   ai: ServerAiStatus;
 };
 
-function serverAiStatus(): ServerAiStatus {
+export function serverAiStatus(): ServerAiStatus {
   const env = getServerEnv();
   if (!env.AI_REAL_GENERATION_ENABLED) return { kind: "mock" };
   if (env.AI_PROVIDER_DEFAULT === "LOCAL")
@@ -54,6 +54,15 @@ function serverAiStatus(): ServerAiStatus {
   if (env.AI_PROVIDER_DEFAULT === "OPENAI")
     return { kind: "external", provider: "OpenAI" };
   return { kind: "mock" };
+}
+
+/** The generation mode as the project overview states it. */
+export function aiStatusLabel(status: ServerAiStatus): string {
+  if (status.kind === "local-runtime")
+    return status.model ? `Local model · ${status.model}` : "Local model";
+  if (status.kind === "external")
+    return `External provider · ${status.provider}`;
+  return "Mock mode";
 }
 
 export async function loadStudioData(

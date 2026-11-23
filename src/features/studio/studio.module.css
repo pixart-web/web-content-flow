@@ -292,6 +292,73 @@
   line-height: 1.4;
 }
 
+/* ---------- Project modules (S4) ---------- */
+.moduleTiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.moduleTile {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+  padding: 20px;
+  border: 1px solid var(--st-border);
+  border-radius: var(--st-radius-m);
+  background: var(--st-surface);
+  transition: border-color var(--st-fast) var(--st-ease);
+}
+
+.moduleTile:hover,
+.moduleTile:focus-within {
+  border-color: var(--color-border-selected);
+}
+
+.moduleTileHead {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.moduleTileHead .tileLabel {
+  margin: 0;
+}
+
+.moduleCount {
+  margin-left: auto;
+  color: var(--st-text-3);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.moduleText {
+  margin: 0;
+  color: var(--st-text-2);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.moduleAction {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-top: auto;
+  color: var(--st-accent);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.moduleBlocked {
+  margin: auto 0 0;
+  color: var(--st-text-3);
+  font-size: 14px;
+}
+
 /* ---------- Panels ---------- */
 .split {
   display: grid;

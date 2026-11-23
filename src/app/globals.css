@@ -1903,6 +1903,26 @@ body {
   font-size: 0.65rem;
   font-weight: 650;
 }
+.project-heading-text {
+  flex: 1;
+  min-width: 0;
+}
+/* Decorative brand monogram (doc 55, S4); its gradient comes from the name. */
+.project-heading > .project-monogram {
+  display: grid;
+  flex: none;
+  width: 3rem;
+  height: 3rem;
+  place-items: center;
+  border: 0;
+  border-radius: 0.875rem;
+  padding: 0;
+  color: var(--color-text-inverse);
+  font-family: var(--font-loaded-display), var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 35%);
+}
 .project-navigation {
   display: flex;
   gap: 0.25rem;

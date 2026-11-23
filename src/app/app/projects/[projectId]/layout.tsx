@@ -1,4 +1,5 @@
 import { ProjectNavigation } from "@/components/shared/project-navigation";
+import { monogram } from "@/features/studio/monogram";
 import { requireProjectOwner } from "@/server/auth/authorization";
 import { getPrisma } from "@/server/db/prisma";
 
@@ -93,7 +94,14 @@ export default async function ProjectLayout({
   return (
     <div className="project-workspace">
       <header className="project-heading">
-        <div>
+        <span
+          aria-hidden
+          className="project-monogram"
+          style={{ background: monogram(project.brandName) }}
+        >
+          {project.brandName.trim().charAt(0).toUpperCase() || "·"}
+        </span>
+        <div className="project-heading-text">
           <p>{project.brandName}</p>
           <h1>{project.name}</h1>
         </div>

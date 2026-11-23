@@ -13,6 +13,11 @@ on:
       - "scripts/package-*.mjs"
       - "tests/desktop/**"
       - "tests/desktop-e2e/**"
+      # The desktop end-to-end test walks the app's pages, so interface
+      # changes must run it too (a home redesign once broke it unseen).
+      - "src/app/**"
+      - "src/components/**"
+      - "src/features/**"
       - "playwright.desktop.config.ts"
       - ".github/workflows/desktop.yml"
       - "package.json"

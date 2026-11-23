@@ -1,6 +1,6 @@
 # Creative AI Workspace — proposta de nova direção UX/UI
 
-**Data:** 2026-11-20 · **Estado:** direção aprovada a 2026-11-20 (com as propostas da secção 6: inglês, tema claro mantido, SEO dentro de Website). S0 a S5 feitas · **Protótipo:** `/app/studio` (não substitui nada)
+**Data:** 2026-11-20 · **Estado:** direção aprovada a 2026-11-20 (com as propostas da secção 6: inglês, tema claro mantido, SEO dentro de Website). S0 a S6 feitas; falta a passagem final de testes · **Protótipo:** `/app/studio` (não substitui nada)
 
 Objetivo: o Web Content Flow deixa de parecer um dashboard SaaS administrativo e passa a ter identidade própria de *Creative AI Workspace*: escuro, premium e cinematográfico, com a criação no centro. Mantém-se a arquitetura, a lógica de negócio e todos os módulos.
 
@@ -126,7 +126,7 @@ Cada etapa é um PR com CI verde, sem migrations nem mudanças de API ou de lóg
 | **S3** Home ✅ | A home Studio passa a ser `/app`, dentro do shell e nos dois temas, com o "Conteúdo recente" vindo do dashboard. O dashboard antigo fica em `/app/dashboard` durante esta versão, ligado no fim da home e na Command Bar. `/app/studio` redireciona para `/app`. A entrada da navegação chama-se "Studio" | Feito: E2E web 63/63 numa base semeada como no CI, axe sem violações na home e no dashboard (2 temas × 2 tamanhos) |
 | **S4** Projeto e módulos ✅ | Cabeçalho do projeto com monograma. No overview, os seis módulos passam a tiles de criação com a contagem real de conteúdos e o aviso de limites de cada um. O modo de geração é o verdadeiro (antes dizia sempre "Mock mode"). Os workspaces dos módulos já estavam no tema desde a S2 e mantêm layout e ações | Feito: axe sem violações em 8 rotas × 2 temas × 2 tamanhos, E2E web 63/63 mais um teste novo |
 | **S5** Restantes ecrãs ✅ | O login, o registo e a recuperação de password passam ao tema da app (cookie lido no servidor), com a marca e um brilho discreto. Library: os filtros de cada módulo só aparecem para o módulo escolhido, ou quando têm um valor ativo (só CSS, o formulário não muda). Settings: cada secção diz o que contém. Privacy: no desktop, o texto deixa de dizer que a geração envia o contexto para fora. Library, Calendar, Brand Profile, Brief, Knowledge e Export já estavam no tema desde a S2 | Feito: axe sem violações em 27 rotas × 2 temas × 2 tamanhos (108 verificações), E2E web 64/64 |
-| **S6** Polimento | Motion final, estados vazios, carregamento e erro, screenshots de referência | Checklist do doc 18 e testes finais |
+| **S6** Polimento ✅ | Os separadores do projeto mostram por esbatimento que há mais para os lados e mantêm o ativo visível. O carregamento tem a forma de uma página Studio, e o erro aponta para o Studio. Monogramas feitos só de tokens. Scroll horizontal a 320 px corrigido (os campos de ficheiro). Capturas de referência em `docs/design/reference/`. Checklist do doc 18 abaixo | Feito: axe sem violações e sem scroll horizontal em 23 rotas × 2 temas × 320 e 1440 px |
 
 **Riscos:**
 - **Contraste no escuro:** valores calculados (WCAG 2.x) acima, e o axe corre em cada etapa. Um primeiro tom de hover (`#7D5EFF`, 4,3:1) falhava AA e foi substituído.
@@ -186,3 +186,23 @@ Cada etapa é um PR com CI verde, sem migrations nem mudanças de API ou de lóg
 - **Filtros da Library:** eram 15 sempre visíveis antes do conteúdo. Ficam a pesquisa, o módulo, o estado e a campanha (que serve vários módulos). Os restantes aparecem por `:has()` quando o módulo está escolhido ou quando o filtro tem um valor, por isso um filtro aplicado nunca fica escondido. Os E2E não mudaram, porque já escolhiam o módulo primeiro.
 - **Textos verdadeiros:** em modo `local`, a página Privacy passa a dizer que a geração corre no computador. Duas descrições novas das Settings foram acertadas ao conteúdo real das páginas.
 - **Fica para a S6:** a barra de separadores do projeto tem 12 entradas e faz scroll horizontal em desktop sem indicação visual. Também ficam os estados vazios, de carregamento e de erro.
+
+### S6: checklist do doc 18 (2026-11-23)
+
+| Área | Resultado |
+|---|---|
+| Tokens | ✅ Zero hex no CSS da app (do shell em diante). Os monogramas usam `var(--color-*)`, com teste unitário. As sombras decorativas mantêm `rgb()` de preto com alfa |
+| Contraste e foco | ✅ axe WCAG 2.2 AA sem violações em todas as rotas, nos dois temas, a 320, 390 e 1440 px. Foco visível em tokens |
+| Estado e seleção | ✅ Nunca só pela cor: texto em todos os estados, `aria-current` na navegação |
+| Shell e navegação | ✅ A navegação global ("Studio", "Projects"…) e a do projeto (separadores) são distintas. O separador ativo fica sempre visível |
+| Home vazia e de quem regressa | ✅ A vazia leva a "Create your first project", sem exemplos inventados. A de quem regressa dá continuidade ("Continue …", conteúdo recente) |
+| Estados | ✅ O carregamento tem a forma da página (sem percentagens falsas) e o pulso pára com movimento reduzido. O erro diz que os dados não mudaram e dá duas saídas. O conteúdo simulado continua marcado |
+| Motion | ✅ Só `transform` e `opacity`, 160–180 ms. Brilho ambiente de 24 s. Tudo pára com `prefers-reduced-motion` |
+| Responsivo | ✅ Sem scroll horizontal da página a 320 px (dois campos de ficheiro corrigidos). Alvos de 44 px |
+| Fora de âmbito | ✅ Não se mostram como disponíveis templates, componentes, automações, publicação nem analytics |
+| "Sem orbs brilhantes" | ⚠️ **Exceção revista:** a direção aprovada (mockup de 2026-11-20) pede gradientes e brilho. Fica um único brilho ambiente, desfocado e atrás do conteúdo, na home e no login, mais fraco no tema claro. Não há orbs como motivo, nem robôs, nem cérebros |
+| Zoom a 200% e leitores de ecrã reais | ⏳ Não verificado nesta passagem. O axe cobre a semântica, e a passagem final deve incluir VoiceOver e zoom |
+
+**Capturas de referência** (`docs/design/reference/`): `studio-home`, `studio-home-light`, `studio-home-mobile`, `project-overview`, `library`, `social-editor`, `sign-in`, todas com os dados demo.
+
+**Regressão encontrada na S6:** o E2E desktop (LF-21) ainda procurava o dashboard antigo no segundo arranque. O workflow Desktop da `main` falhava desde a S3 (#69, #70 e #71), sem que ninguém desse por isso, porque o workflow não corria em PRs que mexem só em `src/app`. O teste passou a usar a home Studio, e o workflow passa a correr também com mudanças em `src/app`, `src/components` e `src/features`.

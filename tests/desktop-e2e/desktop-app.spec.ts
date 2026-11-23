@@ -281,10 +281,10 @@ test("desktop edition works end to end without leaving this computer", async () 
       await window.getByRole("button", { name: "Sign in" }).click();
     }
     await expect(window).toHaveURL(/\/app$/);
-    await expect(
-      window.getByText("UrbanStride", { exact: true }).first(),
-    ).toBeVisible();
-    await window.getByRole("link", { name: "Open project" }).first().click();
+    // The Studio home (doc 55, S3) lists the project the first launch made.
+    const recent = window.getByRole("region", { name: "Recent projects" });
+    await expect(recent.getByText("Desktop Launch")).toBeVisible();
+    await recent.getByRole("listitem").getByRole("link").first().click();
     await expect(
       window.getByRole("heading", { level: 1, name: "Desktop Launch" }),
     ).toBeVisible();

@@ -25,7 +25,7 @@ export function KnowledgeForm({
       <label className="block text-sm font-semibold">
         Text or Markdown file
         <input
-          className="mt-1 block text-sm"
+          className="mt-1 block w-full max-w-full min-w-0 text-sm"
           type="file"
           accept=".txt,.md,text/plain,text/markdown"
           onChange={async (event) => {

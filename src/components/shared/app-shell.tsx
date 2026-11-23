@@ -4,7 +4,7 @@ import {
   ChevronRight,
   Cpu,
   FolderKanban,
-  LayoutDashboard,
+  House,
   LogOut,
   Menu,
   Moon,
@@ -26,7 +26,7 @@ const LOCAL_AI = "/app/settings/local-ai";
 
 function navigationItems(localMode: boolean) {
   return [
-    { href: "/app", label: "Dashboard", icon: LayoutDashboard, exact: true },
+    { href: "/app", label: "Studio", icon: House, exact: true },
     {
       href: "/app/projects",
       label: "Projects",
@@ -134,7 +134,9 @@ export function AppShell({
       ? "Projects"
       : pathname.startsWith("/app/settings")
         ? "Settings"
-        : "Dashboard";
+        : pathname === "/app/dashboard"
+          ? "Classic dashboard"
+          : "Studio";
 
   useEffect(() => {
     if (open) closeButtonRef.current?.focus();

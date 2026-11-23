@@ -29,8 +29,18 @@ export type ServerAiStatus =
 
 export type StudioSkill = { id: string; title: string; description: string };
 
+export type StudioContentItem = {
+  id: string;
+  module: ContentModule;
+  title: string;
+  status: string;
+  updatedAt: Date;
+  href: string;
+};
+
 export type StudioData = {
   localMode: boolean;
+  recentContent: StudioContentItem[];
   projects: StudioProject[];
   skills: StudioSkill[];
   ai: ServerAiStatus;
@@ -65,8 +75,28 @@ export async function loadStudioData(
     builtinSkills(),
   ]);
   const order = STUDIO_MODULES.map((entry) => entry.module);
+  // Recent content of the most recently updated project, as the dashboard did.
+  const latestId = summaries[0]?.id;
+  const recent = latestId
+    ? await prisma.contentItem.findMany({
+        where: { projectId: latestId, project: { userId } },
+        orderBy: { updatedAt: "desc" },
+        take: 5,
+        select: {
+          id: true,
+          module: true,
+          title: true,
+          status: true,
+          updatedAt: true,
+        },
+      })
+    : [];
   return {
     localMode: getServerEnv().APP_MODE === "local",
+    recentContent: recent.map((item) => ({
+      ...item,
+      href: `/app/projects/${latestId}/content/${item.module.toLowerCase()}/${item.id}`,
+    })),
     projects: summaries.map((project) => ({
       id: project.id,
       name: project.name,

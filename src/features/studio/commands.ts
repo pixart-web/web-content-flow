@@ -81,14 +81,14 @@ export function studioCommands(data: CommandSource): StudioCommand[] {
     {
       id: "nav-dashboard",
       group: "Go to",
-      label: "Dashboard",
+      label: "Studio home",
       href: "/app",
     },
     {
-      id: "nav-studio",
+      id: "nav-classic",
       group: "Go to",
-      label: "Studio home (preview)",
-      href: "/app/studio",
+      label: "Classic dashboard",
+      href: "/app/dashboard",
     },
   );
   return commands;

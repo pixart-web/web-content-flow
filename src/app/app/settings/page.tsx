@@ -26,24 +26,41 @@ export default async function SettingsPage() {
         aria-label="Settings sections"
       >
         {[
-          ["Account", "/app/settings/account"],
-          ["Security", "/app/settings/security"],
-          ["Usage", "/app/settings/usage"],
-          ["Privacy", "/app/settings/privacy"],
-          ["Workspace", "/app/settings/workspace"],
+          ["Account", "/app/settings/account", "Name, email and sign out"],
+          ["Security", "/app/settings/security", "Change your password"],
+          ["Usage", "/app/settings/usage", "Generation and token usage"],
+          [
+            "Privacy",
+            "/app/settings/privacy",
+            "What generation sends, and account deletion",
+          ],
+          [
+            "Workspace",
+            "/app/settings/workspace",
+            "Export or import every project",
+          ],
           ...(localMode
             ? [
-                ["Local AI", "/app/settings/local-ai"],
-                ["Private server", "/app/settings/server"],
+                [
+                  "Local AI",
+                  "/app/settings/local-ai",
+                  "Models on this computer",
+                ],
+                [
+                  "Private server",
+                  "/app/settings/server",
+                  "Connect to your own server",
+                ],
               ]
             : []),
-        ].map(([label, href]) => (
+        ].map(([label, href, hint]) => (
           <Link
-            className="border-default bg-surface hover:bg-surface-subtle rounded-control min-h-11 border p-3 font-semibold"
+            className="border-default bg-surface hover:bg-surface-subtle hover:border-strong rounded-card min-h-11 border p-4"
             href={href!}
             key={href}
           >
-            {label}
+            <span className="block font-semibold">{label}</span>
+            <span className="text-secondary mt-1 block text-sm">{hint}</span>
           </Link>
         ))}
       </nav>

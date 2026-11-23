@@ -131,7 +131,7 @@ export function WorkspacePackagePanel({ enabled }: { enabled: boolean }) {
           Workspace package (.json.gz)
           <input
             accept=".gz,application/gzip"
-            className="mt-2 block text-sm"
+            className="mt-2 block w-full max-w-full min-w-0 text-sm"
             disabled={busy !== null}
             onChange={(event) => {
               const file = event.target.files?.[0];

@@ -9,7 +9,7 @@ export default function AppError({ reset }: { reset: () => void }) {
         This workspace could not be loaded
       </h1>
       <p className="text-secondary mt-2">
-        Your account data was not changed. Retry or return to the dashboard.
+        Your account data was not changed. Retry, or go back to Studio.
       </p>
       <div className="mt-5 flex flex-wrap gap-3">
         <button
@@ -22,7 +22,7 @@ export default function AppError({ reset }: { reset: () => void }) {
           className="border-default bg-surface rounded-control min-h-11 border px-4 py-3 text-sm font-semibold"
           href="/app"
         >
-          Return to dashboard
+          Back to Studio
         </Link>
       </div>
     </section>

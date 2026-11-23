@@ -1975,10 +1975,28 @@ body {
 }
 .project-navigation {
   display: flex;
+  min-width: 0;
+  max-width: 100%;
   gap: 0.25rem;
   overflow-x: auto;
   border-bottom: 1px solid var(--color-app-tabs-border);
   scrollbar-width: thin;
+}
+/* Fades show that more tabs are scrolled out of view at that end (S6). */
+.project-navigation[data-more-end] {
+  mask-image: linear-gradient(to right, black calc(100% - 3rem), transparent);
+}
+.project-navigation[data-more-start] {
+  mask-image: linear-gradient(to left, black calc(100% - 3rem), transparent);
+}
+.project-navigation[data-more-start][data-more-end] {
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 3rem,
+    black calc(100% - 3rem),
+    transparent
+  );
 }
 .project-navigation a {
   display: inline-flex;

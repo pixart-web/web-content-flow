@@ -166,3 +166,33 @@ test("home recent content and every project navigation destination resolve", asy
     );
   }
 });
+
+test("project overview opens each recent item in its own module", async ({
+  page,
+}) => {
+  test.skip(test.info().project.name !== "chromium");
+  await signIn(page);
+  await page.goto("/app/projects/phase1-urbanstride-project");
+  await expect(
+    page.getByRole("heading", { name: "Create in this project" }),
+  ).toBeVisible();
+  const items = await page
+    .locator('a[href*="/content/"]')
+    .filter({ has: page.locator("strong") })
+    .evaluateAll((links) =>
+      links.map((link) => ({
+        href: link.getAttribute("href") ?? "",
+        title: link.querySelector("strong")?.textContent ?? "",
+      })),
+    );
+  expect(items.length).toBeGreaterThan(0);
+  for (const item of items) {
+    await page.goto(item.href);
+    await expect(
+      page.getByRole("heading", { name: "This project is not available" }),
+    ).toHaveCount(0);
+    await expect(
+      page.getByRole("heading", { name: item.title, exact: true }).first(),
+    ).toBeVisible();
+  }
+});

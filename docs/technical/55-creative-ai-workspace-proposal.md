@@ -1,6 +1,6 @@
 # Creative AI Workspace — proposta de nova direção UX/UI
 
-**Data:** 2026-11-20 · **Estado:** direção aprovada a 2026-11-20 (com as propostas da secção 6: inglês, tema claro mantido, SEO dentro de Website). S0, S1, S2 e S3 feitas · **Protótipo:** `/app/studio` (não substitui nada)
+**Data:** 2026-11-20 · **Estado:** direção aprovada a 2026-11-20 (com as propostas da secção 6: inglês, tema claro mantido, SEO dentro de Website). S0 a S4 feitas · **Protótipo:** `/app/studio` (não substitui nada)
 
 Objetivo: o Web Content Flow deixa de parecer um dashboard SaaS administrativo e passa a ter identidade própria de *Creative AI Workspace*: escuro, premium e cinematográfico, com a criação no centro. Mantém-se a arquitetura, a lógica de negócio e todos os módulos.
 
@@ -124,7 +124,7 @@ Cada etapa é um PR com CI verde, sem migrations nem mudanças de API ou de lóg
 | **S1** Fundações ✅ | Paleta Studio em `design-tokens/` (`--color-studio-*`). As 87 cores soltas da app em `globals.css` passaram a 59 tokens de papel (`--color-app-*`) com os valores exatos. O CSS do marketing fica de fora (direção própria, doc 15). O protótipo usa os tokens | Feito: 23 ecrãs iguais píxel a píxel (1440 e 390 px), zero hex no CSS da app |
 | **S2** Shell + Command Bar ✅ | `[data-theme="studio"]` redefine os tokens semânticos e os `--color-app-*`, e o tema Studio passa a ser o da app por omissão. O claro continua disponível (botão no shell, cookie `wcf-theme` lido no servidor, sem flash). Command Bar global no topo, com projetos, módulos e definições reais. Local AI na navegação no desktop | Feito: axe WCAG 2.2 AA sem violações em 23 rotas × 2 tamanhos, nos dois temas, sem scroll horizontal |
 | **S3** Home ✅ | A home Studio passa a ser `/app`, dentro do shell e nos dois temas, com o "Conteúdo recente" vindo do dashboard. O dashboard antigo fica em `/app/dashboard` durante esta versão, ligado no fim da home e na Command Bar. `/app/studio` redireciona para `/app`. A entrada da navegação chama-se "Studio" | Feito: E2E web 63/63 numa base semeada como no CI, axe sem violações na home e no dashboard (2 temas × 2 tamanhos) |
-| **S4** Projeto e módulos | Overview e os 6 workspaces no tema | Todos os E2E de fase 2–4 verdes |
+| **S4** Projeto e módulos ✅ | Cabeçalho do projeto com monograma. No overview, os seis módulos passam a tiles de criação com a contagem real de conteúdos e o aviso de limites de cada um. O modo de geração é o verdadeiro (antes dizia sempre "Mock mode"). Os workspaces dos módulos já estavam no tema desde a S2 e mantêm layout e ações | Feito: axe sem violações em 8 rotas × 2 temas × 2 tamanhos, E2E web 63/63 mais um teste novo |
 | **S5** Restantes ecrãs | Library, Calendar, Brand Profile, Brief, Knowledge, Settings, auth e onboarding | Auditoria axe em todas as rotas |
 | **S6** Polimento | Motion final, estados vazios, carregamento e erro, screenshots de referência | Checklist do doc 18 e testes finais |
 
@@ -173,3 +173,10 @@ Cada etapa é um PR com CI verde, sem migrations nem mudanças de API ou de lóg
 - **Coral nos dois temas:** novo token `--color-accent-warm` (`#C2410C` no claro, 5,2:1; `#FF9474` no Studio).
 - **E2E atualizados:** a home de quem regressa e a home vazia (sem projetos nem conteúdo de exemplo). Os testes clicam em itens das listas, e não no link do cabeçalho.
 - **Nome da navegação:** "Home" colidia com a página "Home" do website nos testes e nos leitores de ecrã. Passou a "Studio".
+
+### Notas da S4 (2026-11-23)
+
+- **Verdade no overview:**
+  - o "Generation mode" vem da configuração (`Mock mode`, `Local model · <tag>` ou `External provider · OpenAI`);
+  - a contagem por módulo é uma contagem agrupada na base de dados (a lista de itens está limitada a 50).
+- **Bug corrigido:** na secção "Shared content platform", todos os conteúdos ligavam à rota de Copy. Os posts sociais abriam "This project is not available", e todos diziam "Mock platform proof", mesmo quando não eram simulados. Cada item abre agora no editor do seu módulo e mostra o módulo, a versão e "Mock" só quando a versão o é. Há um E2E novo para isto.

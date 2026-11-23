@@ -1,13 +1,76 @@
+import {
+  CalendarDays,
+  Clapperboard,
+  Globe2,
+  Megaphone,
+  PenLine,
+  Share2,
+} from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { GenerationStatus } from "@/features/projects/generation-status";
 import { GenerateProofContent } from "@/features/content/generate-proof-content";
 import { ContentJobStatus } from "@/features/content/content-job-status";
+import { aiStatusLabel, serverAiStatus } from "@/features/studio/studio-data";
+import styles from "@/features/studio/studio.module.css";
 import { requireUser } from "@/server/auth/require-user";
 import { getPrisma } from "@/server/db/prisma";
 import { createPhase2Repository } from "@/server/repositories/phase-2-repository";
 import { createContentRepository } from "@/server/repositories/content-repository";
+
+// The six content modules as creation tiles (doc 55, S4). Each keeps the
+// boundary statement of what the module does not do.
+const PROJECT_MODULES = [
+  {
+    module: "WEBSITE",
+    label: "Website",
+    icon: Globe2,
+    path: "content/website",
+    description:
+      "Structured, editable website pages from the Brief and Brand Profile. Copy only; no builder or publishing is included.",
+  },
+  {
+    module: "SOCIAL",
+    label: "Social",
+    icon: Share2,
+    path: "content/social",
+    description:
+      "Structured posts, carousels, stories and captions. Publishing and scheduling are not included.",
+  },
+  {
+    module: "ADS",
+    label: "Ads & Creative",
+    icon: Megaphone,
+    path: "content/ads",
+    description:
+      "Advertising copy, editorial variants, creative briefs and image prompt packs. Campaign publishing and performance forecasting are not included.",
+  },
+  {
+    module: "VIDEO",
+    label: "Video & Reels",
+    icon: Clapperboard,
+    path: "content/video",
+    description:
+      "Scripts, shot lists, voice-over, captions and production direction. No video or audio rendering is included.",
+  },
+  {
+    module: "COPY",
+    label: "General Copy",
+    icon: PenLine,
+    path: "content/copy",
+    description:
+      "Marketing, editorial, product, company and sales copy. Sending, publishing and external content fetching are not included.",
+  },
+  {
+    module: "CALENDAR",
+    label: "Content Calendar",
+    icon: CalendarDays,
+    path: "content/calendar",
+    description:
+      "Existing content and planned placeholders in an editorial calendar. No external publishing or scheduling is included.",
+  },
+] as const;
 
 export default async function ProjectOverviewPage({
   params,
@@ -24,7 +87,7 @@ export default async function ProjectOverviewPage({
   const job = project.generationJobs.find(
     (candidate) => candidate.module === "BRAND_PROFILE",
   );
-  const [items, contentJob] = await Promise.all([
+  const [items, contentJob, moduleCounts] = await Promise.all([
     createContentRepository(getPrisma()).listProjectItems(
       user.id,
       projectId,
@@ -38,6 +101,11 @@ export default async function ProjectOverviewPage({
       },
       orderBy: { createdAt: "desc" },
       include: { steps: { orderBy: { ordinal: "asc" } } },
+    }),
+    getPrisma().contentItem.groupBy({
+      by: ["module"],
+      where: { projectId, project: { userId: user.id } },
+      _count: { _all: true },
     }),
   ]);
 
@@ -65,125 +133,51 @@ export default async function ProjectOverviewPage({
           </p>
         )}
       </section>
-      <section className="border-default bg-surface rounded-panel border p-6">
-        <h2 className="font-display text-xl font-semibold">Content Calendar</h2>
-        <p className="text-secondary mt-2 max-w-2xl text-sm">
-          Organise existing content and planned placeholders into an editorial
-          calendar. No external publishing or scheduling is included.
-        </p>
-        {project.currentBrandProfileVersion ? (
-          <Link
-            className="text-link mt-3 inline-flex min-h-11 items-center font-semibold"
-            href={`/app/projects/${projectId}/content/calendar`}
-          >
-            Add or open Content Calendar
-          </Link>
-        ) : (
-          <p className="text-secondary mt-3 text-sm">
-            Generate the Brand Profile before adding Content Calendar.
-          </p>
-        )}
-      </section>
-      <section className="border-default bg-surface rounded-panel border p-6">
-        <h2 className="font-display text-xl font-semibold">General Copy</h2>
-        <p className="text-secondary mt-2 max-w-2xl text-sm">
-          Create structured marketing, editorial, product, company and sales
-          copy. Sending, publishing and external content fetching are not
-          included.
-        </p>
-        {project.currentBrandProfileVersion ? (
-          <Link
-            className="text-link mt-3 inline-flex min-h-11 items-center font-semibold"
-            href={`/app/projects/${projectId}/content/copy`}
-          >
-            Add or open General Copy
-          </Link>
-        ) : (
-          <p className="text-secondary mt-3 text-sm">
-            Generate the Brand Profile before adding General Copy.
-          </p>
-        )}
-      </section>
-      <section className="border-default bg-surface rounded-panel border p-6">
-        <h2 className="font-display text-xl font-semibold">
-          Video &amp; Reels
-        </h2>
-        <p className="text-secondary mt-2 max-w-2xl text-sm">
-          Create structured scripts, shot lists, voice-over, captions and
-          production direction. No video or audio rendering is included.
-        </p>
-        {project.currentBrandProfileVersion ? (
-          <Link
-            className="text-link mt-3 inline-flex min-h-11 items-center font-semibold"
-            href={`/app/projects/${projectId}/content/video`}
-          >
-            Add or open Video &amp; Reels
-          </Link>
-        ) : (
-          <p className="text-secondary mt-3 text-sm">
-            Generate the Brand Profile before adding Video &amp; Reels.
-          </p>
-        )}
-      </section>
-      <section className="border-default bg-surface rounded-panel border p-6">
-        <h2 className="font-display text-xl font-semibold">
-          Ads &amp; Creative
-        </h2>
-        <p className="text-secondary mt-2 max-w-2xl text-sm">
-          Prepare advertising copy, editorial variants, creative briefs and
-          image prompt packs. Campaign publishing and performance forecasting
-          are not included.
-        </p>
-        {project.currentBrandProfileVersion ? (
-          <Link
-            className="text-link mt-3 inline-flex min-h-11 items-center font-semibold"
-            href={`/app/projects/${projectId}/content/ads`}
-          >
-            Add or open Ads &amp; Creative
-          </Link>
-        ) : (
-          <p className="text-secondary mt-3 text-sm">
-            Generate the Brand Profile before adding Ads &amp; Creative.
-          </p>
-        )}
-      </section>
-      <section className="border-default bg-surface rounded-panel border p-6">
-        <h2 className="font-display text-xl font-semibold">Social content</h2>
-        <p className="text-secondary mt-2 max-w-2xl text-sm">
-          Prepare structured posts, carousels, stories and captions. Publishing
-          and scheduling are not included.
-        </p>
-        {project.currentBrandProfileVersion ? (
-          <Link
-            className="text-link mt-3 inline-flex min-h-11 items-center font-semibold"
-            href={`/app/projects/${projectId}/content/social`}
-          >
-            Add or open Social
-          </Link>
-        ) : (
-          <p className="text-secondary mt-3 text-sm">
-            Generate the Brand Profile before adding Social.
-          </p>
-        )}
-      </section>
-      <section className="border-default bg-surface rounded-panel border p-6">
-        <h2 className="font-display text-xl font-semibold">Website content</h2>
-        <p className="text-secondary mt-2 max-w-2xl text-sm">
-          Create structured, editable website pages from the current Brief and
-          Brand Profile. Copy only; no builder or publishing is included.
-        </p>
-        {project.currentBrandProfileVersion ? (
-          <Link
-            className="text-link mt-3 inline-flex min-h-11 items-center font-semibold"
-            href={`/app/projects/${projectId}/content/website`}
-          >
-            Add or open Website
-          </Link>
-        ) : (
-          <p className="text-secondary mt-3 text-sm">
-            Generate the Brand Profile before adding Website.
-          </p>
-        )}
+      <section aria-labelledby="project-modules" className={styles.home}>
+        <div className={styles.sectionHead}>
+          <h2 className={styles.sectionTitle} id="project-modules">
+            Create in this project
+          </h2>
+          <span className={styles.sectionMeta}>
+            Content only: nothing is published or sent from here
+          </span>
+        </div>
+        <ul className={styles.moduleTiles}>
+          {PROJECT_MODULES.map((entry) => {
+            const Icon = entry.icon;
+            const count =
+              moduleCounts.find((row) => row.module === entry.module)?._count
+                ._all ?? 0;
+            return (
+              <li key={entry.module}>
+                <article className={styles.moduleTile}>
+                  <div className={styles.moduleTileHead}>
+                    <span className={styles.tileIcon}>
+                      <Icon aria-hidden size={20} />
+                    </span>
+                    <h3 className={styles.tileLabel}>{entry.label}</h3>
+                    <span className={styles.moduleCount}>
+                      {count} {count === 1 ? "item" : "items"}
+                    </span>
+                  </div>
+                  <p className={styles.moduleText}>{entry.description}</p>
+                  {project.currentBrandProfileVersion ? (
+                    <Link
+                      className={styles.moduleAction}
+                      href={`/app/projects/${projectId}/${entry.path}`}
+                    >
+                      Add or open {entry.label}
+                    </Link>
+                  ) : (
+                    <p className={styles.moduleBlocked}>
+                      Generate the Brand Profile before adding {entry.label}.
+                    </p>
+                  )}
+                </article>
+              </li>
+            );
+          })}
+        </ul>
       </section>
 
       <section className="grid gap-4 sm:grid-cols-3">
@@ -203,7 +197,9 @@ export default async function ProjectOverviewPage({
         </article>
         <article className="border-default bg-surface rounded-card border p-5">
           <h2 className="font-semibold">Generation mode</h2>
-          <p className="text-secondary mt-2 text-sm">Mock mode</p>
+          <p className="text-secondary mt-2 text-sm">
+            {aiStatusLabel(serverAiStatus())}
+          </p>
         </article>
       </section>
       <section className="border-default bg-surface rounded-panel border p-6">
@@ -252,13 +248,17 @@ export default async function ProjectOverviewPage({
               {items.slice(0, 4).map((item) => (
                 <Link
                   className="border-default hover:border-strong rounded-card border p-4"
-                  href={`/app/projects/${projectId}/content/copy/${item.id}`}
+                  // Each item opens in its own module's editor.
+                  href={`/app/projects/${projectId}/content/${item.module.toLowerCase()}/${item.id}`}
                   key={item.id}
                 >
                   <strong>{item.title}</strong>
                   <p className="text-secondary mt-1 text-sm">
-                    Version {item.currentVersion?.versionNumber ?? "—"} · Mock
-                    platform proof
+                    {PROJECT_MODULES.find(
+                      (entry) => entry.module === item.module,
+                    )?.label ?? item.module}{" "}
+                    · Version {item.currentVersion?.versionNumber ?? "—"}
+                    {item.currentVersion?.mock ? " · Mock" : ""}
                   </p>
                 </Link>
               ))}

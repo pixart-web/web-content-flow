@@ -50,31 +50,42 @@ test("creates an account with a safely hashed password", async ({ page }) => {
   ).toBeVisible();
 });
 
-test("signs in, shows returning dashboard, and opens owned project", async ({
+test("signs in, shows the returning home, and opens owned project", async ({
   page,
 }) => {
   await signIn(page);
+  await expect(page.getByText(/Good to see you/)).toBeVisible();
   await expect(
-    page.getByRole("heading", { level: 1, name: /Good to see you/ }),
+    page.getByRole("heading", { level: 1, name: /From one brief/ }),
   ).toBeVisible();
   await expect(
     page.getByText("UrbanStride", { exact: true }).first(),
   ).toBeVisible();
 
-  await page.getByRole("link", { name: "Open project" }).first().click();
+  await page
+    .getByRole("region", { name: "Recent projects" })
+    .getByRole("listitem")
+    .getByRole("link")
+    .first()
+    .click();
   await expect(
     page.getByRole("heading", { level: 1, name: "UrbanStride" }),
   ).toBeVisible();
 });
 
-test("shows a truthful empty dashboard", async ({ page }) => {
+test("shows a truthful empty home", async ({ page }) => {
   await signIn(page, empty);
   await expect(
-    page.getByRole("heading", {
-      name: "Create your first connected content project",
-    }),
+    page.getByRole("heading", { name: "Your first project" }),
   ).toBeVisible();
-  await expect(page.getByText(/Start with one guided brief/)).toBeVisible();
+  await expect(page.getByText(/Start with a guided Brief/)).toBeVisible();
+  // No sample projects or content are shown in their place.
+  await expect(
+    page.getByRole("region", { name: "Recent projects" }),
+  ).toHaveCount(0);
+  await expect(
+    page.getByRole("region", { name: "Recent content" }),
+  ).toHaveCount(0);
 });
 
 test("does not disclose another user's project", async ({ page }) => {
@@ -123,7 +134,7 @@ test("mobile navigation is labelled and keyboard operable", async ({
   ).toBeVisible();
 });
 
-test("dashboard recent content and every project navigation destination resolve", async ({
+test("home recent content and every project navigation destination resolve", async ({
   page,
 }) => {
   test.skip(test.info().project.name !== "chromium");
@@ -131,6 +142,7 @@ test("dashboard recent content and every project navigation destination resolve"
 
   const recentContent = page
     .getByRole("region", { name: "Recent content" })
+    .getByRole("listitem")
     .getByRole("link")
     .first();
   await expect(recentContent).toBeVisible();

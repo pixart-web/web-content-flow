@@ -83,6 +83,7 @@
   --color-status-info-text: #1d4ed8;
   --color-status-info-surface: #eff6ff;
   --color-status-info-border: #bfdbfe;
+  --color-accent-warm: #c2410c;
   --gradient-brand-primary: linear-gradient(135deg, #3b82f6 0%, #4f46e5 50%, #7c3aed 100%);
 
   --font-display: "Poppins", "Avenir Next", "Segoe UI", sans-serif;
@@ -340,6 +341,7 @@
   --color-status-info-text: #a5b4fc;
   --color-status-info-surface: #171a3a;
   --color-status-info-border: #33397a;
+  --color-accent-warm: #ff9474;
   --color-app-canvas: #0c0816;
   --color-app-surface: #141022;
   --color-app-surface-hover: #1b152d;

@@ -8,11 +8,19 @@ export default function PrivacySettingsPage() {
     <div className="max-w-2xl">
       <h1 className="font-display text-3xl font-semibold">Privacy</h1>
       <section className="border-default bg-surface rounded-panel mt-7 border p-6">
-        <p>
-          Real generation sends the necessary Brief, Brand Profile and selected
-          content context to the configured provider. Mock generation sends no
-          content to an external AI provider.
-        </p>
+        {env.APP_MODE === "local" ? (
+          <p>
+            In this desktop edition, generation runs with the local model on
+            this computer, or in mock mode until one is active. Project content
+            is not sent to an external AI provider.
+          </p>
+        ) : (
+          <p>
+            Real generation sends the necessary Brief, Brand Profile and
+            selected content context to the configured provider. Mock generation
+            sends no content to an external AI provider.
+          </p>
+        )}
         <p className="text-secondary mt-4 text-sm">
           Self-service account deletion is{" "}
           {env.ACCOUNT_DELETION_ENABLED ? "enabled" : "not enabled"} for this

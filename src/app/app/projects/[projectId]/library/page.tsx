@@ -275,7 +275,8 @@ export default async function LibraryPage({
           }}
         />
       ) : null}
-      <form className="border-default bg-surface rounded-card grid gap-3 border p-4 sm:grid-cols-4">
+      {/* Module-specific filters show for the chosen module, or when set (doc 55, S5). */}
+      <form className="library-filters border-default bg-surface rounded-card grid gap-3 border p-4 sm:grid-cols-4">
         <label className="text-sm font-semibold">
           Search
           <input
@@ -318,7 +319,7 @@ export default async function LibraryPage({
         >
           Apply filters
         </button>
-        <label className="text-sm font-semibold">
+        <label className="text-sm font-semibold" data-filter-module="SOCIAL">
           Social platform
           <select
             className="border-default rounded-control mt-1 min-h-11 w-full border px-3 font-normal"
@@ -331,7 +332,7 @@ export default async function LibraryPage({
             ))}
           </select>
         </label>
-        <label className="text-sm font-semibold">
+        <label className="text-sm font-semibold" data-filter-module="SOCIAL">
           Social type
           <select
             className="border-default rounded-control mt-1 min-h-11 w-full border px-3 font-normal"
@@ -357,7 +358,7 @@ export default async function LibraryPage({
             name="campaign"
           />
         </label>
-        <label className="text-sm font-semibold">
+        <label className="text-sm font-semibold" data-filter-module="ADS">
           Ads channel
           <select
             aria-label="Ads channel"
@@ -376,7 +377,7 @@ export default async function LibraryPage({
             ))}
           </select>
         </label>
-        <label className="text-sm font-semibold">
+        <label className="text-sm font-semibold" data-filter-module="ADS">
           Ads type
           <select
             aria-label="Ads type"
@@ -398,7 +399,7 @@ export default async function LibraryPage({
             ))}
           </select>
         </label>
-        <label className="text-sm font-semibold">
+        <label className="text-sm font-semibold" data-filter-module="VIDEO">
           Video platform
           <select
             className="border-default rounded-control mt-1 min-h-11 w-full border px-3 font-normal"
@@ -420,7 +421,7 @@ export default async function LibraryPage({
             ))}
           </select>
         </label>
-        <label className="text-sm font-semibold">
+        <label className="text-sm font-semibold" data-filter-module="VIDEO">
           Video format
           <select
             className="border-default rounded-control mt-1 min-h-11 w-full border px-3 font-normal"
@@ -445,7 +446,7 @@ export default async function LibraryPage({
             ))}
           </select>
         </label>
-        <label className="text-sm font-semibold">
+        <label className="text-sm font-semibold" data-filter-module="VIDEO">
           Video type
           <select
             className="border-default rounded-control mt-1 min-h-11 w-full border px-3 font-normal"
@@ -466,7 +467,7 @@ export default async function LibraryPage({
             ))}
           </select>
         </label>
-        <label className="text-sm font-semibold">
+        <label className="text-sm font-semibold" data-filter-module="COPY">
           Copy type
           <select
             className="border-default rounded-control mt-1 min-h-11 w-full border px-3 font-normal"
@@ -481,7 +482,7 @@ export default async function LibraryPage({
             ))}
           </select>
         </label>
-        <label className="text-sm font-semibold">
+        <label className="text-sm font-semibold" data-filter-module="COPY">
           Copy purpose
           <select
             className="border-default rounded-control mt-1 min-h-11 w-full border px-3 font-normal"
@@ -494,7 +495,7 @@ export default async function LibraryPage({
             ))}
           </select>
         </label>
-        <label className="text-sm font-semibold">
+        <label className="text-sm font-semibold" data-filter-module="CALENDAR">
           Calendar type
           <select
             className="border-default rounded-control mt-1 min-h-11 w-full border px-3 font-normal"
@@ -509,7 +510,7 @@ export default async function LibraryPage({
             ))}
           </select>
         </label>
-        <label className="text-sm font-semibold">
+        <label className="text-sm font-semibold" data-filter-module="CALENDAR">
           Calendar starts after
           <input
             className="border-default rounded-control mt-1 min-h-11 w-full border px-3 font-normal"
@@ -518,7 +519,7 @@ export default async function LibraryPage({
             type="date"
           />
         </label>
-        <label className="text-sm font-semibold">
+        <label className="text-sm font-semibold" data-filter-module="CALENDAR">
           Calendar ends before
           <input
             className="border-default rounded-control mt-1 min-h-11 w-full border px-3 font-normal"

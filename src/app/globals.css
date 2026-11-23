@@ -1477,6 +1477,56 @@ body {
   padding: clamp(1.25rem, 3vw, 2.25rem);
 }
 
+/* Library filters (doc 55, S5): module-specific filters appear for the
+ * chosen module, or while they hold a value, so an applied filter is never
+ * hidden. CSS only: the form stays a plain GET form. */
+.library-filters [data-filter-module] {
+  display: none;
+}
+.library-filters:has(select[name="module"] option[value="SOCIAL"]:checked)
+  [data-filter-module="SOCIAL"],
+.library-filters:has(select[name="module"] option[value="ADS"]:checked)
+  [data-filter-module="ADS"],
+.library-filters:has(select[name="module"] option[value="VIDEO"]:checked)
+  [data-filter-module="VIDEO"],
+.library-filters:has(select[name="module"] option[value="COPY"]:checked)
+  [data-filter-module="COPY"],
+.library-filters:has(select[name="module"] option[value="CALENDAR"]:checked)
+  [data-filter-module="CALENDAR"],
+.library-filters [data-filter-module]:has(option:checked:not([value=""])),
+.library-filters [data-filter-module]:has(input[value]:not([value=""])) {
+  display: block;
+}
+
+/* Auth pages (doc 55, S5): one quiet glow behind the card, from tokens. */
+.auth-shell {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+.auth-glow {
+  position: absolute;
+  inset: -30% -10% auto 40%;
+  z-index: -1;
+  height: 80vh;
+  background:
+    radial-gradient(
+      40% 50% at 50% 50%,
+      color-mix(in srgb, var(--color-action-primary) 38%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      30% 40% at 75% 70%,
+      color-mix(in srgb, var(--color-studio-coral) 22%, transparent),
+      transparent 70%
+    );
+  filter: blur(10px);
+  pointer-events: none;
+}
+[data-theme="light"] .auth-glow {
+  opacity: 0.35;
+}
+
 /* Studio theme accents for the shell (doc 55, S2). Colours come from tokens. */
 [data-theme="studio"] .app-sidebar {
   background: linear-gradient(

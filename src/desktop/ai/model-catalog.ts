@@ -63,10 +63,10 @@ const entries: CatalogEntry[] = [
     minProfile: "standard",
     structuredMode: "native_schema",
     evaluation: {
-      suite: "1.4.0",
+      suite: "1.6.0",
       status: "candidate",
       summary:
-        "Valid structure in all seven modules on Apple M4; occasional invented product attribute; human review required.",
+        "Passed all nine evaluation cases on Apple M4 (suite 1.6.0, 5 samples each): valid structure, no invented attributes; human review still required.",
     },
   },
   {
@@ -112,6 +112,31 @@ const entries: CatalogEntry[] = [
       suite: "1.1.0",
       status: "rejected",
       summary: "Misses the seoTitle length limit in every product description.",
+    },
+  },
+  {
+    // LF-19 (2026-11-24): first candidate for 16 GB Macs. Valid structure but
+    // invents product attributes in most text modules (docs/technical/48).
+    id: "ministral-3-3b",
+    displayName: "Ministral 3 3B",
+    runtime: "ollama",
+    tag: "ministral-3:3b",
+    manifestDigest:
+      "f04aa1c738f64e13c625b82ae92504fc0260fa6723b509ed1ece0fa188179b1d",
+    sizeBytes: 2_953_840_808,
+    parameters: "3.8B Q4_K_M",
+    license: {
+      spdx: "Apache-2.0",
+      verifiedAt: "2026-11-24",
+      url: "https://www.apache.org/licenses/LICENSE-2.0",
+    },
+    minProfile: "essential",
+    structuredMode: "native_schema",
+    evaluation: {
+      suite: "1.6.0",
+      status: "rejected",
+      summary:
+        "72 invented product attributes in 45 samples (6 of 9 cases); Video script schema valid 3 of 5 times.",
     },
   },
 ];

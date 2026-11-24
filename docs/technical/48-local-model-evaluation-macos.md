@@ -48,6 +48,30 @@ Before/after on the side-by-side samples (one email + one product description pe
 - **Video is the slowest task** (p50 ≈ 1 min 50 s, ≈ 8k tokens): acceptable as a background job, but it sets the bar for the "interactive" expectation on the macOS edition.
 - **Calendar (suite 1.4.0):** `calendar.editorial_week` plans one week from four fixed source items (one per module), as `calendar-handler` does. `gemma4:12b-it-qat`, 3 samples: ✅ 100% first-pass valid, 0 prohibited words, 0 flags, p50 120 s / p95 133 s, ≈ 3,000 tokens. Slow for its output size; the large entries schema dominates.
 
+## Round 4 — Essential profile (LF-19), suite 1.6.0, 2026-11-24
+
+Goal: a model for 16 GB Macs (Essential profile), so ≤ ~5 GB resident while macOS, PostgreSQL and the app also run. Same Apple M4 / 32 GB, 5 samples per case, `native_schema`, thinking off. `gemma4:12b-it-qat` was rerun on the same suite as the reference.
+
+| Case | `ministral-3:3b` (Apache-2.0, 3.0 GB) | `gemma4:12b-it-qat` (reference) |
+|---|---|---|
+| `brand_profile` | ❌ 8 flags (*sustainable*, *ergonomic*, *cushioning*, *durable*) · 41 s / 57 s | ✅ 0 flags · 55 s / 72 s |
+| `copy.marketing_email` | ❌ 5 flags · 17 s / 31 s | ✅ · 32 s / 51 s |
+| `copy.product_description` | ❌ 25 flags (*durable*, *breathable*, *slip-resistant*…) · 21 s / 24 s | ✅ · 38 s / 55 s |
+| `copy.faq_document` | ❌ 15 flags (*recycled*, *eco-friendly*…) · 21 s / 24 s | ✅ · 34 s / 55 s |
+| `website.home` | ❌ 13 flags · 25 s / 28 s | ✅ · 52 s / 73 s |
+| `social.instagram_post` | ✅ · 12 s / 25 s | ✅ · 19 s / 59 s |
+| `ads.meta_ad` | ✅ · 19 s / 38 s | ✅ · 50 s / 107 s |
+| `video.reel_script` | ❌ 60% valid (repair did not fix), 6 flags · 56 s / 92 s | ✅ · 89 s / 139 s |
+| `calendar.editorial_week` | ✅ · 49 s / 60 s | ✅ · 108 s / 123 s |
+| **Result** | **FAIL** — 72 flags in 45 samples | **PASS** — every case, 0 flags |
+
+- **The suite is not stricter than before:** the reference passes everything on 1.6.0, so the flags are the small model's own inventions (attributes absent from the Brief), the same failure as `qwen3.5:4b` in round 2, only more often.
+- **Memory fits the Essential budget:** `ministral-3:3b` runs at 2.6 GB of GPU memory (32k context) and ≈ 4.8 GB resident on this Mac.
+- **Speed:** about half the latency of `gemma4` on most cases, on hardware stronger than the target.
+- **Catalog:** added as `rejected`, so the app never offers it. `gemma4` now records suite 1.6.0.
+
+**Essential stays without an approved model.** 16 GB Macs keep mock mode, a private server or the `not_recommended` `qwen3.5:4b`. Next candidates to try when approved for download: `gemma3:4b-it-qat` (4.0 GB, Gemma Terms of Use), `phi4-mini:3.8b` (2.5 GB, MIT) and `granite4:3b` (2.1 GB, Apache-2.0). A prompt or decoding change (for example stricter attribute grounding) is the other route; ADR-077 keeps human review mandatory either way.
+
 ## Findings
 
 1. **`qwen3.5` cannot use Ollama's structured output** on this Ollama version: both a JSON Schema and `"json"` return `structured output is unavailable`. It works only in `prompted` mode (schema in the instructions, zod validation). `gemma4` accepts `format` with the JSON Schema, so the runtime enforces the structure.
@@ -80,4 +104,6 @@ ollama pull gemma4:12b-it-qat && ollama pull qwen3.5:4b && ollama pull qwen3.5:9
 AI_OLLAMA_BASE_URL=http://127.0.0.1:11434 AI_OLLAMA_MODEL=gemma4:12b-it-qat pnpm ai:health   # server up and model pulled?
 AI_OLLAMA_BASE_URL=http://127.0.0.1:11434 AI_OLLAMA_MODEL=gemma4:12b-it-qat AI_OLLAMA_STRUCTURED_MODE=native_schema pnpm eval:ai --runtime ollama --samples 5
 AI_OLLAMA_BASE_URL=http://127.0.0.1:11434 AI_OLLAMA_MODEL=qwen3.5:4b AI_OLLAMA_STRUCTURED_MODE=prompted pnpm eval:ai --runtime ollama --samples 5
+ollama pull ministral-3:3b
+AI_OLLAMA_BASE_URL=http://127.0.0.1:11434 AI_OLLAMA_MODEL=ministral-3:3b AI_OLLAMA_STRUCTURED_MODE=native_schema pnpm eval:ai --runtime ollama --samples 5
 ```

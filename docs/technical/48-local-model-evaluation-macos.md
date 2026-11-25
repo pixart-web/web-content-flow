@@ -95,6 +95,25 @@ Same suite 1.6.0, 5 samples per case, `native_schema`, thinking off, Apple M4. M
 
 ADR-077 keeps human review mandatory either way.
 
+### Round 5 — product-facts grounding, prompt 1.3.0 experiment (2026-11-25)
+
+Route 1 above, measured. The experimental prompt 1.3.0 added a block after the generation context restating the supplied product facts (`productOrService`, `primaryOffer`, `valueProposition`) and stating that every physical, material, comfort, durability, care, sustainability, safety or performance attribute they do not state is unknown. Same suite 1.6.0, 5 samples per case, `native_schema`, thinking off, Apple M4.
+
+| Model | Invented-attribute flags (1.2.0 → 1.3.0) | Held-out synonyms (1.2.0 → 1.3.0) | Validity with 1.3.0 | Result |
+|---|---|---|---|---|
+| `phi4-mini:3.8b` | 10 → **4** | 2 → 0 | Brand Profile **20%**, Video 60%, Product description 80% | FAIL |
+| `granite4:3b` | 51 → **62** | 8 → 9 | Video 80% first pass (100% after repair) | FAIL |
+| `gemma4:12b-it-qat` (reference) | 0 → 0 | 9 → 9 | 100% in every case | PASS |
+
+Held-out synonyms are terms the detector watches but does not score (*sturdy*, *soft*, *conscious*…). They show whether a model only swapped flagged words for unflagged ones: `phi4-mini` did not.
+
+- **The grounding block does not make a small model usable.** `phi4-mini` invents less, but it still cannot hold the Brand Profile schema (4 of 5 samples invalid even after repair), and that failure is structural, not a prompt-content one.
+- **It is not uniformly helpful:** `granite4` invented more with it, including new *sustainable* / *eco-friendly* claims in the Brand Profile.
+- **No regression on the reference:** `gemma4` still passes every case with 0 flags.
+- **Not adopted.** Production stays on prompt 1.2.0: a prompt change with no measured gain on the approved model, and a loss on one small model, is not worth the extra variance. The experiment is kept on branch `exp/lf19-product-grounding` for a future round.
+
+**Essential stays without an approved model.** The remaining routes are 2 (larger small models, ≈ 7–8B at 4-bit) and 3 (measuring `gemma4:12b-it-qat` with a smaller context on a real 16 GB Mac).
+
 ## Findings
 
 1. **`qwen3.5` cannot use Ollama's structured output** on this Ollama version: both a JSON Schema and `"json"` return `structured output is unavailable`. It works only in `prompted` mode (schema in the instructions, zod validation). `gemma4` accepts `format` with the JSON Schema, so the runtime enforces the structure.

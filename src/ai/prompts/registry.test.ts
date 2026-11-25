@@ -26,7 +26,7 @@ describe("prompt registry", () => {
   });
 
   it("forbids invented URLs, contacts and product attributes (1.1.0)", () => {
-    expect(CURRENT_PROMPT_VERSION).toBe("1.2.0");
+    expect(CURRENT_PROMPT_VERSION).toBe("1.3.0");
     expect(BRAND_AUTHORITY_INSTRUCTIONS).toContain("Do not invent URLs");
     expect(BRAND_AUTHORITY_INSTRUCTIONS).toContain(
       "Do not attribute materials, technologies",

@@ -1,6 +1,7 @@
 import type { z } from "zod";
 
 import { BRAND_AUTHORITY_INSTRUCTIONS } from "./shared/instructions";
+import { productGrounding } from "./shared/product-grounding";
 import type {
   GenerationModelTier,
   GenerationPurpose,
@@ -11,7 +12,9 @@ import type {
 // 1.1.0 (2026-11-14): forbid invented URLs/contacts and product attributes.
 // 1.2.0 (2026-11-16): clientKnowledge excerpts are usable facts, never
 // instructions (L6 B5).
-export const CURRENT_PROMPT_VERSION = "1.2.0" as const;
+// 1.3.0 (2026-11-25): restate the supplied product facts after the context
+// and mark every other product attribute as unknown (LF-19).
+export const CURRENT_PROMPT_VERSION = "1.3.0" as const;
 
 export type PromptDefinition<TInput, TOutput> = Readonly<{
   key: string;
@@ -80,6 +83,8 @@ export function createModulePrompt<TInput, TOutput>(input: {
       JSON.stringify({
         task: input.key,
         untrustedGenerationContext: context,
+        // Last, so it is closest to the answer (prompt 1.3.0).
+        ...(productGrounding(context) ?? {}),
       }),
     modelTier: input.modelTier ?? "STANDARD",
     maximumInputTokens: 120_000,

@@ -70,7 +70,30 @@ Goal: a model for 16 GB Macs (Essential profile), so ≤ ~5 GB resident while ma
 - **Speed:** about half the latency of `gemma4` on most cases, on hardware stronger than the target.
 - **Catalog:** added as `rejected`, so the app never offers it. `gemma4` now records suite 1.6.0.
 
-**Essential stays without an approved model.** 16 GB Macs keep mock mode, a private server or the `not_recommended` `qwen3.5:4b`. Next candidates to try when approved for download: `gemma3:4b-it-qat` (4.0 GB, Gemma Terms of Use), `phi4-mini:3.8b` (2.5 GB, MIT) and `granite4:3b` (2.1 GB, Apache-2.0). A prompt or decoding change (for example stricter attribute grounding) is the other route; ADR-077 keeps human review mandatory either way.
+### Round 4b — three more small models (2026-11-25)
+
+Same suite 1.6.0, 5 samples per case, `native_schema`, thinking off, Apple M4. Memory is Ollama's own figure for the loaded model (`ollama ps`).
+
+| Model | Licence | Size / loaded | First-pass valid | Invented-attribute flags | Result |
+|---|---|---|---|---|---|
+| `ministral-3:3b` | Apache-2.0 | 3.0 GB / 2.6 GB | 8 of 9 cases at 100%; Video 60% | **72** in 6 cases | FAIL |
+| `gemma3:4b-it-qat` | Gemma Terms of Use | 4.0 GB / 3.7 GB | Calendar **20%** first pass (100% after repair) | **61** in 7 cases, including an invented `UrbanStride.com` | FAIL |
+| `granite4:3b` | Apache-2.0 | 2.1 GB / 3.7 GB | Video 80% (repair did not fix) | **51** in 5 cases | FAIL |
+| `phi4-mini:3.8b` | MIT | 2.5 GB / 5.1 GB | Brand Profile **20%**, FAQ 80%, Video 60% → 80% after repair | **10** in 3 cases | FAIL |
+| `gemma4:12b-it-qat` (reference, Standard) | Apache-2.0 | 7.2 GB | 100% in every case | **0** | PASS |
+
+- **No 3–4B model is usable for the Essential profile today.** Three of them invent product attributes in most text modules (51–72 flags in 45 samples), the same failure seen with `qwen3.5:4b`.
+- **`phi4-mini` is the closest:** it invents far less (10 flags), but it cannot hold the Brand Profile schema, which every other module depends on. A prompt or schema adjustment for this one model might be worth one more round. It would not justify a production change on its own.
+- **`gemma3` could not be offered even if it passed:** the catalog only accepts Apache-2.0 and MIT, so it is recorded here but not in the catalog.
+- **Catalog:** `ministral-3:3b`, `phi4-mini:3.8b` and `granite4:3b` are `rejected` (never offered). `gemma4` records suite 1.6.0.
+
+**Essential stays without an approved model.** 16 GB Macs keep mock mode, a private server or the `not_recommended` `qwen3.5:4b`. Routes worth trying next, in order:
+
+1. A grounding change in the production prompt for attributes (list the allowed product facts explicitly), measured on `phi4-mini` and `granite4`.
+2. Larger small models when they appear (≈ 7–8B at 4-bit, ≤ 5 GB loaded).
+3. Revisiting the 16 GB budget with `gemma4:12b-it-qat`: it loads at ≈ 7 GB, which is tight but possibly workable with a smaller context. It needs a real 16 GB Mac to measure.
+
+ADR-077 keeps human review mandatory either way.
 
 ## Findings
 
@@ -104,6 +127,6 @@ ollama pull gemma4:12b-it-qat && ollama pull qwen3.5:4b && ollama pull qwen3.5:9
 AI_OLLAMA_BASE_URL=http://127.0.0.1:11434 AI_OLLAMA_MODEL=gemma4:12b-it-qat pnpm ai:health   # server up and model pulled?
 AI_OLLAMA_BASE_URL=http://127.0.0.1:11434 AI_OLLAMA_MODEL=gemma4:12b-it-qat AI_OLLAMA_STRUCTURED_MODE=native_schema pnpm eval:ai --runtime ollama --samples 5
 AI_OLLAMA_BASE_URL=http://127.0.0.1:11434 AI_OLLAMA_MODEL=qwen3.5:4b AI_OLLAMA_STRUCTURED_MODE=prompted pnpm eval:ai --runtime ollama --samples 5
-ollama pull ministral-3:3b
-AI_OLLAMA_BASE_URL=http://127.0.0.1:11434 AI_OLLAMA_MODEL=ministral-3:3b AI_OLLAMA_STRUCTURED_MODE=native_schema pnpm eval:ai --runtime ollama --samples 5
+ollama pull ministral-3:3b && ollama pull gemma3:4b-it-qat && ollama pull phi4-mini:3.8b && ollama pull granite4:3b
+AI_OLLAMA_BASE_URL=http://127.0.0.1:11434 AI_OLLAMA_MODEL=phi4-mini:3.8b AI_OLLAMA_STRUCTURED_MODE=native_schema pnpm eval:ai --runtime ollama --samples 5   # same for each tag
 ```

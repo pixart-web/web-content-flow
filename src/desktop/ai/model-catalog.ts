@@ -63,10 +63,10 @@ const entries: CatalogEntry[] = [
     minProfile: "standard",
     structuredMode: "native_schema",
     evaluation: {
-      suite: "1.4.0",
+      suite: "1.6.0",
       status: "candidate",
       summary:
-        "Valid structure in all seven modules on Apple M4; occasional invented product attribute; human review required.",
+        "Passed all nine evaluation cases on Apple M4 (suite 1.6.0, 5 samples each): valid structure, no invented attributes; human review still required.",
     },
   },
   {
@@ -112,6 +112,77 @@ const entries: CatalogEntry[] = [
       suite: "1.1.0",
       status: "rejected",
       summary: "Misses the seoTitle length limit in every product description.",
+    },
+  },
+  {
+    // LF-19 (2026-11-24): first candidate for 16 GB Macs. Valid structure but
+    // invents product attributes in most text modules (docs/technical/48).
+    id: "ministral-3-3b",
+    displayName: "Ministral 3 3B",
+    runtime: "ollama",
+    tag: "ministral-3:3b",
+    manifestDigest:
+      "f04aa1c738f64e13c625b82ae92504fc0260fa6723b509ed1ece0fa188179b1d",
+    sizeBytes: 2_953_840_808,
+    parameters: "3.8B Q4_K_M",
+    license: {
+      spdx: "Apache-2.0",
+      verifiedAt: "2026-11-24",
+      url: "https://www.apache.org/licenses/LICENSE-2.0",
+    },
+    minProfile: "essential",
+    structuredMode: "native_schema",
+    evaluation: {
+      suite: "1.6.0",
+      status: "rejected",
+      summary:
+        "72 invented product attributes in 45 samples (6 of 9 cases); Video script schema valid 3 of 5 times.",
+    },
+  },
+  {
+    id: "phi4-mini-3.8b",
+    displayName: "Phi-4 mini 3.8B",
+    runtime: "ollama",
+    tag: "phi4-mini:3.8b",
+    manifestDigest:
+      "78fad5d182a7c33065e153a5f8ba210754207ba9d91973f57dffa7f487363753",
+    sizeBytes: 2_491_876_774,
+    parameters: "3.8B Q4_K_M",
+    license: {
+      spdx: "MIT",
+      verifiedAt: "2026-11-25",
+      url: "https://opensource.org/license/mit",
+    },
+    minProfile: "essential",
+    structuredMode: "native_schema",
+    evaluation: {
+      suite: "1.6.0",
+      status: "rejected",
+      summary:
+        "Fewest invented attributes of the small models (10 in 45 samples), but Brand Profile is valid only 1 time in 5.",
+    },
+  },
+  {
+    id: "granite4-3b",
+    displayName: "Granite 4 3B",
+    runtime: "ollama",
+    tag: "granite4:3b",
+    manifestDigest:
+      "89962fcc75239ac434cdebceb6b7e0669397f92eaef9c487774b718bc36a3e5f",
+    sizeBytes: 2_099_521_385,
+    parameters: "3.4B Q4_K_M",
+    license: {
+      spdx: "Apache-2.0",
+      verifiedAt: "2026-11-25",
+      url: "https://www.apache.org/licenses/LICENSE-2.0",
+    },
+    minProfile: "essential",
+    structuredMode: "native_schema",
+    evaluation: {
+      suite: "1.6.0",
+      status: "rejected",
+      summary:
+        "51 invented product attributes in 45 samples (5 of 9 cases); Video script valid 4 of 5 times.",
     },
   },
 ];

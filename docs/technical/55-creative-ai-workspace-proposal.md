@@ -201,7 +201,8 @@ Cada etapa é um PR com CI verde, sem migrations nem mudanças de API ou de lóg
 | Responsivo | ✅ Sem scroll horizontal da página a 320 px (dois campos de ficheiro corrigidos). Alvos de 44 px |
 | Fora de âmbito | ✅ Não se mostram como disponíveis templates, componentes, automações, publicação nem analytics |
 | "Sem orbs brilhantes" | ⚠️ **Exceção revista:** a direção aprovada (mockup de 2026-11-20) pede gradientes e brilho. Fica um único brilho ambiente, desfocado e atrás do conteúdo, na home e no login, mais fraco no tema claro. Não há orbs como motivo, nem robôs, nem cérebros |
-| Zoom a 200% e leitores de ecrã reais | ⏳ Não verificado nesta passagem. O axe cobre a semântica, e a passagem final deve incluir VoiceOver e zoom |
+| Zoom a 200% | ✅ 2026-11-26: 24 rotas da app (Studio e claro) a 640×400 e 512×384 CSS px, ou seja, 1280×800 e 1024×768 a 200%. Sem scroll horizontal nem conteúdo cortado. Barra de comandos e menu também a 260 px de altura (WCAG 1.4.10). Corrigido: a barra de comandos ficava presa aos 56 px do topo (o `backdrop-filter` do topo prende os filhos fixos), o fundo escurecido nunca cobria a página e, em janelas baixas, a barra saía do ecrã. O menu móvel e a barra lateral cortavam a conta e o "Sign out" sem scroll |
+| Leitores de ecrã reais | ⏳ O axe cobre a semântica. Falta uma passagem humana com VoiceOver |
 
 **Capturas de referência** (`docs/design/reference/`): `studio-home`, `studio-home-light`, `studio-home-mobile`, `project-overview`, `library`, `social-editor`, `sign-in`, todas com os dados demo.
 

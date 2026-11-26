@@ -3,6 +3,7 @@
 import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 import styles from "./command-bar.module.css";
 
@@ -24,6 +25,10 @@ export function CommandBar({ commands }: { commands: StudioCommand[] }) {
   const [active, setActive] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  // Where the overlay renders: the topbar's backdrop-filter makes it the
+  // containing block of fixed descendants, so the overlay goes to the shell
+  // (which carries the theme) to cover the whole window.
+  const [host, setHost] = useState<Element | null>(null);
   const listId = useId();
   const titleId = useId();
 
@@ -41,7 +46,7 @@ export function CommandBar({ commands }: { commands: StudioCommand[] }) {
     const onKey = (event: KeyboardEvent) => {
       if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
         event.preventDefault();
-        setOpen(true);
+        openBar();
       }
     };
     window.addEventListener("keydown", onKey);
@@ -51,6 +56,11 @@ export function CommandBar({ commands }: { commands: StudioCommand[] }) {
   useEffect(() => {
     if (open) inputRef.current?.focus();
   }, [open]);
+
+  function openBar() {
+    setHost(triggerRef.current?.closest(".app-shell") ?? document.body);
+    setOpen(true);
+  }
 
   function close() {
     setOpen(false);
@@ -89,7 +99,7 @@ export function CommandBar({ commands }: { commands: StudioCommand[] }) {
       <button
         aria-haspopup="dialog"
         className={styles.trigger}
-        onClick={() => setOpen(true)}
+        onClick={openBar}
         ref={triggerRef}
         type="button"
       >
@@ -101,84 +111,91 @@ export function CommandBar({ commands }: { commands: StudioCommand[] }) {
           ⌘K
         </span>
       </button>
-      {open ? (
-        <div
-          className={styles.overlay}
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) close();
-          }}
-        >
-          <div
-            aria-labelledby={titleId}
-            aria-modal="true"
-            className={styles.palette}
-            role="dialog"
-          >
-            <h2 className="sr-only" id={titleId}>
-              Command bar
-            </h2>
-            <input
-              aria-activedescendant={
-                results[active] ? `${listId}-${results[active].id}` : undefined
-              }
-              aria-autocomplete="list"
-              aria-controls={listId}
-              aria-expanded="true"
-              aria-label="Search commands"
-              className={styles.input}
-              onChange={(event) => {
-                setQuery(event.target.value);
-                setActive(0);
+      {open && host
+        ? createPortal(
+            <div
+              className={styles.overlay}
+              onMouseDown={(event) => {
+                if (event.target === event.currentTarget) close();
               }}
-              onKeyDown={onInputKey}
-              placeholder="Type a project, a module or a setting…"
-              ref={inputRef}
-              role="combobox"
-              value={query}
-            />
-            <ul className={styles.list} id={listId} role="listbox">
-              {results.map((command, index) => {
-                const heading =
-                  results[index - 1]?.group !== command.group
-                    ? command.group
-                    : null;
-                return (
-                  <li key={command.id} role="presentation">
-                    {heading ? (
-                      <div aria-hidden className={styles.group}>
-                        {heading}
-                      </div>
-                    ) : null}
-                    <div
-                      aria-selected={index === active}
-                      className={`${styles.option} ${index === active ? styles.optionActive : ""}`}
-                      id={`${listId}-${command.id}`}
-                      onClick={() => run(command)}
-                      onMouseMove={() => setActive(index)}
-                      role="option"
-                    >
-                      <span>{command.label}</span>
-                      {command.detail ? (
-                        <span className={styles.detail}>{command.detail}</span>
-                      ) : null}
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-            {!results.length ? (
-              <p className={styles.foot} role="status">
-                Nothing matches “{query}”.
-              </p>
-            ) : (
-              <p className={styles.foot}>
-                ↑↓ to move · Enter to open · Esc to close. Asking the local AI
-                for a task from here is a later stage.
-              </p>
-            )}
-          </div>
-        </div>
-      ) : null}
+            >
+              <div
+                aria-labelledby={titleId}
+                aria-modal="true"
+                className={styles.palette}
+                role="dialog"
+              >
+                <h2 className="sr-only" id={titleId}>
+                  Command bar
+                </h2>
+                <input
+                  aria-activedescendant={
+                    results[active]
+                      ? `${listId}-${results[active].id}`
+                      : undefined
+                  }
+                  aria-autocomplete="list"
+                  aria-controls={listId}
+                  aria-expanded="true"
+                  aria-label="Search commands"
+                  className={styles.input}
+                  onChange={(event) => {
+                    setQuery(event.target.value);
+                    setActive(0);
+                  }}
+                  onKeyDown={onInputKey}
+                  placeholder="Type a project, a module or a setting…"
+                  ref={inputRef}
+                  role="combobox"
+                  value={query}
+                />
+                <ul className={styles.list} id={listId} role="listbox">
+                  {results.map((command, index) => {
+                    const heading =
+                      results[index - 1]?.group !== command.group
+                        ? command.group
+                        : null;
+                    return (
+                      <li key={command.id} role="presentation">
+                        {heading ? (
+                          <div aria-hidden className={styles.group}>
+                            {heading}
+                          </div>
+                        ) : null}
+                        <div
+                          aria-selected={index === active}
+                          className={`${styles.option} ${index === active ? styles.optionActive : ""}`}
+                          id={`${listId}-${command.id}`}
+                          onClick={() => run(command)}
+                          onMouseMove={() => setActive(index)}
+                          role="option"
+                        >
+                          <span>{command.label}</span>
+                          {command.detail ? (
+                            <span className={styles.detail}>
+                              {command.detail}
+                            </span>
+                          ) : null}
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+                {!results.length ? (
+                  <p className={styles.foot} role="status">
+                    Nothing matches “{query}”.
+                  </p>
+                ) : (
+                  <p className={styles.foot}>
+                    ↑↓ to move · Enter to open · Esc to close. Asking the local
+                    AI for a task from here is a later stage.
+                  </p>
+                )}
+              </div>
+            </div>,
+            host,
+          )
+        : null}
     </>
   );
 }

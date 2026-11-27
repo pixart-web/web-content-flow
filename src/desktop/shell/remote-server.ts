@@ -2,6 +2,7 @@ import { app, ipcMain, Menu, shell, type BrowserWindow } from "electron";
 
 import type { DesktopRemoteServerResult } from "./desktop-api";
 import { probeRemoteServer, validateRemoteServerUrl } from "./remote-url";
+import { updatesMenuItem } from "./updates-ipc";
 import {
   readSettings,
   writeSettings,
@@ -88,6 +89,7 @@ export async function startRemote(context: {
       { role: "editMenu" },
       { role: "viewMenu" },
       { role: "windowMenu" },
+      { role: "help", submenu: [updatesMenuItem(context.log)] },
     ]),
   );
   await context.window.loadURL(`${origin}/app`);

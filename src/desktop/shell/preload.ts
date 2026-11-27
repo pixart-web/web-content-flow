@@ -36,6 +36,8 @@ const api: WcfDesktopApi = {
   activateModel: (id) => ipcRenderer.invoke("wcf:ai-activate", id),
   deactivateModel: () => ipcRenderer.invoke("wcf:ai-deactivate"),
   openExternal: (url) => ipcRenderer.invoke("wcf:open-external", url),
+  appVersion: () => ipcRenderer.invoke("wcf:app-version"),
+  checkForUpdates: () => ipcRenderer.invoke("wcf:check-for-updates"),
 };
 
 contextBridge.exposeInMainWorld("wcfDesktop", api);

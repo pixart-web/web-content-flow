@@ -6,6 +6,8 @@ import { listOwnedUsage } from "@/server/ai/usage-service";
 import { getPrisma } from "@/server/db/prisma";
 import Link from "next/link";
 
+import { UpdatesCard } from "@/features/desktop/updates-card";
+
 export default async function SettingsPage() {
   const user = await requireUser("/app/settings");
   const availability = getGenerationAvailability();
@@ -64,6 +66,7 @@ export default async function SettingsPage() {
           </Link>
         ))}
       </nav>
+      {localMode ? <UpdatesCard /> : null}
       <section className="border-default bg-surface rounded-panel mt-8 border p-6">
         <h2 className="font-display text-xl font-semibold">Account identity</h2>
         <dl className="mt-5 space-y-4">

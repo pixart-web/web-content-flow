@@ -36,6 +36,7 @@ import {
   writeSettings,
   type InstallationPaths,
 } from "./installation";
+import { isReleasePage } from "./updates";
 
 // L4b: main-process side of the local AI assistant. Every handler checks that
 // the call comes from the local app origin; nothing else in the window can
@@ -345,8 +346,12 @@ export function registerAiIpc(context: {
   });
 
   handle("wcf:open-external", async (_event, url: string) => {
-    // Only the documented destinations (Ollama download, licence texts).
-    if (/^https:\/\/(ollama\.com|www\.apache\.org|opensource\.org)\//.test(url))
+    // Only the documented destinations (Ollama download, licence texts,
+    // this app's release pages).
+    if (
+      /^https:\/\/(ollama\.com|www\.apache\.org|opensource\.org)\//.test(url) ||
+      isReleasePage(url)
+    )
       await shell.openExternal(url);
   });
 }

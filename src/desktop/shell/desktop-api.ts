@@ -76,6 +76,22 @@ export type DesktopRemoteServerResult =
       reason: "invalid_url" | "unreachable" | "not_web_content_flow";
     };
 
+// LF-20 update notice: asked on demand, never installed by the app.
+export type DesktopUpdateCheck =
+  | { state: "up_to_date"; current: string; latest: string }
+  | {
+      state: "available";
+      current: string;
+      latest: string;
+      url: string;
+      publishedAt: string | null;
+    }
+  | {
+      state: "unavailable";
+      current: string;
+      reason: "offline" | "no_releases" | "failed";
+    };
+
 export type DesktopPlatform = "darwin" | "win32" | "linux" | "other";
 
 export type WcfDesktopApi = Readonly<{
@@ -95,4 +111,6 @@ export type WcfDesktopApi = Readonly<{
   removeKnowledgeModel: () => Promise<void>;
   deactivateModel: () => Promise<void>;
   openExternal: (url: string) => Promise<void>;
+  appVersion: () => Promise<string>;
+  checkForUpdates: () => Promise<DesktopUpdateCheck>;
 }>;

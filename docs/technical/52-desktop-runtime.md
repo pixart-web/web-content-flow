@@ -161,3 +161,16 @@ Depois de "Set up this computer" (perfil de dono, LF-06), o onboarding em modo `
 - **Correção:** o proxy do modo `local` redirecionava `/brand/*` para `/app`, e o logótipo da app nunca aparecia na edição desktop. `/brand` passou à lista de caminhos servidos (continua a exigir o token).
 - O E2E desktop (LF-21) verifica o bloco, a ida e a volta ao ecrã Local AI quando a máquina o suporta, o aviso e o logótipo, sempre com o guarda sem rede.
 - **Ainda não feito no LF-20:** auto-update, assinatura e notarização (dependem da conta Apple Developer).
+
+## Aviso de atualizações e releases (LF-20, 2026-11-27)
+
+Sem assinatura, uma app não se pode atualizar sozinha em segurança. Por isso a app avisa, mas não instala:
+
+- **Verificação só a pedido:** em Settings → **Updates** (só no modo `local`) ou em **Help → Check for Updates…** (também no modo de servidor privado). A app pede ao GitHub `releases/latest` (`src/desktop/shell/updates.ts`) com um nome de cliente genérico e um limite de 10 s. Não há verificação em segundo plano nem envio de dados do computador.
+- **Resultado:** "é a versão mais recente", "há a versão X", com um botão que abre a página da release no browser, ou o motivo de não saber (sem rede, nenhuma versão publicada, resposta inválida). Ignora rascunhos, pré-releases e links fora deste repositório. Uma build de desenvolvimento (`0.0.0`) vê qualquer release como mais recente.
+- **Instalação manual:** descarregar da página e instalar por cima. Os dados ficam onde estão, e as migrations correm no arranque seguinte, com snapshot antes.
+- **Publicar uma versão** (`.github/workflows/desktop-release.yml`):
+  1. Empurrar uma tag `vMAJOR.MINOR.PATCH`. O workflow usa a tag como versão, constrói e empacota em macOS, Windows e Linux, e cria uma release em **rascunho** com os pacotes e o `SHA256SUMS.txt`.
+  2. O dono revê o rascunho e publica-o. Só a partir daí a app o vê.
+- **Verificado na app real (macOS):** o cartão e o menu Help, com a verificação real ao GitHub a responder "No version has been published yet" (ainda não há releases). O caminho "há versão nova" está coberto pelos testes unitários.
+- **Ainda não feito:** auto-update com instalação (precisa de assinatura), e um primeiro release real.

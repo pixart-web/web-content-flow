@@ -22,6 +22,7 @@ import { registerAiIpc } from "./ai-ipc";
 import { isLoopbackUrl } from "./offline";
 import { registerOwnerIpc } from "./owner-ipc";
 import { registerRemoteServerIpc, startRemote } from "./remote-server";
+import { installUpdatesMenu, registerUpdatesIpc } from "./updates-ipc";
 import {
   installationPaths,
   launchTokens,
@@ -213,6 +214,8 @@ async function start() {
   registerAiIpc({ origin: ORIGIN, here, paths, env: () => env, log });
   registerOwnerIpc({ origin: ORIGIN, here, tokens, log });
   registerRemoteServerIpc({ origin: ORIGIN, paths, log });
+  registerUpdatesIpc({ origin: ORIGIN, log });
+  installUpdatesMenu(log);
   web = fork(join("web", "server.js"), env, "wcf-web");
   worker = fork("worker.mjs", env, "wcf-worker");
   const maintenance = () => fork("maintenance.mjs", env, "wcf-maintenance");
